@@ -1,0 +1,47 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: yarn install
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: yarn install
+
+      - name: Run Backend Tests
+        working-directory: ./backend
+        run: npm run test
+
+      - name: Build Frontend
+        working-directory: ./frontend
+        run: yarn build
+
+      - name: Setup Environment Variables
+        working-directory: ./backend
+        run: |
+          touch .env
+          echo "${{ secrets.PROD }}" > .env
+
+      - name: Restart PM2 Services
+        run: |
+          pm2 restart all || pm2 start ./backend/index.js --name backend
+          pm2 serve ./frontend/build 3000 --spa --name frontend
+
