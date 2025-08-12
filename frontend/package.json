@@ -1,5 +1,5 @@
 {
-  "name": "task-manager-frontend",
+  "name": "healthcare-appointment-system",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -8,7 +8,16 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.10.0",
     "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "@mui/material": "^5.15.0",
+    "@mui/icons-material": "^5.15.0",
+    "@emotion/react": "^11.11.0",
+    "@emotion/styled": "^11.11.0",
+    "date-fns": "^2.30.0",
+    "react-datepicker": "^4.25.0",
+    "react-dropzone": "^14.2.3",
+    "react-hot-toast": "^2.4.1",
+    "jwt-decode": "^4.0.0"
   },
   "scripts": {
     "start": "react-scripts start",
