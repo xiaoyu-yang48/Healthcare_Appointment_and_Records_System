@@ -1,73 +1,248 @@
 
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 };
 
 const registerUser = async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, role, phone, address, dateOfBirth, gender } = req.body;
+    
     try {
         const userExists = await User.findOne({ email });
-        if (userExists) return res.status(400).json({ message: 'User already exists' });
+        if (userExists) {
+            return res.status(400).json({ message: '用户已存在' });
+        }
 
-        const user = await User.create({ name, email, password });
-        res.status(201).json({ id: user.id, name: user.name, email: user.email, token: generateToken(user.id) });
+        // 验证角色
+        if (role && !['patient', 'doctor'].includes(role)) {
+            return res.status(400).json({ message: '无效的用户角色' });
+        }
+
+        const userData = {
+            name,
+            email,
+            password,
+            role: role || 'patient',
+            phone,
+            address,
+            dateOfBirth,
+            gender
+        };
+
+        const user = await User.create(userData);
+        
+        // 更新最后登录时间
+        user.lastLogin = new Date();
+        await user.save();
+
+        const userResponse = {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            phone: user.phone,
+            address: user.address,
+            dateOfBirth: user.dateOfBirth,
+            gender: user.gender
+        };
+
+        res.status(201).json({
+            message: '注册成功',
+            token: generateToken(user._id),
+            user: userResponse
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('注册错误:', error);
+        res.status(500).json({ message: '服务器错误', error: error.message });
     }
 };
 
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
+    
     try {
-        const user = await User.findOne({ email });
-        if (user && (await bcrypt.compare(password, user.password))) {
-            res.json({ id: user.id, name: user.name, email: user.email, token: generateToken(user.id) });
-        } else {
-            res.status(401).json({ message: 'Invalid email or password' });
+        const user = await User.findOne({ email }).select('+password');
+        
+        if (!user) {
+            return res.status(401).json({ message: '邮箱或密码错误' });
         }
+
+        if (!user.isActive) {
+            return res.status(401).json({ message: '账户已被禁用' });
+        }
+
+        const isMatch = await user.matchPassword(password);
+        if (!isMatch) {
+            return res.status(401).json({ message: '邮箱或密码错误' });
+        }
+
+        // 更新最后登录时间
+        user.lastLogin = new Date();
+        await user.save();
+
+        const userResponse = {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            phone: user.phone,
+            address: user.address,
+            dateOfBirth: user.dateOfBirth,
+            gender: user.gender,
+            specialization: user.specialization,
+            department: user.department,
+            avatar: user.avatar
+        };
+
+        res.json({
+            message: '登录成功',
+            token: generateToken(user._id),
+            user: userResponse
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('登录错误:', error);
+        res.status(500).json({ message: '服务器错误', error: error.message });
     }
 };
 
 const getProfile = async (req, res) => {
     try {
-      const user = await User.findById(req.user.id);
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-  
-      res.status(200).json({
-        name: user.name,
-        email: user.email,
-        university: user.university,
-        address: user.address,
-      });
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ message: '用户不存在' });
+        }
+
+        const userResponse = {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            phone: user.phone,
+            address: user.address,
+            dateOfBirth: user.dateOfBirth,
+            gender: user.gender,
+            specialization: user.specialization,
+            department: user.department,
+            licenseNumber: user.licenseNumber,
+            experience: user.experience,
+            education: user.education,
+            bio: user.bio,
+            emergencyContact: user.emergencyContact,
+            medicalHistory: user.medicalHistory,
+            allergies: user.allergies,
+            avatar: user.avatar,
+            lastLogin: user.lastLogin
+        };
+
+        res.status(200).json(userResponse);
     } catch (error) {
-      res.status(500).json({ message: 'Server error', error: error.message });
+        console.error('获取用户资料错误:', error);
+        res.status(500).json({ message: '服务器错误', error: error.message });
     }
-  };
+};
 
 const updateUserProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
-        if (!user) return res.status(404).json({ message: 'User not found' });
+        if (!user) {
+            return res.status(404).json({ message: '用户不存在' });
+        }
 
-        const { name, email, university, address } = req.body;
-        user.name = name || user.name;
-        user.email = email || user.email;
-        user.university = university || user.university;
-        user.address = address || user.address;
+        const {
+            name, email, phone, address, dateOfBirth, gender,
+            specialization, department, licenseNumber, experience, education, bio,
+            emergencyContact, medicalHistory, allergies
+        } = req.body;
+
+        // 更新基本信息
+        if (name) user.name = name;
+        if (email) user.email = email;
+        if (phone) user.phone = phone;
+        if (address) user.address = address;
+        if (dateOfBirth) user.dateOfBirth = dateOfBirth;
+        if (gender) user.gender = gender;
+
+        // 更新医生特有信息
+        if (user.role === 'doctor') {
+            if (specialization) user.specialization = specialization;
+            if (department) user.department = department;
+            if (licenseNumber) user.licenseNumber = licenseNumber;
+            if (experience) user.experience = experience;
+            if (education) user.education = education;
+            if (bio) user.bio = bio;
+        }
+
+        // 更新患者特有信息
+        if (user.role === 'patient') {
+            if (emergencyContact) user.emergencyContact = emergencyContact;
+            if (medicalHistory) user.medicalHistory = medicalHistory;
+            if (allergies) user.allergies = allergies;
+        }
 
         const updatedUser = await user.save();
-        res.json({ id: updatedUser.id, name: updatedUser.name, email: updatedUser.email, university: updatedUser.university, address: updatedUser.address, token: generateToken(updatedUser.id) });
+
+        const userResponse = {
+            id: updatedUser._id,
+            name: updatedUser.name,
+            email: updatedUser.email,
+            role: updatedUser.role,
+            phone: updatedUser.phone,
+            address: updatedUser.address,
+            dateOfBirth: updatedUser.dateOfBirth,
+            gender: updatedUser.gender,
+            specialization: updatedUser.specialization,
+            department: updatedUser.department,
+            licenseNumber: updatedUser.licenseNumber,
+            experience: updatedUser.experience,
+            education: updatedUser.education,
+            bio: updatedUser.bio,
+            emergencyContact: updatedUser.emergencyContact,
+            medicalHistory: updatedUser.medicalHistory,
+            allergies: updatedUser.allergies,
+            avatar: updatedUser.avatar
+        };
+
+        res.json({
+            message: '资料更新成功',
+            user: userResponse
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('更新用户资料错误:', error);
+        res.status(500).json({ message: '服务器错误', error: error.message });
     }
 };
 
-module.exports = { registerUser, loginUser, updateUserProfile, getProfile };
+const changePassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        
+        const user = await User.findById(req.user.id).select('+password');
+        if (!user) {
+            return res.status(404).json({ message: '用户不存在' });
+        }
+
+        const isMatch = await user.matchPassword(currentPassword);
+        if (!isMatch) {
+            return res.status(400).json({ message: '当前密码错误' });
+        }
+
+        user.password = newPassword;
+        await user.save();
+
+        res.json({ message: '密码修改成功' });
+    } catch (error) {
+        console.error('修改密码错误:', error);
+        res.status(500).json({ message: '服务器错误', error: error.message });
+    }
+};
+
+module.exports = { 
+    registerUser, 
+    loginUser, 
+    updateUserProfile, 
+    getProfile,
+    changePassword
+};
