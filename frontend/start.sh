@@ -23,7 +23,7 @@ npm install
 # 创建环境变量文件
 if [ ! -f .env ]; then
     echo "📝 创建环境变量文件..."
-    echo "REACT_APP_API_URL=http://localhost:5000/api" > .env
+    echo "REACT_APP_API_URL=http://localhost:3001/api" > .env
     echo "✅ 环境变量文件已创建"
 fi
 

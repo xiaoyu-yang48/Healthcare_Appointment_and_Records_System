@@ -116,7 +116,7 @@ src/
 创建 `.env` 文件并配置以下变量：
 
 ```
-REACT_APP_API_URL=http://localhost:5000/api
+REACT_APP_API_URL=http://localhost:3001/api
 ```
 
 ## 主要组件说明
