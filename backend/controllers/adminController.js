@@ -86,6 +86,55 @@ const getSystemStats = async (req, res) => {
     }
 };
 
+// 获取最近预约
+const getRecentAppointments = async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: '无权限访问管理员功能' });
+        }
+
+        const { limit = 10 } = req.query;
+        
+        const recentAppointments = await Appointment.find()
+            .populate('patient', 'name email')
+            .populate('doctor', 'name email')
+            .sort({ createdAt: -1 })
+            .limit(parseInt(limit));
+
+        res.json({
+            appointments: recentAppointments,
+            total: recentAppointments.length
+        });
+    } catch (error) {
+        console.error('获取最近预约错误:', error);
+        res.status(500).json({ message: '服务器错误', error: error.message });
+    }
+};
+
+// 获取最近用户
+const getRecentUsers = async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: '无权限访问管理员功能' });
+        }
+
+        const { limit = 10 } = req.query;
+        
+        const recentUsers = await User.find()
+            .select('name email role createdAt isActive')
+            .sort({ createdAt: -1 })
+            .limit(parseInt(limit));
+
+        res.json({
+            users: recentUsers,
+            total: recentUsers.length
+        });
+    } catch (error) {
+        console.error('获取最近用户错误:', error);
+        res.status(500).json({ message: '服务器错误', error: error.message });
+    }
+};
+
 // 获取用户列表
 const getUsers = async (req, res) => {
     try {
@@ -334,6 +383,8 @@ const getDepartmentStats = async (req, res) => {
 
 module.exports = {
     getSystemStats,
+    getRecentUsers,
+    getRecentAppointments,
     getUsers,
     updateUserStatus,
     deleteUser,

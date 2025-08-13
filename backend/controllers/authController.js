@@ -17,7 +17,7 @@ const registerUser = async (req, res) => {
         }
 
         // 验证角色
-        if (role && !['patient', 'doctor'].includes(role)) {
+        if (role && !['patient', 'doctor', 'admin'].includes(role)) {
             return res.status(400).json({ message: '无效的用户角色' });
         }
 
@@ -64,6 +64,30 @@ const loginUser = async (req, res) => {
     const { email, password } = req.body;
     
     try {
+        // 临时固定密码管理员登录（仅用于调试）
+        if (email === 'admin@healthcare.com' && password === 'admin123') {
+            const adminUser = {
+                id: 'temp-admin-id',
+                name: '系统管理员',
+                email: 'admin@healthcare.com',
+                role: 'admin',
+                phone: '13800000000',
+                address: '',
+                dateOfBirth: null,
+                gender: null,
+                specialization: null,
+                department: null,
+                avatar: null
+            };
+
+            res.json({
+                message: '管理员登录成功（临时模式）',
+                token: generateToken(adminUser.id),
+                user: adminUser
+            });
+            return;
+        }
+
         const user = await User.findOne({ email }).select('+password');
         
         if (!user) {
@@ -110,6 +134,32 @@ const loginUser = async (req, res) => {
 
 const getProfile = async (req, res) => {
     try {
+        // 临时管理员处理（仅用于调试）
+        if (req.user._id === 'temp-admin-id') {
+            const tempAdminResponse = {
+                id: 'temp-admin-id',
+                name: '系统管理员',
+                email: 'admin@healthcare.com',
+                role: 'admin',
+                phone: '13800000000',
+                address: '',
+                dateOfBirth: null,
+                gender: null,
+                specialization: null,
+                department: null,
+                licenseNumber: null,
+                experience: null,
+                education: null,
+                bio: null,
+                emergencyContact: null,
+                medicalHistory: [],
+                allergies: [],
+                avatar: null,
+                lastLogin: new Date()
+            };
+            return res.status(200).json(tempAdminResponse);
+        }
+
         const user = await User.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ message: '用户不存在' });
