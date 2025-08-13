@@ -59,7 +59,9 @@ const DoctorDashboard = () => {
       setTodayAppointments(todayData);
       
       // 获取即将到来的预约
-      const upcomingResponse = await api.get('/appointments/doctor/upcoming');
+      const upcomingResponse = await api.get('/appointments/doctor', {
+        params: { status: 'confirmed' }
+      });
       const upcomingData = upcomingResponse.data;
       setUpcomingAppointments(upcomingData.slice(0, 5)); // 只显示最近5个
       
@@ -67,10 +69,10 @@ const DoctorDashboard = () => {
       const statsResponse = await api.get('/doctors/stats');
       const statsData = statsResponse.data;
       setStats({
-        totalPatients: statsData.totalPatients || 0,
+        totalPatients: statsData.recentPatients?.length || 0,
         todayAppointments: todayData.length,
         completedToday: todayData.filter(apt => apt.status === 'completed').length,
-        pendingAppointments: statsData.pendingAppointments || 0,
+        pendingAppointments: statsData.statusStats?.find(s => s._id === 'pending')?.count || 0,
       });
       
     } catch (error) {
@@ -249,7 +251,7 @@ const DoctorDashboard = () => {
               {todayAppointments.length > 0 ? (
                 <List>
                   {todayAppointments.map((appointment) => (
-                    <ListItem key={appointment._id} divider>
+                    <ListItem key={appointment.id} divider>
                       <ListItemIcon>
                         {getStatusIcon(appointment.status)}
                       </ListItemIcon>
@@ -266,14 +268,14 @@ const DoctorDashboard = () => {
                             />
                           </Box>
                         }
-                        secondary={`${format(new Date(appointment.date), 'HH:mm')} - ${appointment.department}`}
+                        secondary={`${appointment.timeSlot} - ${appointment.type || '咨询'}`}
                       />
                       <Box>
                         {appointment.status === 'pending' && (
                           <Button
                             size="small"
                             variant="outlined"
-                            onClick={() => handleUpdateAppointmentStatus(appointment._id, 'confirmed')}
+                            onClick={() => handleUpdateAppointmentStatus(appointment.id, 'confirmed')}
                           >
                             确认
                           </Button>
@@ -282,7 +284,7 @@ const DoctorDashboard = () => {
                           <Button
                             size="small"
                             variant="outlined"
-                            onClick={() => handleUpdateAppointmentStatus(appointment._id, 'completed')}
+                            onClick={() => handleUpdateAppointmentStatus(appointment.id, 'completed')}
                           >
                             完成
                           </Button>
@@ -319,13 +321,13 @@ const DoctorDashboard = () => {
               {upcomingAppointments.length > 0 ? (
                 <List>
                   {upcomingAppointments.map((appointment) => (
-                    <ListItem key={appointment._id} divider>
+                    <ListItem key={appointment.id} divider>
                       <ListItemIcon>
                         <Person />
                       </ListItemIcon>
                       <ListItemText
                         primary={appointment.patient?.name}
-                        secondary={`${format(new Date(appointment.date), 'MM-dd HH:mm')} - ${appointment.department}`}
+                        secondary={`${format(new Date(appointment.date), 'MM-dd')} ${appointment.timeSlot}`}
                       />
                       <Chip
                         label={getStatusLabel(appointment.status)}

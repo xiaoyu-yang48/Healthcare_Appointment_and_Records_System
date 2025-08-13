@@ -43,7 +43,7 @@ const PatientMessages = () => {
 
   useEffect(() => {
     if (selectedConversation) {
-      fetchMessages(selectedConversation._id);
+      fetchMessages(selectedConversation.user.id);
     }
   }, [selectedConversation]);
 
@@ -71,9 +71,9 @@ const PatientMessages = () => {
     }
   };
 
-  const fetchMessages = async (conversationId) => {
+  const fetchMessages = async (userId) => {
     try {
-      const response = await api.get(`/messages/conversation/${conversationId}`);
+      const response = await api.get(`/messages/conversation/${userId}`);
       setMessages(response.data);
     } catch (error) {
       console.error('获取消息失败:', error);
@@ -87,9 +87,8 @@ const PatientMessages = () => {
     try {
       setSending(true);
       const messageData = {
-        conversationId: selectedConversation._id,
+        receiverId: selectedConversation.user.id,
         content: newMessage.trim(),
-        receiverId: selectedConversation.doctor._id,
       };
 
       const response = await api.post('/messages', messageData);
@@ -98,7 +97,7 @@ const PatientMessages = () => {
       
       // 更新对话列表中的最后消息
       const updatedConversations = conversations.map(conv => 
-        conv._id === selectedConversation._id 
+        conv.user.id === selectedConversation.user.id 
           ? { ...conv, lastMessage: response.data }
           : conv
       );
@@ -167,9 +166,9 @@ const PatientMessages = () => {
                 <List sx={{ maxHeight: 'calc(100% - 60px)', overflow: 'auto' }}>
                   {conversations.map((conversation) => (
                     <ListItem
-                      key={conversation._id}
+                      key={conversation.user.id}
                       button
-                      selected={selectedConversation?._id === conversation._id}
+                      selected={selectedConversation?.user.id === conversation.user.id}
                       onClick={() => setSelectedConversation(conversation)}
                       sx={{ mb: 1, borderRadius: 1 }}
                     >
@@ -182,7 +181,7 @@ const PatientMessages = () => {
                         primary={
                           <Box display="flex" justifyContent="space-between" alignItems="center">
                             <Typography variant="subtitle2">
-                              {conversation.doctor.name}
+                              {conversation.user.name}
                             </Typography>
                             {getUnreadCount(conversation) > 0 && (
                               <Chip
@@ -237,10 +236,10 @@ const PatientMessages = () => {
                     </Avatar>
                     <Box>
                       <Typography variant="h6">
-                        {selectedConversation.doctor.name}
+                        {selectedConversation.user.name}
                       </Typography>
                       <Typography variant="body2" color="textSecondary">
-                        {selectedConversation.doctor.department}
+                        {selectedConversation.user.role === 'doctor' ? '医生' : '用户'}
                       </Typography>
                     </Box>
                   </Box>
@@ -252,17 +251,17 @@ const PatientMessages = () => {
                     <Box>
                       {messages.map((message) => (
                         <Box
-                          key={message._id}
+                          key={message.id}
                           display="flex"
-                          justifyContent={message.senderId === user._id ? 'flex-end' : 'flex-start'}
+                          justifyContent={message.sender.id === user.id ? 'flex-end' : 'flex-start'}
                           mb={2}
                         >
                           <Paper
                             sx={{
                               p: 2,
                               maxWidth: '70%',
-                              backgroundColor: message.senderId === user._id ? 'primary.main' : 'grey.100',
-                              color: message.senderId === user._id ? 'white' : 'text.primary',
+                              backgroundColor: message.sender.id === user.id ? 'primary.main' : 'grey.100',
+                              color: message.sender.id === user.id ? 'white' : 'text.primary',
                             }}
                           >
                             <Typography variant="body2">
@@ -273,7 +272,7 @@ const PatientMessages = () => {
                               sx={{
                                 display: 'block',
                                 mt: 1,
-                                color: message.senderId === user._id ? 'rgba(255,255,255,0.7)' : 'text.secondary',
+                                color: message.sender.id === user.id ? 'rgba(255,255,255,0.7)' : 'text.secondary',
                               }}
                             >
                               {getMessageTime(message.createdAt)}

@@ -27,7 +27,6 @@ import {
   MedicalServices,
   Schedule,
   Settings,
-  Add,
   TrendingUp,
   Person,
   LocalHospital,
@@ -41,14 +40,26 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
-    totalUsers: 0,
-    totalDoctors: 0,
-    totalPatients: 0,
-    totalAppointments: 0,
-    todayAppointments: 0,
-    pendingAppointments: 0,
+    users: {
+      total: 0,
+      patients: 0,
+      doctors: 0,
+      active: 0
+    },
+    appointments: {
+      total: 0,
+      today: 0,
+      byStatus: []
+    },
+    records: {
+      total: 0,
+      thisMonth: 0
+    },
+    messages: {
+      total: 0,
+      unread: 0
+    }
   });
-  const [recentUsers, setRecentUsers] = useState([]);
   const [recentAppointments, setRecentAppointments] = useState([]);
 
   useEffect(() => {
@@ -63,13 +74,8 @@ const AdminDashboard = () => {
       const statsResponse = await api.get('/admin/stats');
       setStats(statsResponse.data);
       
-      // 获取最近用户
-      const usersResponse = await api.get('/admin/users/recent');
-      setRecentUsers(usersResponse.data);
-      
-      // 获取最近预约
-      const appointmentsResponse = await api.get('/admin/appointments/recent');
-      setRecentAppointments(appointmentsResponse.data);
+      // 获取最近预约（从stats中获取）
+      setRecentAppointments(statsResponse.data.recentAppointments || []);
       
     } catch (error) {
       console.error('获取仪表板数据失败:', error);
@@ -163,7 +169,7 @@ const AdminDashboard = () => {
                     总用户数
                   </Typography>
                   <Typography variant="h4">
-                    {stats.totalUsers}
+                    {stats.users?.total || 0}
                   </Typography>
                 </Box>
               </Box>
@@ -181,7 +187,7 @@ const AdminDashboard = () => {
                     医生数量
                   </Typography>
                   <Typography variant="h4">
-                    {stats.totalDoctors}
+                    {stats.users?.doctors || 0}
                   </Typography>
                 </Box>
               </Box>
@@ -199,7 +205,7 @@ const AdminDashboard = () => {
                     患者数量
                   </Typography>
                   <Typography variant="h4">
-                    {stats.totalPatients}
+                    {stats.users?.patients || 0}
                   </Typography>
                 </Box>
               </Box>
@@ -217,7 +223,7 @@ const AdminDashboard = () => {
                     总预约数
                   </Typography>
                   <Typography variant="h4">
-                    {stats.totalAppointments}
+                    {stats.appointments?.total || 0}
                   </Typography>
                 </Box>
               </Box>
@@ -237,7 +243,7 @@ const AdminDashboard = () => {
               <Box display="flex" justifyContent="space-between" alignItems="center">
                 <Box>
                   <Typography variant="h3" color="primary">
-                    {stats.todayAppointments}
+                    {stats.appointments?.today || 0}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
                     今日预约总数
@@ -245,7 +251,7 @@ const AdminDashboard = () => {
                 </Box>
                 <Box textAlign="right">
                   <Typography variant="h6" color="warning.main">
-                    {stats.pendingAppointments}
+                    {stats.appointments?.byStatus?.find(s => s._id === 'pending')?.count || 0}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
                     待处理预约
@@ -288,63 +294,8 @@ const AdminDashboard = () => {
       </Grid>
 
       <Grid container spacing={3}>
-        {/* 最近用户 */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                <Typography variant="h6">
-                  最近注册用户
-                </Typography>
-                <Button
-                  variant="outlined"
-                  startIcon={<Add />}
-                  onClick={() => navigate('/admin/users')}
-                >
-                  用户管理
-                </Button>
-              </Box>
-              
-              {recentUsers.length > 0 ? (
-                <TableContainer>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>姓名</TableCell>
-                        <TableCell>角色</TableCell>
-                        <TableCell>注册时间</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {recentUsers.map((user) => (
-                        <TableRow key={user._id}>
-                          <TableCell>{user.name}</TableCell>
-                          <TableCell>
-                            <Chip
-                              label={getRoleLabel(user.role)}
-                              color={getRoleColor(user.role)}
-                              size="small"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            {format(new Date(user.createdAt), 'MM-dd HH:mm')}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              ) : (
-                <Typography color="textSecondary" align="center" sx={{ py: 2 }}>
-                  暂无最近注册用户
-                </Typography>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-
         {/* 最近预约 */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12}>
           <Card>
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
@@ -372,7 +323,7 @@ const AdminDashboard = () => {
                     </TableHead>
                     <TableBody>
                       {recentAppointments.map((appointment) => (
-                        <TableRow key={appointment._id}>
+                        <TableRow key={appointment.id}>
                           <TableCell>{appointment.patient?.name}</TableCell>
                           <TableCell>{appointment.doctor?.name}</TableCell>
                           <TableCell>
@@ -383,7 +334,7 @@ const AdminDashboard = () => {
                             />
                           </TableCell>
                           <TableCell>
-                            {format(new Date(appointment.date), 'MM-dd HH:mm')}
+                            {format(new Date(appointment.date), 'MM-dd')} {appointment.timeSlot}
                           </TableCell>
                         </TableRow>
                       ))}

@@ -225,13 +225,13 @@ const PatientDashboard = () => {
               {appointments.length > 0 ? (
                 <List>
                   {appointments.map((appointment) => (
-                    <ListItem key={appointment._id} divider>
+                    <ListItem key={appointment.id} divider>
                       <ListItemIcon>
                         <Schedule />
                       </ListItemIcon>
                       <ListItemText
-                        primary={`${appointment.doctor?.name || '医生'} - ${appointment.department}`}
-                        secondary={`${format(new Date(appointment.date), 'yyyy-MM-dd HH:mm')}`}
+                        primary={`${appointment.doctor?.name || '医生'} - ${appointment.doctor?.department || '科室'}`}
+                        secondary={`${format(new Date(appointment.date), 'yyyy-MM-dd')} ${appointment.timeSlot}`}
                       />
                       <Chip
                         label={getStatusLabel(appointment.status)}
@@ -269,13 +269,13 @@ const PatientDashboard = () => {
               {medicalRecords.length > 0 ? (
                 <List>
                   {medicalRecords.map((record) => (
-                    <ListItem key={record._id} divider>
+                    <ListItem key={record.id} divider>
                       <ListItemIcon>
                         <MedicalServices />
                       </ListItemIcon>
                       <ListItemText
                         primary={record.diagnosis || '诊断信息'}
-                        secondary={`${record.doctor?.name || '医生'} - ${format(new Date(record.createdAt), 'yyyy-MM-dd')}`}
+                        secondary={`${record.doctor?.name || '医生'} - ${format(new Date(record.visitDate), 'yyyy-MM-dd')}`}
                       />
                     </ListItem>
                   ))}

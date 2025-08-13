@@ -20,6 +20,11 @@ import PatientRecords from './pages/PatientRecords';
 import PatientMessages from './pages/PatientMessages';
 import DoctorDashboard from './pages/DoctorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminUsers from './pages/AdminUsers';
+import AdminAppointments from './pages/AdminAppointments';
+import AdminRecords from './pages/AdminRecords';
+import AdminSettings from './pages/AdminSettings';
+import TestLogin from './pages/TestLogin';
 
 // 创建主题
 const theme = createTheme({
@@ -90,14 +95,14 @@ const AppContent = () => {
     }
     
     switch (user?.role) {
-      case 'patient':
-        return '/patient/dashboard';
-      case 'doctor':
-        return '/doctor/dashboard';
-      case 'admin':
-        return '/admin/dashboard';
-      default:
-        return '/login';
+        case 'patient':
+            return '/patient/dashboard';
+        case 'doctor':
+            return '/doctor/dashboard';
+        case 'admin':
+            return '/admin/dashboard';
+        default:
+            return '/login';
     }
   };
 
@@ -125,6 +130,7 @@ const AppContent = () => {
         <Route path="/register" element={
           isAuthenticated() ? <Navigate to={getDefaultRoute()} replace /> : <Register />
         } />
+        <Route path="/test-login" element={<TestLogin />} />
         
         {/* 受保护的路由 */}
         <Route path="/profile" element={
@@ -166,6 +172,26 @@ const AppContent = () => {
         <Route path="/admin/dashboard" element={
           <ProtectedRoute allowedRoles={['admin']}>
             <AdminDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/users" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminUsers />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/appointments" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminAppointments />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/records" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminRecords />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/settings" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminSettings />
           </ProtectedRoute>
         } />
         

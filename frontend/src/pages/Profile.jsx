@@ -39,6 +39,9 @@ const Profile = () => {
     name: '',
     email: '',
     phone: '',
+    address: '',
+    dateOfBirth: '',
+    gender: '',
     department: '',
     specialization: '',
   });
@@ -50,6 +53,9 @@ const Profile = () => {
         name: user.name || '',
         email: user.email || '',
         phone: user.phone || '',
+        address: user.address || '',
+        dateOfBirth: user.dateOfBirth || '',
+        gender: user.gender || '',
         department: user.department || '',
         specialization: user.specialization || '',
       });
@@ -69,7 +75,7 @@ const Profile = () => {
     setError('');
 
     try {
-      const response = await api.put('/users/profile', formData);
+      const response = await api.put('/auth/profile', formData);
       updateUser(response.data);
       setEditing(false);
       toast.success('个人信息更新成功');
@@ -121,6 +127,12 @@ const Profile = () => {
     '骨科',
     '肿瘤科',
     '急诊科',
+  ];
+
+  const genders = [
+    { value: 'male', label: '男' },
+    { value: 'female', label: '女' },
+    { value: 'other', label: '其他' },
   ];
 
   if (!user) {
@@ -216,6 +228,50 @@ const Profile = () => {
                 />
               </Grid>
 
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="地址"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  disabled={!editing}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="出生日期"
+                  name="dateOfBirth"
+                  type="date"
+                  value={formData.dateOfBirth}
+                  onChange={handleChange}
+                  disabled={!editing}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth disabled={!editing}>
+                  <InputLabel>性别</InputLabel>
+                  <Select
+                    name="gender"
+                    value={formData.gender}
+                    label="性别"
+                    onChange={handleChange}
+                  >
+                    {genders.map((gender) => (
+                      <MenuItem key={gender.value} value={gender.value}>
+                        {gender.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
               {user.role === 'doctor' && (
                 <>
                   <Grid item xs={12} sm={6}>
@@ -267,6 +323,9 @@ const Profile = () => {
                             name: user.name || '',
                             email: user.email || '',
                             phone: user.phone || '',
+                            address: user.address || '',
+                            dateOfBirth: user.dateOfBirth || '',
+                            gender: user.gender || '',
                             department: user.department || '',
                             specialization: user.specialization || '',
                           });

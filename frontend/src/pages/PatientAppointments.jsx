@@ -83,9 +83,10 @@ const PatientAppointments = () => {
     try {
       const appointmentData = {
         doctorId: selectedDoctor,
-        date: selectedDate,
-        time: selectedTime,
-        patientId: user._id,
+        date: format(selectedDate, 'yyyy-MM-dd'),
+        timeSlot: selectedTime,
+        symptoms: '',
+        type: 'consultation',
       };
 
       await api.post('/appointments', appointmentData);
@@ -106,7 +107,9 @@ const PatientAppointments = () => {
 
   const handleCancelAppointment = async (appointmentId) => {
     try {
-      await api.put(`/appointments/${appointmentId}/cancel`);
+      await api.put(`/appointments/${appointmentId}/cancel`, {
+        reason: '患者取消'
+      });
       toast.success('预约已取消');
       fetchData(); // 刷新数据
     } catch (error) {
@@ -124,7 +127,10 @@ const PatientAppointments = () => {
             date: format(selectedDate, 'yyyy-MM-dd'),
           },
         });
-        setAvailableSlots(response.data.availableSlots || []);
+        const availableTimeSlots = response.data.timeSlots
+          .filter(slot => slot.isAvailable)
+          .map(slot => slot.time);
+        setAvailableSlots(availableTimeSlots);
       } catch (error) {
         console.error('获取可用时间失败:', error);
         setAvailableSlots([]);
@@ -141,7 +147,10 @@ const PatientAppointments = () => {
             date: format(date, 'yyyy-MM-dd'),
           },
         });
-        setAvailableSlots(response.data.availableSlots || []);
+        const availableTimeSlots = response.data.timeSlots
+          .filter(slot => slot.isAvailable)
+          .map(slot => slot.time);
+        setAvailableSlots(availableTimeSlots);
       } catch (error) {
         console.error('获取可用时间失败:', error);
         setAvailableSlots([]);
@@ -235,16 +244,16 @@ const PatientAppointments = () => {
                 </TableHead>
                 <TableBody>
                   {appointments.map((appointment) => (
-                    <TableRow key={appointment._id}>
+                    <TableRow key={appointment.id}>
                       <TableCell>
                         <Box display="flex" alignItems="center">
                           <Person sx={{ mr: 1 }} />
                           {appointment.doctor?.name}
                         </Box>
                       </TableCell>
-                      <TableCell>{appointment.department}</TableCell>
+                      <TableCell>{appointment.doctor?.department}</TableCell>
                       <TableCell>
-                        {format(new Date(appointment.date), 'yyyy-MM-dd HH:mm')}
+                        {format(new Date(appointment.date), 'yyyy-MM-dd')} {appointment.timeSlot}
                       </TableCell>
                       <TableCell>
                         <Chip
@@ -258,7 +267,7 @@ const PatientAppointments = () => {
                           <Tooltip title="取消预约">
                             <IconButton
                               color="error"
-                              onClick={() => handleCancelAppointment(appointment._id)}
+                              onClick={() => handleCancelAppointment(appointment.id)}
                             >
                               <Cancel />
                             </IconButton>
@@ -316,7 +325,7 @@ const PatientAppointments = () => {
 
           <Grid container spacing={2}>
             {filteredDoctors.map((doctor) => (
-              <Grid item xs={12} sm={6} md={4} key={doctor._id}>
+              <Grid item xs={12} sm={6} md={4} key={doctor.id}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="h6" gutterBottom>
@@ -334,7 +343,7 @@ const PatientAppointments = () => {
                       variant="outlined"
                       size="small"
                       onClick={() => {
-                        setSelectedDoctor(doctor._id);
+                        setSelectedDoctor(doctor.id);
                         setOpenBookingDialog(true);
                       }}
                     >
@@ -361,7 +370,7 @@ const PatientAppointments = () => {
                 onChange={(e) => handleDoctorChange(e.target.value)}
               >
                 {doctors.map((doctor) => (
-                  <MenuItem key={doctor._id} value={doctor._id}>
+                  <MenuItem key={doctor.id} value={doctor.id}>
                     {doctor.name} - {doctor.department}
                   </MenuItem>
                 ))}

@@ -64,7 +64,7 @@ const PatientRecords = () => {
 
   const handleDownloadReport = async (recordId, fileName) => {
     try {
-      const response = await api.get(`/medical-records/${recordId}/download`, {
+      const response = await api.get(`/medical-records/${recordId}/attachments`, {
         responseType: 'blob',
       });
       
@@ -133,7 +133,7 @@ const PatientRecords = () => {
       {medicalRecords.length > 0 ? (
         <Grid container spacing={3}>
           {medicalRecords.map((record) => (
-            <Grid item xs={12} key={record._id}>
+            <Grid item xs={12} key={record.id}>
               <Card>
                 <CardContent>
                   <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
@@ -148,7 +148,7 @@ const PatientRecords = () => {
                           size="small"
                         />
                         <Typography variant="body2" color="textSecondary">
-                          {format(new Date(record.createdAt), 'yyyy-MM-dd HH:mm')}
+                          {format(new Date(record.visitDate), 'yyyy-MM-dd HH:mm')}
                         </Typography>
                       </Box>
                       <Typography variant="body2" color="textSecondary">
@@ -178,32 +178,45 @@ const PatientRecords = () => {
                     </Box>
                   )}
 
-                  {record.prescription && (
+                  {record.treatment && (
                     <Box mb={2}>
                       <Typography variant="subtitle2" gutterBottom>
-                        处方信息：
+                        治疗方案：
                       </Typography>
                       <Typography variant="body2" color="textSecondary">
-                        {record.prescription}
+                        {record.treatment}
                       </Typography>
                     </Box>
                   )}
 
-                  {record.attachments && record.attachments.length > 0 && (
+                  {record.prescription && record.prescription.medications && (
+                    <Box mb={2}>
+                      <Typography variant="subtitle2" gutterBottom>
+                        处方信息：
+                      </Typography>
+                      {record.prescription.medications.map((med, index) => (
+                        <Typography key={index} variant="body2" color="textSecondary">
+                          {med.name} - {med.dosage} - {med.frequency}
+                        </Typography>
+                      ))}
+                    </Box>
+                  )}
+
+                  {record.labResults && record.labResults.length > 0 && (
                     <Box>
                       <Typography variant="subtitle2" gutterBottom>
                         检查报告：
                       </Typography>
                       <Box display="flex" gap={1} flexWrap="wrap">
-                        {record.attachments.map((attachment, index) => (
+                        {record.labResults.map((result, index) => (
                           <Button
                             key={index}
                             variant="outlined"
                             size="small"
                             startIcon={<Download />}
-                            onClick={() => handleDownloadReport(record._id, attachment.name)}
+                            onClick={() => handleDownloadReport(record.id, `${result.testName}.pdf`)}
                           >
-                            {attachment.name || `报告${index + 1}`}
+                            {result.testName}
                           </Button>
                         ))}
                       </Box>
@@ -273,7 +286,7 @@ const PatientRecords = () => {
                         </ListItemIcon>
                         <ListItemText
                           primary="就诊时间"
-                          secondary={format(new Date(selectedRecord.createdAt), 'yyyy-MM-dd HH:mm')}
+                          secondary={format(new Date(selectedRecord.visitDate), 'yyyy-MM-dd HH:mm')}
                         />
                       </ListItem>
                       <ListItem>
@@ -312,37 +325,69 @@ const PatientRecords = () => {
                   </Paper>
                 </Grid>
 
-                {selectedRecord.prescription && (
+                {selectedRecord.treatment && (
                   <Grid item xs={12}>
                     <Paper sx={{ p: 2 }}>
                       <Typography variant="subtitle1" gutterBottom>
-                        处方信息
+                        治疗方案
                       </Typography>
                       <Typography variant="body2" color="textSecondary">
-                        {selectedRecord.prescription}
+                        {selectedRecord.treatment}
                       </Typography>
                     </Paper>
                   </Grid>
                 )}
 
-                {selectedRecord.attachments && selectedRecord.attachments.length > 0 && (
+                {selectedRecord.prescription && selectedRecord.prescription.medications && (
                   <Grid item xs={12}>
                     <Paper sx={{ p: 2 }}>
                       <Typography variant="subtitle1" gutterBottom>
-                        检查报告
+                        处方信息
                       </Typography>
-                      <Box display="flex" gap={1} flexWrap="wrap">
-                        {selectedRecord.attachments.map((attachment, index) => (
-                          <Button
-                            key={index}
-                            variant="outlined"
-                            startIcon={<Download />}
-                            onClick={() => handleDownloadReport(selectedRecord._id, attachment.name)}
-                          >
-                            {attachment.name || `报告${index + 1}`}
-                          </Button>
-                        ))}
-                      </Box>
+                      {selectedRecord.prescription.medications.map((med, index) => (
+                        <Box key={index} mb={1}>
+                          <Typography variant="body2" color="textSecondary">
+                            <strong>{med.name}</strong> - {med.dosage} - {med.frequency}
+                          </Typography>
+                          {med.instructions && (
+                            <Typography variant="caption" color="textSecondary">
+                              说明：{med.instructions}
+                            </Typography>
+                          )}
+                        </Box>
+                      ))}
+                    </Paper>
+                  </Grid>
+                )}
+
+                {selectedRecord.vitalSigns && (
+                  <Grid item xs={12}>
+                    <Paper sx={{ p: 2 }}>
+                      <Typography variant="subtitle1" gutterBottom>
+                        生命体征
+                      </Typography>
+                      <Grid container spacing={2}>
+                        <Grid item xs={6} sm={3}>
+                          <Typography variant="body2" color="textSecondary">
+                            血压：{selectedRecord.vitalSigns.bloodPressure}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={6} sm={3}>
+                          <Typography variant="body2" color="textSecondary">
+                            心率：{selectedRecord.vitalSigns.heartRate}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={6} sm={3}>
+                          <Typography variant="body2" color="textSecondary">
+                            体温：{selectedRecord.vitalSigns.temperature}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={6} sm={3}>
+                          <Typography variant="body2" color="textSecondary">
+                            体重：{selectedRecord.vitalSigns.weight}kg
+                          </Typography>
+                        </Grid>
+                      </Grid>
                     </Paper>
                   </Grid>
                 )}
@@ -356,6 +401,24 @@ const PatientRecords = () => {
                       <Typography variant="body2" color="textSecondary">
                         {selectedRecord.notes}
                       </Typography>
+                    </Paper>
+                  </Grid>
+                )}
+
+                {selectedRecord.followUpDate && (
+                  <Grid item xs={12}>
+                    <Paper sx={{ p: 2 }}>
+                      <Typography variant="subtitle1" gutterBottom>
+                        随访信息
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        随访日期：{selectedRecord.followUpDate}
+                      </Typography>
+                      {selectedRecord.followUpNotes && (
+                        <Typography variant="body2" color="textSecondary">
+                          随访说明：{selectedRecord.followUpNotes}
+                        </Typography>
+                      )}
                     </Paper>
                   </Grid>
                 )}
