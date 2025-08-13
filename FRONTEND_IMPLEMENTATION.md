@@ -156,7 +156,7 @@ npm install
 ### 2. 配置环境变量
 创建 `.env` 文件：
 ```
-REACT_APP_API_URL=http://localhost:5000/api
+REACT_APP_API_URL=http://localhost:3001/api
 ```
 
 ### 3. 启动开发服务器

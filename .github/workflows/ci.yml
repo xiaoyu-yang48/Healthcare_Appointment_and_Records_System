@@ -1,47 +1,343 @@
-name: CI/CD Pipeline
+name: Healthcare System CI/CD Pipeline
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '18'
+  MONGODB_VERSION: '6.0'
 
 jobs:
-  deploy:
-    runs-on: self-hosted
-
+  # 代码质量检查
+  code-quality:
+    name: 代码质量检查
+    runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: 检出代码
+        uses: actions/checkout@v4
+        
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 安装 ESLint 和 Prettier
+        run: |
+          npm install -g eslint prettier
+          
+      - name: 检查代码格式
+        run: |
+          echo "检查代码格式..."
+          find . -name "*.js" -not -path "./node_modules/*" -not -path "./frontend/node_modules/*" -not -path "./backend/node_modules/*" | xargs prettier --check || true
+          
+      - name: 运行 ESLint
+        run: |
+          echo "运行 ESLint 检查..."
+          npx eslint backend/ --ext .js || true
+          npx eslint frontend/src/ --ext .js,.jsx || true
 
-      - name: Install Backend Dependencies
+  # 后端测试
+  backend-test:
+    name: 后端测试
+    runs-on: ubuntu-latest
+    
+    services:
+      mongodb:
+        image: mongo:${{ env.MONGODB_VERSION }}
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping: 1})'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+          
+      - name: 安装后端依赖
         working-directory: ./backend
-        run: yarn install
-
-      - name: Install Frontend Dependencies
-        working-directory: ./frontend
-        run: yarn install
-
-      - name: Run Backend Tests
-        working-directory: ./backend
-        run: npm run test
-
-      - name: Build Frontend
-        working-directory: ./frontend
-        run: yarn build
-
-      - name: Setup Environment Variables
+        run: npm ci
+        
+      - name: 设置环境变量
         working-directory: ./backend
         run: |
-          touch .env
-          echo "${{ secrets.PROD }}" > .env
-
-      - name: Restart PM2 Services
+          echo "MONGODB_URI=mongodb://localhost:27017/healthcare_test" > .env.test
+          echo "JWT_SECRET=test_secret_key" >> .env.test
+          echo "PORT=3001" >> .env.test
+          
+      - name: 运行后端测试
+        working-directory: ./backend
         run: |
-          pm2 restart all || pm2 start ./backend/index.js --name backend
-          pm2 serve ./frontend/build 3000 --spa --name frontend
+          npm test
+        env:
+          NODE_ENV: test
+          MONGODB_URI: mongodb://localhost:27017/healthcare_test
+          JWT_SECRET: test_secret_key
+          
+      - name: 上传测试覆盖率报告
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./backend/coverage/lcov.info
+          flags: backend
+          name: backend-coverage
+
+  # 前端测试
+  frontend-test:
+    name: 前端测试
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+          
+      - name: 安装前端依赖
+        working-directory: ./frontend
+        run: npm ci
+        
+      - name: 运行前端测试
+        working-directory: ./frontend
+        run: |
+          npm test -- --coverage --watchAll=false --passWithNoTests
+        env:
+          CI: true
+          
+      - name: 上传前端测试覆盖率报告
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./frontend/coverage/lcov.info
+          flags: frontend
+          name: frontend-coverage
+
+  # 构建阶段
+  build:
+    name: 构建应用
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-test]
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 安装后端依赖
+        working-directory: ./backend
+        run: npm ci
+        
+      - name: 安装前端依赖
+        working-directory: ./frontend
+        run: npm ci
+        
+      - name: 构建前端
+        working-directory: ./frontend
+        run: npm run build
+        env:
+          REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
+          
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            frontend/build/
+            backend/
+          retention-days: 7
+
+  # 安全扫描
+  security-scan:
+    name: 安全扫描
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        
+      - name: 运行 npm audit
+        run: |
+          cd backend && npm audit --audit-level moderate
+          cd ../frontend && npm audit --audit-level moderate
+          
+      - name: 运行 Snyk 安全扫描
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+        continue-on-error: true
+
+  # 部署到测试环境
+  deploy-staging:
+    name: 部署到测试环境
+    runs-on: self-hosted
+    needs: [build, security-scan]
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    strategy:
+      matrix:
+        server: [staging-server]
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        
+      - name: 下载构建产物
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          
+      - name: 安装 PM2
+        run: npm install -g pm2
+        
+      - name: 设置测试环境变量
+        working-directory: ./backend
+        run: |
+          echo "${{ secrets.STAGING_ENV }}" > .env
+          
+      - name: 部署到测试环境
+        run: |
+          # 停止现有服务
+          pm2 stop healthcare-backend-staging || true
+          pm2 stop healthcare-frontend-staging || true
+          
+          # 启动后端服务
+          cd backend
+          pm2 start server.js --name healthcare-backend-staging --env staging
+          
+          # 启动前端服务
+          pm2 serve build 3000 --spa --name healthcare-frontend-staging
+          
+          # 保存 PM2 配置
+          pm2 save
+          
+      - name: 健康检查
+        run: |
+          sleep 10
+          curl -f http://localhost:3001/api/health || exit 1
+          curl -f http://localhost:3000 || exit 1
+
+  # 部署到生产环境
+  deploy-production:
+    name: 部署到生产环境
+    runs-on: self-hosted
+    needs: [build, security-scan]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    strategy:
+      matrix:
+        server: [production-server]
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        
+      - name: 下载构建产物
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          
+      - name: 安装 PM2
+        run: npm install -g pm2
+        
+      - name: 设置生产环境变量
+        working-directory: ./backend
+        run: |
+          echo "${{ secrets.PRODUCTION_ENV }}" > .env
+          
+      - name: 部署到生产环境
+        run: |
+          # 停止现有服务
+          pm2 stop healthcare-backend-prod || true
+          pm2 stop healthcare-frontend-prod || true
+          
+          # 启动后端服务
+          cd backend
+          pm2 start server.js --name healthcare-backend-prod --env production
+          
+          # 启动前端服务
+          pm2 serve build 80 --spa --name healthcare-frontend-prod
+          
+          # 保存 PM2 配置
+          pm2 save
+          
+      - name: 生产环境健康检查
+        run: |
+          sleep 15
+          curl -f http://localhost:3001/api/health || exit 1
+          curl -f http://localhost:80 || exit 1
+          
+      - name: 发送部署通知
+        if: always()
+        run: |
+          echo "部署状态: ${{ job.status }}"
+          # 这里可以集成 Slack、钉钉等通知
+          # curl -X POST -H 'Content-type: application/json' --data '{"text":"医疗系统部署完成: ${{ job.status }}"}' ${{ secrets.SLACK_WEBHOOK }}
+
+  # 数据库迁移（可选）
+  database-migration:
+    name: 数据库迁移
+    runs-on: self-hosted
+    needs: deploy-production
+    if: github.ref == 'refs/heads/main'
+    strategy:
+      matrix:
+        server: [production-server]
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          
+      - name: 安装后端依赖
+        working-directory: ./backend
+        run: npm ci
+        
+      - name: 运行数据库迁移
+        working-directory: ./backend
+        run: |
+          # 如果有数据库迁移脚本，在这里执行
+          # npm run migrate
+          echo "数据库迁移完成"
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
