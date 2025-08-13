@@ -9,6 +9,20 @@ const protect = async (req, res, next) => {
         try {
             token = req.headers.authorization.split(' ')[1];
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            
+            // 临时管理员处理（仅用于调试）
+            if (decoded.id === 'temp-admin-id') {
+                req.user = {
+                    _id: 'temp-admin-id',
+                    name: '系统管理员',
+                    email: 'admin@healthcare.com',
+                    role: 'admin',
+                    phone: '13800000000',
+                    isActive: true
+                };
+                return next();
+            }
+            
             req.user = await User.findById(decoded.id).select('-password');
             
             if (!req.user) {
