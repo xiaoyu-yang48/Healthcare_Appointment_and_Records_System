@@ -21,7 +21,7 @@ async function testPatientFeatures() {
     console.log('1. 患者登录...');
     const patientLoginResponse = await axios.post(`${API_BASE_URL}/auth/login`, testPatient);
     const patientToken = patientLoginResponse.data.token;
-    const patientId = patientLoginResponse.data.user.id;
+    const patientId = patientLoginResponse.data.user._id || patientLoginResponse.data.user.id;
     console.log('✅ 患者登录成功');
     console.log(`   患者ID: ${patientId}`);
     console.log(`   患者姓名: ${patientLoginResponse.data.user.name}`);
@@ -32,7 +32,7 @@ async function testPatientFeatures() {
     console.log('\n2. 医生登录...');
     const doctorLoginResponse = await axios.post(`${API_BASE_URL}/auth/login`, testDoctor);
     const doctorToken = doctorLoginResponse.data.token;
-    const doctorId = doctorLoginResponse.data.user.id;
+    const doctorId = doctorLoginResponse.data.user._id || doctorLoginResponse.data.user.id;
     console.log('✅ 医生登录成功');
     console.log(`   医生ID: ${doctorId}`);
     console.log(`   医生姓名: ${doctorLoginResponse.data.user.name}`);
