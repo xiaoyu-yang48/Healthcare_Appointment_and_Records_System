@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
 import { Toaster } from 'react-hot-toast';
+import { t } from './utils/i18n';
 
 // Context
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -30,6 +31,7 @@ import AdminAppointments from './pages/AdminAppointments';
 import AdminRecords from './pages/AdminRecords';
 import AdminSettings from './pages/AdminSettings';
 import TestLogin from './pages/TestLogin';
+import TestLanguage from './pages/TestLanguage';
 
 // 创建主题
 const theme = createTheme({
@@ -76,7 +78,7 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const { user, loading, isAuthenticated } = useAuth();
 
   if (loading) {
-    return <div>加载中...</div>;
+    return <div>{t('loading')}</div>;
   }
 
   if (!isAuthenticated()) {
@@ -136,6 +138,7 @@ const AppContent = () => {
           isAuthenticated() ? <Navigate to={getDefaultRoute()} replace /> : <Register />
         } />
         <Route path="/test-login" element={<TestLogin />} />
+        <Route path="/test-language" element={<TestLanguage />} />
         
         {/* 受保护的路由 */}
         <Route path="/profile" element={

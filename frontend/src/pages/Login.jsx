@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { t, setLanguage, getLanguage } from '../utils/i18n';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   Container,
@@ -49,7 +50,7 @@ const Login = () => {
       const result = await login(formData.email, formData.password);
       
       if (result.success) {
-        toast.success('登录成功！');
+        toast.success(t('login_success'));
         
         // 根据角色重定向到不同页面
         switch (result.user.role) {
@@ -70,100 +71,73 @@ const Login = () => {
         toast.error(result.error);
       }
     } catch (error) {
-      setError('登录失败，请重试');
-      toast.error('登录失败，请重试');
+      setError(t('login_failed'));
+      toast.error(t('login_failed'));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <Paper
-          elevation={3}
-          sx={{
-            padding: 4,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <Typography component="h1" variant="h4" gutterBottom>
-            医疗预约系统
+    <Container maxWidth="xs">
+      <Box sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Paper elevation={3} sx={{ p: 3, width: '100%' }}>
+          <Typography variant="h5" align="center" gutterBottom>
+            {t('login')}
           </Typography>
-          
-          <Typography variant="h6" color="textSecondary" gutterBottom>
-            用户登录
-          </Typography>
-
           <Tabs
             value={formData.role}
             onChange={handleRoleChange}
-            sx={{ marginBottom: 3 }}
+            indicatorColor="primary"
+            textColor="primary"
+            centered
+            sx={{ mb: 2 }}
           >
-            <Tab label="患者" value="patient" />
-            <Tab label="医生" value="doctor" />
-            <Tab label="管理员" value="admin" />
+            <Tab label={t('patient')} value="patient" />
+            <Tab label={t('doctor')} value="doctor" />
+            <Tab label={t('admin')} value="admin" />
           </Tabs>
-
-          {error && (
-            <Alert severity="error" sx={{ width: '100%', marginBottom: 2 }}>
-              {error}
-            </Alert>
-          )}
-
-          <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
+          <form onSubmit={handleSubmit}>
             <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label="邮箱地址"
+              label={t('email')}
               name="email"
-              autoComplete="email"
-              autoFocus
               value={formData.email}
               onChange={handleChange}
-            />
-            <TextField
+              fullWidth
               margin="normal"
               required
-              fullWidth
+            />
+            <TextField
+              label={t('password')}
               name="password"
-              label="密码"
               type="password"
-              id="password"
-              autoComplete="current-password"
               value={formData.password}
               onChange={handleChange}
+              fullWidth
+              margin="normal"
+              required
             />
+            {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
             <Button
               type="submit"
-              fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2 }}
+              color="primary"
+              fullWidth
+              sx={{ mt: 2 }}
               disabled={loading}
             >
-              {loading ? <CircularProgress size={24} /> : '登录'}
+              {loading ? <CircularProgress size={24} /> : t('login')}
             </Button>
-            
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="body2" color="textSecondary">
-                还没有账号？{' '}
-                <Link to="/register" style={{ textDecoration: 'none' }}>
-                  立即注册
-                </Link>
-              </Typography>
-            </Box>
+          </form>
+          <Box mt={2} textAlign="center">
+            <Typography variant="body2">
+              {t('no_account')} <Link to="/register">{t('register')}</Link>
+            </Typography>
+          </Box>
+          <Box mt={2} textAlign="center">
+            <Button color="inherit" onClick={() => setLanguage(getLanguage() === 'en' ? 'zh' : 'en')}>
+              {getLanguage() === 'en' ? t('chinese') : t('english')}
+            </Button>
           </Box>
         </Paper>
       </Box>

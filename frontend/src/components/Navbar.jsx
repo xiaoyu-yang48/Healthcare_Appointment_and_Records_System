@@ -22,6 +22,7 @@ import {
   Settings,
   Logout,
 } from '@mui/icons-material';
+import { t, setLanguage, getLanguage } from '../utils/i18n';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
@@ -46,13 +47,13 @@ const Navbar = () => {
   const getRoleLabel = () => {
     switch (user?.role) {
       case 'patient':
-        return '患者';
+        return t('patient');
       case 'doctor':
-        return '医生';
+        return t('doctor');
       case 'admin':
-        return '管理员';
+        return t('admin');
       default:
-        return '用户';
+        return t('user');
     }
   };
 
@@ -72,20 +73,20 @@ const Navbar = () => {
   const getNavItems = () => {
     if (isPatient()) {
       return [
-        { label: '预约挂号', path: '/patient/appointments', icon: <Schedule /> },
-        { label: '我的病历', path: '/patient/records', icon: <MedicalServices /> },
-        { label: '消息中心', path: '/patient/messages', icon: <Message /> },
+        { label: t('appointments'), path: '/patient/appointments', icon: <Schedule /> },
+        { label: t('records'), path: '/patient/records', icon: <MedicalServices /> },
+        { label: t('messages'), path: '/patient/messages', icon: <Message /> },
       ];
     } else if (isDoctor()) {
       return [
-        { label: '我的排班', path: '/doctor/schedule', icon: <Schedule /> },
-        { label: '患者管理', path: '/doctor/patients', icon: <People /> },
-        { label: '消息中心', path: '/doctor/messages', icon: <Message /> },
+        { label: t('schedule'), path: '/doctor/schedule', icon: <Schedule /> },
+        { label: t('patients'), path: '/doctor/patients', icon: <People /> },
+        { label: t('messages'), path: '/doctor/messages', icon: <Message /> },
       ];
     } else if (isAdmin()) {
       return [
-        { label: '用户管理', path: '/admin/users', icon: <People /> },
-        { label: '系统设置', path: '/admin/settings', icon: <Settings /> },
+        { label: t('patients'), path: '/admin/users', icon: <People /> },
+        { label: t('settings'), path: '/admin/settings', icon: <Settings /> },
       ];
     }
     return [];
@@ -98,12 +99,9 @@ const Navbar = () => {
   return (
     <AppBar position="static">
       <Toolbar>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          <Link to={getDashboardPath()} style={{ textDecoration: 'none', color: 'inherit' }}>
-            医疗预约系统
-          </Link>
+        <Typography variant="h6" component={Link} to={getDashboardPath()} sx={{ color: 'inherit', textDecoration: 'none', flexGrow: 1 }}>
+          {t('dashboard')}
         </Typography>
-
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           {getNavItems().map((item) => (
             <Button
@@ -116,14 +114,12 @@ const Navbar = () => {
               {item.label}
             </Button>
           ))}
-
           <Chip
             label={getRoleLabel()}
             color="secondary"
             size="small"
             sx={{ mr: 1 }}
           />
-
           <IconButton
             size="large"
             aria-label="account of current user"
@@ -136,36 +132,38 @@ const Navbar = () => {
               {user.name?.charAt(0) || <AccountCircle />}
             </Avatar>
           </IconButton>
-
-          <Menu
-            id="menu-appbar"
-            anchorEl={anchorEl}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            keepMounted
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            open={Boolean(anchorEl)}
-            onClose={handleClose}
-          >
-            <MenuItem onClick={() => { navigate('/profile'); handleClose(); }}>
-              <AccountCircle sx={{ mr: 1 }} />
-              个人资料
-            </MenuItem>
-            <MenuItem onClick={() => { navigate(getDashboardPath()); handleClose(); }}>
-              <Dashboard sx={{ mr: 1 }} />
-              仪表板
-            </MenuItem>
-            <MenuItem onClick={handleLogout}>
-              <Logout sx={{ mr: 1 }} />
-              退出登录
-            </MenuItem>
-          </Menu>
+          <Button color="inherit" onClick={() => setLanguage(getLanguage() === 'en' ? 'zh' : 'en')}>
+            {getLanguage() === 'en' ? t('chinese') : t('english')}
+          </Button>
         </Box>
+        <Menu
+          id="menu-appbar"
+          anchorEl={anchorEl}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          keepMounted
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          open={Boolean(anchorEl)}
+          onClose={handleClose}
+        >
+          <MenuItem onClick={() => { navigate('/profile'); handleClose(); }}>
+            <AccountCircle sx={{ mr: 1 }} />
+            {t('profile')}
+          </MenuItem>
+          <MenuItem onClick={() => { navigate(getDashboardPath()); handleClose(); }}>
+            <Dashboard sx={{ mr: 1 }} />
+            {t('dashboard')}
+          </MenuItem>
+          <MenuItem onClick={handleLogout}>
+            <Logout sx={{ mr: 1 }} />
+            {t('logout')}
+          </MenuItem>
+        </Menu>
       </Toolbar>
     </AppBar>
   );

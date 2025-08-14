@@ -27,6 +27,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../axiosConfig';
 import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
+import { t } from '../utils/i18n';
 
 const PatientDashboard = () => {
   const { user } = useAuth();
@@ -77,7 +78,7 @@ const PatientDashboard = () => {
       
     } catch (error) {
       console.error('获取仪表板数据失败:', error);
-      toast.error('获取数据失败');
+      toast.error(t('get_data_failed'));
     } finally {
       setLoading(false);
     }
@@ -101,13 +102,13 @@ const PatientDashboard = () => {
   const getStatusLabel = (status) => {
     switch (status) {
       case 'confirmed':
-        return '已确认';
+        return t('status_confirmed');
       case 'pending':
-        return '待确认';
+        return t('status_pending');
       case 'cancelled':
-        return '已取消';
+        return t('status_cancelled');
       case 'completed':
-        return '已完成';
+        return t('status_completed');
       default:
         return status;
     }
@@ -126,7 +127,7 @@ const PatientDashboard = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" gutterBottom>
-        欢迎回来，{user?.name}！
+        {t('welcome_back')}，{user?.name}！
       </Typography>
       
       {/* 统计卡片 */}
@@ -138,7 +139,7 @@ const PatientDashboard = () => {
                 <Schedule color="primary" sx={{ mr: 2 }} />
                 <Box>
                   <Typography color="textSecondary" gutterBottom>
-                    总预约数
+                    {t('total_appointments')}
                   </Typography>
                   <Typography variant="h4">
                     {stats.totalAppointments}
@@ -156,7 +157,7 @@ const PatientDashboard = () => {
                 <CalendarToday color="success" sx={{ mr: 2 }} />
                 <Box>
                   <Typography color="textSecondary" gutterBottom>
-                    即将到来
+                    {t('upcoming')}
                   </Typography>
                   <Typography variant="h4">
                     {stats.upcomingAppointments}
@@ -174,7 +175,7 @@ const PatientDashboard = () => {
                 <MedicalServices color="info" sx={{ mr: 2 }} />
                 <Box>
                   <Typography color="textSecondary" gutterBottom>
-                    已完成
+                    {t('completed')}
                   </Typography>
                   <Typography variant="h4">
                     {stats.completedAppointments}
@@ -192,7 +193,7 @@ const PatientDashboard = () => {
                 <Message color="secondary" sx={{ mr: 2 }} />
                 <Box>
                   <Typography color="textSecondary" gutterBottom>
-                    病历数量
+                    {t('medical_records_count')}
                   </Typography>
                   <Typography variant="h4">
                     {stats.totalRecords}
@@ -211,14 +212,14 @@ const PatientDashboard = () => {
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                 <Typography variant="h6">
-                  最近预约
+                  {t('recent_appointments')}
                 </Typography>
                 <Button
                   variant="outlined"
                   startIcon={<Add />}
                   onClick={() => navigate('/patient/appointments')}
                 >
-                  预约挂号
+                  {t('book_appointment')}
                 </Button>
               </Box>
               
@@ -230,7 +231,7 @@ const PatientDashboard = () => {
                         <Schedule />
                       </ListItemIcon>
                       <ListItemText
-                        primary={`${appointment.doctor?.name || '医生'} - ${appointment.doctor?.department || '科室'}`}
+                        primary={`${appointment.doctor?.name || t('doctor')} - ${appointment.doctor?.department || t('department')}`}
                         secondary={`${format(new Date(appointment.date), 'yyyy-MM-dd')} ${appointment.timeSlot}`}
                       />
                       <Chip
