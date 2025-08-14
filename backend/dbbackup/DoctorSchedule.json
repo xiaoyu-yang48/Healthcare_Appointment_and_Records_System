@@ -1,0 +1,35 @@
+[
+  {
+    "_id": "689d4b407d69b9c7f86bffc9",
+    "doctor": "689d1fda627f6ca8d12e6383",
+    "date": "2025-08-16T00:00:00.000Z",
+    "__v": 0,
+    "createdAt": "2025-08-14T02:34:40.482Z",
+    "isWorkingDay": true,
+    "maxAppointments": 20,
+    "notes": "正常工作日",
+    "timeSlots": [
+      {
+        "time": "09:00-10:00",
+        "isAvailable": true,
+        "_id": "689d4b40878cf2d53a8ec550"
+      },
+      {
+        "time": "10:00-11:00",
+        "isAvailable": true,
+        "_id": "689d4b40878cf2d53a8ec551"
+      },
+      {
+        "time": "14:00-15:00",
+        "isAvailable": true,
+        "_id": "689d4b40878cf2d53a8ec552"
+      },
+      {
+        "time": "15:00-16:00",
+        "isAvailable": true,
+        "_id": "689d4b40878cf2d53a8ec553"
+      }
+    ],
+    "updatedAt": "2025-08-14T02:34:40.482Z"
+  }
+]

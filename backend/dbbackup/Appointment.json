@@ -1,0 +1,16 @@
+[
+  {
+    "_id": "689d32a2878cf2d53a8ec464",
+    "patient": "689d2e6d878cf2d53a8ec454",
+    "doctor": "689d1fda627f6ca8d12e6383",
+    "date": "2025-08-21T00:00:00.000Z",
+    "timeSlot": "09:00-10:00",
+    "status": "confirmed",
+    "type": "consultation",
+    "symptoms": "无特殊症状",
+    "reminderSent": false,
+    "createdAt": "2025-08-14T00:49:38.074Z",
+    "updatedAt": "2025-08-14T01:27:43.997Z",
+    "__v": 0
+  }
+]

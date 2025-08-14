@@ -1,0 +1,37 @@
+[
+  {
+    "_id": "689d32a2878cf2d53a8ec46e",
+    "patient": "689d2e6d878cf2d53a8ec454",
+    "doctor": "689d1fda627f6ca8d12e6383",
+    "symptoms": "无特殊症状",
+    "diagnosis": "健康体检",
+    "treatment": "建议定期体检",
+    "labResults": [],
+    "notes": "患者身体状况良好",
+    "isActive": true,
+    "visitDate": "2025-08-14T00:49:38.104Z",
+    "attachments": [],
+    "createdAt": "2025-08-14T00:49:38.106Z",
+    "updatedAt": "2025-08-14T00:49:38.106Z",
+    "__v": 0
+  },
+  {
+    "_id": "689d3b99878cf2d53a8ec52a",
+    "patient": "689d2e6d878cf2d53a8ec454",
+    "doctor": "689d1fda627f6ca8d12e6383",
+    "symptoms": "测试症状",
+    "diagnosis": "测试诊断",
+    "treatment": "测试治疗",
+    "prescription": {
+      "medications": []
+    },
+    "labResults": [],
+    "notes": "医生端测试病历",
+    "isActive": true,
+    "visitDate": "2025-08-14T01:27:53.508Z",
+    "attachments": [],
+    "createdAt": "2025-08-14T01:27:53.508Z",
+    "updatedAt": "2025-08-14T01:27:53.508Z",
+    "__v": 0
+  }
+]
