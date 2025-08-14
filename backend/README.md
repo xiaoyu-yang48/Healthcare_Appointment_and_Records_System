@@ -412,16 +412,17 @@ npm test
 4. 配置反向代理（如 Nginx）
 5. 使用 PM2 管理进程
 
-### Docker 部署
+### 本地部署
 
-```dockerfile
-FROM node:16-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY . .
-EXPOSE 5000
-CMD ["npm", "start"]
+```bash
+# 安装依赖
+npm install
+
+# 启动服务
+npm start
+
+# 或者使用PM2
+pm2 start server.js --name healthcare-backend
 ```
 
 ## 许可证

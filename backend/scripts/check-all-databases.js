@@ -18,7 +18,7 @@ const possibleConnections = [
     uri: 'mongodb://localhost:27017/test'
   },
   {
-    name: 'Docker配置',
+    name: '本地配置',
     uri: 'mongodb://admin:123123@192.168.0.202:27017/emr?authSource=admin'
   },
   {

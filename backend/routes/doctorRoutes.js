@@ -14,14 +14,17 @@ const router = express.Router();
 
 // 公开路由（获取医生列表和详情）
 router.get('/', getDoctors);
-router.get('/:id', getDoctorById);
-router.get('/:id/schedule', getDoctorSchedule);
 router.get('/available-slots', getAvailableTimeSlots);
 
 // 需要医生权限的路由
 router.use(protect);
+router.get('/schedule', doctorOnly, getDoctorSchedule);
 router.post('/schedule', doctorOnly, setDoctorSchedule);
 router.put('/schedule/:id', doctorOnly, updateDoctorSchedule);
 router.get('/stats', doctorOnly, getDoctorStats);
+
+// 参数路由（必须放在具体路径之后）
+router.get('/:id', getDoctorById);
+router.get('/:id/schedule', getDoctorSchedule);
 
 module.exports = router; 

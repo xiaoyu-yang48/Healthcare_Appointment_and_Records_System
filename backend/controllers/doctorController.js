@@ -39,6 +39,8 @@ const getDoctors = async (req, res) => {
 const getDoctorById = async (req, res) => {
     try {
         const { id } = req.params;
+        
+        console.log('getDoctorById called with id:', id);
 
         const doctor = await User.findOne({ _id: id, role: 'doctor', isActive: true })
             .select('-password');
@@ -60,7 +62,13 @@ const getDoctorSchedule = async (req, res) => {
         const { id } = req.params;
         const { date, startDate, endDate } = req.query;
 
-        let query = { doctor: id };
+        console.log('getDoctorSchedule called with params:', { id, date, startDate, endDate });
+        console.log('req.user:', req.user);
+
+        // 如果没有id参数，使用当前登录用户的ID（医生查看自己的排班）
+        const doctorId = id || req.user.id;
+        console.log('Using doctorId:', doctorId);
+        let query = { doctor: doctorId };
 
         if (date) {
             const targetDate = new Date(date);
@@ -73,6 +81,7 @@ const getDoctorSchedule = async (req, res) => {
             const end = new Date(endDate);
             end.setDate(end.getDate() + 1);
             query.date = { $gte: start, $lt: end };
+            console.log('Date range query:', { startDate, endDate, start, end, query });
         } else {
             // 默认返回未来7天的排班
             const today = new Date();
@@ -85,20 +94,29 @@ const getDoctorSchedule = async (req, res) => {
         const schedules = await DoctorSchedule.find(query)
             .sort({ date: 1 });
 
+        console.log('Found schedules:', schedules.length);
+        schedules.forEach((schedule, index) => {
+            console.log(`Schedule ${index}:`, {
+                id: schedule._id,
+                date: schedule.date,
+                doctor: schedule.doctor,
+                isWorkingDay: schedule.isWorkingDay
+            });
+        });
+
         // 如果查询特定日期，返回单个排班记录
         if (date) {
             const schedule = schedules[0];
             if (schedule) {
                 res.json(schedule);
             } else {
-                // 如果没有排班记录，返回默认的空排班
-                res.json({
-                    doctor: id,
-                    date: new Date(date),
-                    timeSlots: [],
-                    isWorkingDay: false,
-                    isAvailable: false
-                });
+                            // 如果没有排班记录，返回默认的空排班
+            res.json({
+                doctor: doctorId,
+                date: new Date(date),
+                timeSlots: [],
+                isWorkingDay: false
+            });
             }
         } else {
             res.json(schedules);
