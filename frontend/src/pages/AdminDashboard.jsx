@@ -35,6 +35,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../axiosConfig';
 import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
+import { t } from '../utils/i18n';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -79,7 +80,7 @@ const AdminDashboard = () => {
       
     } catch (error) {
       console.error('获取仪表板数据失败:', error);
-      toast.error('获取数据失败');
+      toast.error(t('get_data_failed'));
     } finally {
       setLoading(false);
     }
@@ -88,11 +89,11 @@ const AdminDashboard = () => {
   const getRoleLabel = (role) => {
     switch (role) {
       case 'patient':
-        return '患者';
+        return t('patient');
       case 'doctor':
-        return '医生';
+        return t('doctor');
       case 'admin':
-        return '管理员';
+        return t('admin');
       default:
         return role;
     }
@@ -129,13 +130,13 @@ const AdminDashboard = () => {
   const getStatusLabel = (status) => {
     switch (status) {
       case 'confirmed':
-        return '已确认';
+        return t('status_confirmed');
       case 'pending':
-        return '待确认';
+        return t('status_pending');
       case 'cancelled':
-        return '已取消';
+        return t('status_cancelled');
       case 'completed':
-        return '已完成';
+        return t('status_completed');
       default:
         return status;
     }
@@ -154,7 +155,7 @@ const AdminDashboard = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" gutterBottom>
-        系统管理仪表板
+        {t('system_management_dashboard')}
       </Typography>
       
       {/* 统计卡片 */}
@@ -166,7 +167,7 @@ const AdminDashboard = () => {
                 <People color="primary" sx={{ mr: 2 }} />
                 <Box>
                   <Typography color="textSecondary" gutterBottom>
-                    总用户数
+                    {t('total_users')}
                   </Typography>
                   <Typography variant="h4">
                     {stats.users?.total || 0}
@@ -184,7 +185,7 @@ const AdminDashboard = () => {
                 <LocalHospital color="success" sx={{ mr: 2 }} />
                 <Box>
                   <Typography color="textSecondary" gutterBottom>
-                    医生数量
+                    {t('doctor_count')}
                   </Typography>
                   <Typography variant="h4">
                     {stats.users?.doctors || 0}
@@ -202,7 +203,7 @@ const AdminDashboard = () => {
                 <Person color="info" sx={{ mr: 2 }} />
                 <Box>
                   <Typography color="textSecondary" gutterBottom>
-                    患者数量
+                    {t('patient_count')}
                   </Typography>
                   <Typography variant="h4">
                     {stats.users?.patients || 0}
@@ -220,7 +221,7 @@ const AdminDashboard = () => {
                 <Schedule color="secondary" sx={{ mr: 2 }} />
                 <Box>
                   <Typography color="textSecondary" gutterBottom>
-                    总预约数
+                    {t('total_appointments')}
                   </Typography>
                   <Typography variant="h4">
                     {stats.appointments?.total || 0}
@@ -238,7 +239,7 @@ const AdminDashboard = () => {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                今日预约统计
+                {t('today_appointment_stats')}
               </Typography>
               <Box display="flex" justifyContent="space-between" alignItems="center">
                 <Box>
@@ -246,7 +247,7 @@ const AdminDashboard = () => {
                     {stats.appointments?.today || 0}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
-                    今日预约总数
+                    {t('today_total_appointments')}
                   </Typography>
                 </Box>
                 <Box textAlign="right">

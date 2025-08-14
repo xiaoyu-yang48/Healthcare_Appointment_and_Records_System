@@ -244,7 +244,7 @@ const PatientDashboard = () => {
                 </List>
               ) : (
                 <Typography color="textSecondary" align="center" sx={{ py: 2 }}>
-                  暂无预约记录
+                  {t('no_appointment_records')}
                 </Typography>
               )}
             </CardContent>
@@ -257,13 +257,13 @@ const PatientDashboard = () => {
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                 <Typography variant="h6">
-                  最近病历
+                  {t('recent_medical_records')}
                 </Typography>
                 <Button
                   variant="outlined"
                   onClick={() => navigate('/patient/records')}
                 >
-                  查看全部
+                  {t('view_all')}
                 </Button>
               </Box>
               
@@ -275,15 +275,15 @@ const PatientDashboard = () => {
                         <MedicalServices />
                       </ListItemIcon>
                       <ListItemText
-                        primary={record.diagnosis || '诊断信息'}
-                        secondary={`${record.doctor?.name || '医生'} - ${format(new Date(record.visitDate), 'yyyy-MM-dd')}`}
+                        primary={record.diagnosis || t('diagnosis_info')}
+                        secondary={`${record.doctor?.name || t('doctor')} - ${format(new Date(record.visitDate), 'yyyy-MM-dd')}`}
                       />
                     </ListItem>
                   ))}
                 </List>
               ) : (
                 <Typography color="textSecondary" align="center" sx={{ py: 2 }}>
-                  暂无病历记录
+                  {t('no_medical_records')}
                 </Typography>
               )}
             </CardContent>
@@ -294,7 +294,7 @@ const PatientDashboard = () => {
       {/* 快速操作 */}
       <Paper sx={{ p: 3, mt: 3 }}>
         <Typography variant="h6" gutterBottom>
-          快速操作
+          {t('quick_actions')}
         </Typography>
         <Grid container spacing={2}>
           <Grid item>
@@ -303,7 +303,7 @@ const PatientDashboard = () => {
               startIcon={<Add />}
               onClick={() => navigate('/patient/appointments')}
             >
-              预约挂号
+              {t('book_appointment')}
             </Button>
           </Grid>
           <Grid item>
@@ -312,7 +312,7 @@ const PatientDashboard = () => {
               startIcon={<MedicalServices />}
               onClick={() => navigate('/patient/records')}
             >
-              查看病历
+              {t('view_medical_records')}
             </Button>
           </Grid>
           <Grid item>
@@ -321,7 +321,7 @@ const PatientDashboard = () => {
               startIcon={<Message />}
               onClick={() => navigate('/patient/messages')}
             >
-              消息中心
+              {t('message_center')}
             </Button>
           </Grid>
         </Grid>
