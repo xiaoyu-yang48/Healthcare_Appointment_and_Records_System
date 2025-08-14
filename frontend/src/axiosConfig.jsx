@@ -74,9 +74,17 @@ api.interceptors.response.use(
     }
     
     if (error.response?.status === 401) {
+      console.log('检测到401错误，清除认证信息并重定向到登录页');
+      console.log('当前URL:', window.location.href);
+      console.log('用户信息:', localStorage.getItem('user'));
+      
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      
+      // 避免在登录页面重复重定向
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
     
     return Promise.reject(error);

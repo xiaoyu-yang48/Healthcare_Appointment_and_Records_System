@@ -36,12 +36,19 @@ export const AuthProvider = ({ children }) => {
 
   const validateToken = async () => {
     try {
-      await api.get('/auth/profile');
+      console.log('🔍 验证token...');
+      const response = await api.get('/auth/profile');
+      console.log('✅ Token验证成功:', response.data);
     } catch (error) {
-      console.error('Token validation failed:', error);
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      setUser(null);
+      console.error('❌ Token validation failed:', error);
+      console.error('错误详情:', error.response?.data);
+      
+      // 只有在401错误时才清除认证信息
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
+      }
     }
   };
 
