@@ -30,8 +30,7 @@ import AdminUsers from './pages/AdminUsers';
 import AdminAppointments from './pages/AdminAppointments';
 import AdminRecords from './pages/AdminRecords';
 import AdminSettings from './pages/AdminSettings';
-import TestLogin from './pages/TestLogin';
-import TestLanguage from './pages/TestLanguage';
+
 
 // 创建主题
 const theme = createTheme({
@@ -137,8 +136,7 @@ const AppContent = () => {
         <Route path="/register" element={
           isAuthenticated() ? <Navigate to={getDefaultRoute()} replace /> : <Register />
         } />
-        <Route path="/test-login" element={<TestLogin />} />
-        <Route path="/test-language" element={<TestLanguage />} />
+   
         
         {/* 受保护的路由 */}
         <Route path="/profile" element={

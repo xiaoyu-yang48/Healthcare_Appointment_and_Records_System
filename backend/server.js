@@ -19,6 +19,8 @@ app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/doctors', require('./routes/doctorRoutes'));
 app.use('/api/medical-records', require('./routes/medicalRecordRoutes'));
 app.use('/api/messages', require('./routes/messageRoutes'));
+app.use('/api/notices', require('./routes/noticeRoutes'));
+app.use('/api/settings', require('./routes/settingsRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 
 // 健康检查端点

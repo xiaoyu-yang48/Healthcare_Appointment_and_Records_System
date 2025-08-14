@@ -33,6 +33,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../axiosConfig';
 import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
+import { t } from '../utils/i18n';
 
 const AdminAppointments = () => {
   const [appointments, setAppointments] = useState([]);
@@ -60,16 +61,16 @@ const AdminAppointments = () => {
       const response = await api.get('/admin/appointments', { params });
       setAppointments(response.data.appointments);
       setTotalAppointments(response.data.pagination.totalAppointments);
-    } catch (error) {
-      console.error('获取预约列表失败:', error);
-      toast.error('获取预约列表失败');
-    } finally {
+          } catch (error) {
+        console.error('获取预约列表失败:', error);
+        toast.error(t('get_appointment_list_failed'));
+      } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteAppointment = async (appointmentId) => {
-    if (!window.confirm('确定要删除这个预约吗？此操作不可撤销。')) {
+    if (!window.confirm(t('confirm_delete_appointment'))) {
       return;
     }
 
@@ -77,23 +78,23 @@ const AdminAppointments = () => {
       await api.delete(`/admin/appointments/${appointmentId}`);
       setAppointments(prev => prev.filter(appointment => appointment._id !== appointmentId));
       setTotalAppointments(prev => prev - 1);
-      toast.success('预约删除成功');
+      toast.success(t('appointment_deleted_success'));
     } catch (error) {
       console.error('删除预约失败:', error);
-      toast.error('删除预约失败');
+      toast.error(t('delete_appointment_failed'));
     }
   };
 
   const getStatusLabel = (status) => {
     switch (status) {
       case 'confirmed':
-        return '已确认';
+        return t('status_confirmed');
       case 'pending':
-        return '待确认';
+        return t('status_pending');
       case 'cancelled':
-        return '已取消';
+        return t('status_cancelled');
       case 'completed':
-        return '已完成';
+        return t('status_completed');
       default:
         return status;
     }
@@ -135,48 +136,48 @@ const AdminAppointments = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        预约管理
-      </Typography>
+              <Typography variant="h4" gutterBottom>
+         {t('appointment_management')}
+        </Typography>
 
       {/* 搜索和筛选 */}
       <Paper sx={{ p: 3, mb: 3 }}>
         <Box display="flex" gap={2} alignItems="center" flexWrap="wrap">
-          <TextField
-            label="搜索预约"
-            variant="outlined"
-            size="small"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            InputProps={{
-              startAdornment: <Search />,
-            }}
-            sx={{ minWidth: 200 }}
-            placeholder="患者姓名、医生姓名"
-          />
+                      <TextField
+             label={t('search_appointments')}
+              variant="outlined"
+              size="small"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              InputProps={{
+                startAdornment: <Search />,
+              }}
+              sx={{ minWidth: 200 }}
+             placeholder={t('patient_name_doctor_name')}
+            />
           
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>状态筛选</InputLabel>
-            <Select
-              value={statusFilter}
-              label="状态筛选"
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <MenuItem value="">全部</MenuItem>
-              <MenuItem value="pending">待确认</MenuItem>
-              <MenuItem value="confirmed">已确认</MenuItem>
-              <MenuItem value="completed">已完成</MenuItem>
-              <MenuItem value="cancelled">已取消</MenuItem>
-            </Select>
-          </FormControl>
+                      <FormControl size="small" sx={{ minWidth: 120 }}>
+             <InputLabel>{t('status_filter')}</InputLabel>
+              <Select
+                value={statusFilter}
+               label={t('status_filter')}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+               <MenuItem value="">{t('all_status')}</MenuItem>
+               <MenuItem value="pending">{t('status_pending')}</MenuItem>
+               <MenuItem value="confirmed">{t('status_confirmed')}</MenuItem>
+               <MenuItem value="completed">{t('status_completed')}</MenuItem>
+               <MenuItem value="cancelled">{t('status_cancelled')}</MenuItem>
+              </Select>
+            </FormControl>
 
-          <Button
-            variant="outlined"
-            startIcon={<Refresh />}
-            onClick={fetchAppointments}
-          >
-            刷新
-          </Button>
+                      <Button
+              variant="outlined"
+              startIcon={<Refresh />}
+              onClick={fetchAppointments}
+            >
+             {t('refresh')}
+            </Button>
         </Box>
       </Paper>
 
@@ -185,15 +186,15 @@ const AdminAppointments = () => {
         <TableContainer>
           <Table>
             <TableHead>
-              <TableRow>
-                <TableCell>患者</TableCell>
-                <TableCell>医生</TableCell>
-                <TableCell>预约日期</TableCell>
-                <TableCell>时间段</TableCell>
-                <TableCell>状态</TableCell>
-                <TableCell>创建时间</TableCell>
-                <TableCell>操作</TableCell>
-              </TableRow>
+                              <TableRow>
+                 <TableCell>{t('patient')}</TableCell>
+                 <TableCell>{t('doctor')}</TableCell>
+                 <TableCell>{t('appointment_date')}</TableCell>
+                 <TableCell>{t('time_slot')}</TableCell>
+                 <TableCell>{t('status')}</TableCell>
+                 <TableCell>{t('created_at')}</TableCell>
+                 <TableCell>{t('actions')}</TableCell>
+                </TableRow>
             </TableHead>
             <TableBody>
               {appointments.map((appointment) => (
@@ -215,15 +216,15 @@ const AdminAppointments = () => {
                     {appointment.createdAt ? format(new Date(appointment.createdAt), 'yyyy-MM-dd HH:mm') : '-'}
                   </TableCell>
                   <TableCell>
-                    <IconButton
+                                        <IconButton
                       size="small"
-                      onClick={() => toast.info('查看详情功能待实现')}
+                     onClick={() => toast.info(t('view_details_not_implemented'))}
                     >
                       <Visibility />
                     </IconButton>
                     <IconButton
                       size="small"
-                      onClick={() => toast.info('编辑功能待实现')}
+                     onClick={() => toast.info(t('edit_not_implemented'))}
                     >
                       <Edit />
                     </IconButton>
@@ -249,8 +250,8 @@ const AdminAppointments = () => {
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
-          labelRowsPerPage="每页行数:"
-          labelDisplayedRows={({ from, to, count }) => `${from}-${to} / ${count}`}
+          labelRowsPerPage={t('rows_per_page')}
+          labelDisplayedRows={({ from, to, count }) => `${from}-${to} ${t('of')} ${count}`}
         />
       </Paper>
     </Container>

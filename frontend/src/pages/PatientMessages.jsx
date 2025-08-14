@@ -26,6 +26,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../axiosConfig';
 import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
+import { t } from '../utils/i18n';
 
 const PatientMessages = () => {
   const { user } = useAuth();
@@ -43,7 +44,7 @@ const PatientMessages = () => {
 
   useEffect(() => {
     if (selectedConversation) {
-      fetchMessages(selectedConversation.user.id);
+      fetchMessages(selectedConversation.user._id || selectedConversation.user.id);
     }
   }, [selectedConversation]);
 
@@ -64,8 +65,8 @@ const PatientMessages = () => {
         setSelectedConversation(response.data[0]);
       }
     } catch (error) {
-      console.error('获取对话列表失败:', error);
-      toast.error('获取对话列表失败');
+      console.error('Failed to get conversations:', error);
+      toast.error(t('get_conversations_failed'));
     } finally {
       setLoading(false);
     }
@@ -76,8 +77,8 @@ const PatientMessages = () => {
       const response = await api.get(`/messages/conversation/${userId}`);
       setMessages(response.data);
     } catch (error) {
-      console.error('获取消息失败:', error);
-      toast.error('获取消息失败');
+      console.error('Failed to get messages:', error);
+      toast.error(t('get_messages_failed'));
     }
   };
 
@@ -87,7 +88,7 @@ const PatientMessages = () => {
     try {
       setSending(true);
       const messageData = {
-        receiverId: selectedConversation.user.id,
+        recipientId: selectedConversation.user._id || selectedConversation.user.id,
         content: newMessage.trim(),
       };
 
@@ -97,16 +98,16 @@ const PatientMessages = () => {
       
       // 更新对话列表中的最后消息
       const updatedConversations = conversations.map(conv => 
-        conv.user.id === selectedConversation.user.id 
+        (conv.user._id === selectedConversation.user._id || conv.user.id === selectedConversation.user.id)
           ? { ...conv, lastMessage: response.data }
           : conv
       );
       setConversations(updatedConversations);
       
-      toast.success('消息发送成功');
+      toast.success(t('message_sent_success'));
     } catch (error) {
-      console.error('发送消息失败:', error);
-      toast.error('发送消息失败');
+      console.error('Failed to send message:', error);
+      toast.error(t('send_message_failed'));
     } finally {
       setSending(false);
     }
@@ -127,7 +128,7 @@ const PatientMessages = () => {
     if (diffInHours < 24) {
       return format(messageDate, 'HH:mm');
     } else if (diffInHours < 48) {
-      return '昨天';
+      return t('yesterday');
     } else {
       return format(messageDate, 'MM-dd');
     }
@@ -150,7 +151,7 @@ const PatientMessages = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" gutterBottom>
-        消息中心
+        {t('message_center')}
       </Typography>
 
       <Grid container spacing={3} sx={{ height: '70vh' }}>
@@ -159,17 +160,17 @@ const PatientMessages = () => {
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                对话列表
+                {t('conversation_list')}
               </Typography>
               
               {conversations.length > 0 ? (
                 <List sx={{ maxHeight: 'calc(100% - 60px)', overflow: 'auto' }}>
                   {conversations.map((conversation) => (
-                    <ListItem
-                      key={conversation.user.id}
-                      button
-                      selected={selectedConversation?.user.id === conversation.user.id}
-                      onClick={() => setSelectedConversation(conversation)}
+                                          <ListItem
+                        key={conversation.user._id || conversation.user.id}
+                        button
+                        selected={selectedConversation?.user._id === conversation.user._id || selectedConversation?.user.id === conversation.user.id}
+                        onClick={() => setSelectedConversation(conversation)}
                       sx={{ mb: 1, borderRadius: 1 }}
                     >
                       <ListItemAvatar>
@@ -195,7 +196,7 @@ const PatientMessages = () => {
                         secondary={
                           <Box>
                             <Typography variant="body2" color="textSecondary" noWrap>
-                              {conversation.lastMessage?.content || '暂无消息'}
+                              {conversation.lastMessage?.content || t('no_messages')}
                             </Typography>
                             {conversation.lastMessage && (
                               <Typography variant="caption" color="textSecondary">
@@ -212,10 +213,10 @@ const PatientMessages = () => {
                 <Box textAlign="center" py={4}>
                   <Message sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
                   <Typography variant="h6" color="textSecondary" gutterBottom>
-                    暂无对话
+                    {t('no_conversations')}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
-                    您还没有与任何医生进行过交流
+                    {t('no_conversations_message')}
                   </Typography>
                 </Box>
               )}
@@ -239,7 +240,7 @@ const PatientMessages = () => {
                         {selectedConversation.user.name}
                       </Typography>
                       <Typography variant="body2" color="textSecondary">
-                        {selectedConversation.user.role === 'doctor' ? '医生' : '用户'}
+                        {selectedConversation.user.role === 'doctor' ? t('doctor') : t('user')}
                       </Typography>
                     </Box>
                   </Box>
@@ -251,9 +252,9 @@ const PatientMessages = () => {
                     <Box>
                       {messages.map((message) => (
                         <Box
-                          key={message.id}
+                          key={message._id}
                           display="flex"
-                          justifyContent={message.sender.id === user.id ? 'flex-end' : 'flex-start'}
+                          justifyContent={message.sender._id === user.id ? 'flex-end' : 'flex-start'}
                           mb={2}
                         >
                           <Paper
@@ -272,7 +273,7 @@ const PatientMessages = () => {
                               sx={{
                                 display: 'block',
                                 mt: 1,
-                                color: message.sender.id === user.id ? 'rgba(255,255,255,0.7)' : 'text.secondary',
+                                color: message.sender._id === user.id ? 'rgba(255,255,255,0.7)' : 'text.secondary',
                               }}
                             >
                               {getMessageTime(message.createdAt)}
@@ -285,7 +286,7 @@ const PatientMessages = () => {
                   ) : (
                     <Box textAlign="center" py={4}>
                       <Typography variant="body2" color="textSecondary">
-                        开始与医生交流吧
+                        {t('start_conversation_message')}
                       </Typography>
                     </Box>
                   )}
@@ -298,7 +299,7 @@ const PatientMessages = () => {
                       fullWidth
                       multiline
                       maxRows={4}
-                      placeholder="输入消息..."
+                      placeholder={t('type_message')}
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       onKeyPress={handleKeyPress}
@@ -325,10 +326,10 @@ const PatientMessages = () => {
                 <Box textAlign="center">
                   <Message sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
                   <Typography variant="h6" color="textSecondary" gutterBottom>
-                    选择对话
+                    {t('select_conversation')}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
-                    请从左侧选择一个对话开始交流
+                    {t('select_conversation_message')}
                   </Typography>
                 </Box>
               </Box>

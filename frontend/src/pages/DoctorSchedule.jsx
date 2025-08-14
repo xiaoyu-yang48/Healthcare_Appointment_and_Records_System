@@ -32,7 +32,7 @@ import {
   Schedule,
   CheckCircle,
   Cancel,
-  Time,
+  AccessTime,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import api from '../axiosConfig';
@@ -271,7 +271,7 @@ const DoctorSchedule = () => {
                                 label={slot}
                                 size="small"
                                 variant="outlined"
-                                icon={<Time />}
+                                icon={<AccessTime />}
                               />
                             ))}
                           </Box>
@@ -349,7 +349,7 @@ const DoctorSchedule = () => {
                         size="small"
                         fullWidth
                         onClick={() => handleTimeSlotToggle(slot)}
-                        startIcon={formData.timeSlots.includes(slot) ? <CheckCircle /> : <Time />}
+                        startIcon={formData.timeSlots.includes(slot) ? <CheckCircle /> : <AccessTime />}
                       >
                         {slot}
                       </Button>

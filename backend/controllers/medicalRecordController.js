@@ -1,6 +1,7 @@
 const MedicalRecord = require('../models/MedicalRecord');
 const User = require('../models/User');
 const Appointment = require('../models/Appointment');
+const Notice = require('../models/Notice');
 
 // 获取患者病历列表
 const getPatientRecords = async (req, res) => {
@@ -96,6 +97,19 @@ const createMedicalRecord = async (req, res) => {
             .populate('patient', 'name phone dateOfBirth gender')
             .populate('doctor', 'name specialization department')
             .populate('appointment', 'date timeSlot');
+
+        // 创建病历添加通知给患者
+        try {
+            await Notice.createMedicalRecordAdded(
+                patientId,
+                req.user.id,
+                medicalRecord._id,
+                req.user.name
+            );
+        } catch (noticeError) {
+            console.error('创建病历通知失败:', noticeError);
+            // 通知失败不影响病历创建
+        }
 
         res.status(201).json({
             message: '病历创建成功',

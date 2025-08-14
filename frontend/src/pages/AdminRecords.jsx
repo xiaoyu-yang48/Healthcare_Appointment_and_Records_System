@@ -34,6 +34,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../axiosConfig';
 import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
+import { t } from '../utils/i18n';
 
 const AdminRecords = () => {
   const [records, setRecords] = useState([]);
@@ -61,14 +62,14 @@ const AdminRecords = () => {
       setTotalRecords(response.data.pagination.totalRecords);
     } catch (error) {
       console.error('获取病历列表失败:', error);
-      toast.error('获取病历列表失败');
+      toast.error(t('get_medical_records_failed'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteRecord = async (recordId) => {
-    if (!window.confirm('确定要删除这个病历吗？此操作不可撤销。')) {
+    if (!window.confirm(t('confirm_delete_record'))) {
       return;
     }
 
@@ -76,19 +77,19 @@ const AdminRecords = () => {
       await api.delete(`/admin/medical-records/${recordId}`);
       setRecords(prev => prev.filter(record => record._id !== recordId));
       setTotalRecords(prev => prev - 1);
-      toast.success('病历删除成功');
+      toast.success(t('record_deleted_success'));
     } catch (error) {
       console.error('删除病历失败:', error);
-      toast.error('删除病历失败');
+      toast.error(t('delete_record_failed'));
     }
   };
 
   const handleExportRecord = async (recordId) => {
     try {
-      toast.info('导出功能待实现');
+      toast.info(t('export_not_implemented'));
     } catch (error) {
       console.error('导出病历失败:', error);
-      toast.error('导出病历失败');
+      toast.error(t('export_not_implemented'));
     }
   };
 
@@ -113,40 +114,40 @@ const AdminRecords = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        病历管理
-      </Typography>
+              <Typography variant="h4" gutterBottom>
+         {t('medical_records_management')}
+        </Typography>
 
       {/* 搜索和筛选 */}
       <Paper sx={{ p: 3, mb: 3 }}>
         <Box display="flex" gap={2} alignItems="center" flexWrap="wrap">
-          <TextField
-            label="搜索病历"
-            variant="outlined"
-            size="small"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            InputProps={{
-              startAdornment: <Search />,
-            }}
-            sx={{ minWidth: 200 }}
-            placeholder="患者姓名、医生姓名、诊断"
-          />
+                      <TextField
+             label={t('search_medical_records')}
+              variant="outlined"
+              size="small"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              InputProps={{
+                startAdornment: <Search />,
+              }}
+              sx={{ minWidth: 200 }}
+             placeholder={t('patient_name_doctor_name_diagnosis')}
+            />
 
-          <Button
-            variant="outlined"
-            startIcon={<Refresh />}
-            onClick={fetchRecords}
-          >
-            刷新
-          </Button>
+                      <Button
+              variant="outlined"
+              startIcon={<Refresh />}
+              onClick={fetchRecords}
+            >
+             {t('refresh')}
+            </Button>
 
-          <Button
-            variant="contained"
-            onClick={() => toast.info('批量导出功能待实现')}
-          >
-            批量导出
-          </Button>
+            <Button
+              variant="contained"
+              onClick={() => toast.info(t('batch_export_not_implemented'))}
+            >
+             {t('batch_export')}
+            </Button>
         </Box>
       </Paper>
 
@@ -155,15 +156,15 @@ const AdminRecords = () => {
         <TableContainer>
           <Table>
             <TableHead>
-              <TableRow>
-                <TableCell>患者</TableCell>
-                <TableCell>医生</TableCell>
-                <TableCell>就诊日期</TableCell>
-                <TableCell>诊断</TableCell>
-                <TableCell>状态</TableCell>
-                <TableCell>创建时间</TableCell>
-                <TableCell>操作</TableCell>
-              </TableRow>
+                              <TableRow>
+                 <TableCell>{t('patient')}</TableCell>
+                 <TableCell>{t('doctor')}</TableCell>
+                 <TableCell>{t('visit_date')}</TableCell>
+                 <TableCell>{t('diagnosis')}</TableCell>
+                 <TableCell>{t('status')}</TableCell>
+                 <TableCell>{t('created_at')}</TableCell>
+                 <TableCell>{t('actions')}</TableCell>
+                </TableRow>
             </TableHead>
             <TableBody>
               {records.map((record) => (
@@ -180,7 +181,7 @@ const AdminRecords = () => {
                   </TableCell>
                   <TableCell>
                     <Chip
-                      label={record.isActive ? '有效' : '已归档'}
+                      label={record.isActive ? t('active') : t('archived')}
                       color={record.isActive ? 'success' : 'default'}
                       size="small"
                     />
@@ -191,7 +192,7 @@ const AdminRecords = () => {
                   <TableCell>
                     <IconButton
                       size="small"
-                      onClick={() => toast.info('查看详情功能待实现')}
+                      onClick={() => toast.info(t('view_details_not_implemented'))}
                     >
                       <Visibility />
                     </IconButton>
@@ -203,7 +204,7 @@ const AdminRecords = () => {
                     </IconButton>
                     <IconButton
                       size="small"
-                      onClick={() => toast.info('编辑功能待实现')}
+                      onClick={() => toast.info(t('edit_not_implemented'))}
                     >
                       <Edit />
                     </IconButton>
@@ -229,8 +230,8 @@ const AdminRecords = () => {
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
-          labelRowsPerPage="每页行数:"
-          labelDisplayedRows={({ from, to, count }) => `${from}-${to} / ${count}`}
+          labelRowsPerPage={t('rows_per_page')}
+          labelDisplayedRows={({ from, to, count }) => `${from}-${to} ${t('of')} ${count}`}
         />
       </Paper>
     </Container>

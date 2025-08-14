@@ -1,6 +1,7 @@
 const Appointment = require('../models/Appointment');
 const User = require('../models/User');
 const DoctorSchedule = require('../models/DoctorSchedule');
+const Notice = require('../models/Notice');
 
 // 获取患者预约列表
 const getPatientAppointments = async (req, res) => {
@@ -114,6 +115,19 @@ const createAppointment = async (req, res) => {
             .populate('doctor', 'name specialization department')
             .populate('patient', 'name phone');
 
+        // 创建预约请求通知给医生
+        try {
+            await Notice.createAppointmentRequest(
+                doctorId,
+                req.user.id,
+                appointment._id,
+                req.user.name
+            );
+        } catch (noticeError) {
+            console.error('创建预约通知失败:', noticeError);
+            // 通知失败不影响预约创建
+        }
+
         res.status(201).json({
             message: '预约创建成功',
             appointment: populatedAppointment
@@ -158,6 +172,21 @@ const updateAppointmentStatus = async (req, res) => {
             .populate('doctor', 'name specialization department')
             .populate('patient', 'name phone');
 
+        // 如果状态更新为确认，创建确认通知给患者
+        if (status === 'confirmed') {
+            try {
+                await Notice.createAppointmentConfirmed(
+                    appointment.patient,
+                    req.user.id,
+                    appointment._id,
+                    req.user.name
+                );
+            } catch (noticeError) {
+                console.error('创建确认通知失败:', noticeError);
+                // 通知失败不影响状态更新
+            }
+        }
+
         res.json({
             message: '预约状态更新成功',
             appointment: updatedAppointment
@@ -199,6 +228,20 @@ const cancelAppointment = async (req, res) => {
         appointment.cancelledAt = new Date();
 
         await appointment.save();
+
+        // 创建取消通知
+        try {
+            const recipientId = req.user.role === 'doctor' ? appointment.patient : appointment.doctor;
+            await Notice.createAppointmentCancelled(
+                recipientId,
+                req.user.id,
+                appointment._id,
+                req.user.name
+            );
+        } catch (noticeError) {
+            console.error('创建取消通知失败:', noticeError);
+            // 通知失败不影响取消操作
+        }
 
         res.json({ message: '预约取消成功' });
     } catch (error) {

@@ -27,6 +27,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import api from '../axiosConfig';
 import { toast } from 'react-hot-toast';
+import { t } from '../utils/i18n';
 
 const AdminSettings = () => {
   const [loading, setLoading] = useState(true);
@@ -69,10 +70,10 @@ const AdminSettings = () => {
       // setSettings(response.data);
       
       // 暂时使用默认设置
-      toast.info('设置功能待实现');
+      toast.info(t('settings.fetching_placeholder'));
     } catch (error) {
       console.error('获取设置失败:', error);
-      toast.error('获取设置失败');
+      toast.error(t('settings.fetch_failed'));
     } finally {
       setLoading(false);
     }
@@ -84,10 +85,10 @@ const AdminSettings = () => {
       // 这里应该调用后端API保存设置
       // await api.put('/admin/settings', settings);
       
-      toast.success('设置保存成功');
+      toast.success(t('settings.save_success'));
     } catch (error) {
       console.error('保存设置失败:', error);
-      toast.error('保存设置失败');
+      toast.error(t('settings.save_failed'));
     } finally {
       setSaving(false);
     }
@@ -95,19 +96,19 @@ const AdminSettings = () => {
 
   const handleBackup = async () => {
     try {
-      toast.info('备份功能待实现');
+      toast.info(t('settings.backup_placeholder'));
     } catch (error) {
       console.error('备份失败:', error);
-      toast.error('备份失败');
+      toast.error(t('settings.backup_failed'));
     }
   };
 
   const handleRestore = async () => {
     try {
-      toast.info('恢复功能待实现');
+      toast.info(t('settings.restore_placeholder'));
     } catch (error) {
       console.error('恢复失败:', error);
-      toast.error('恢复失败');
+      toast.error(t('settings.restore_failed'));
     }
   };
 
@@ -134,7 +135,7 @@ const AdminSettings = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" gutterBottom>
-        系统设置
+        {t('settings.title')}
       </Typography>
 
       <Grid container spacing={3}>
@@ -142,20 +143,20 @@ const AdminSettings = () => {
         <Grid item xs={12} md={6}>
           <Card>
             <CardHeader
-              title="系统设置"
+              title={t('settings.system_title')}
               avatar={<Settings />}
             />
             <CardContent>
               <TextField
                 fullWidth
-                label="系统名称"
+                label={t('settings.site_name_label')}
                 value={settings.system.siteName}
                 onChange={(e) => handleSettingChange('system', 'siteName', e.target.value)}
                 margin="normal"
               />
               <TextField
                 fullWidth
-                label="最大文件大小 (MB)"
+                label={t('settings.max_file_size_label')}
                 type="number"
                 value={settings.system.maxFileSize}
                 onChange={(e) => handleSettingChange('system', 'maxFileSize', parseInt(e.target.value))}
@@ -163,7 +164,7 @@ const AdminSettings = () => {
               />
               <TextField
                 fullWidth
-                label="会话超时时间 (分钟)"
+                label={t('settings.session_timeout_label')}
                 type="number"
                 value={settings.system.sessionTimeout}
                 onChange={(e) => handleSettingChange('system', 'sessionTimeout', parseInt(e.target.value))}
@@ -176,7 +177,7 @@ const AdminSettings = () => {
                     onChange={(e) => handleSettingChange('system', 'maintenanceMode', e.target.checked)}
                   />
                 }
-                label="维护模式"
+                label={t('settings.maintenance_mode_label')}
               />
             </CardContent>
           </Card>
@@ -186,13 +187,13 @@ const AdminSettings = () => {
         <Grid item xs={12} md={6}>
           <Card>
             <CardHeader
-              title="安全设置"
+              title={t('settings.security_title')}
               avatar={<Security />}
             />
             <CardContent>
               <TextField
                 fullWidth
-                label="密码最小长度"
+                label={t('settings.password_min_length_label')}
                 type="number"
                 value={settings.security.passwordMinLength}
                 onChange={(e) => handleSettingChange('security', 'passwordMinLength', parseInt(e.target.value))}
@@ -200,7 +201,7 @@ const AdminSettings = () => {
               />
               <TextField
                 fullWidth
-                label="最大登录尝试次数"
+                label={t('settings.max_login_attempts_label')}
                 type="number"
                 value={settings.security.maxLoginAttempts}
                 onChange={(e) => handleSettingChange('security', 'maxLoginAttempts', parseInt(e.target.value))}
@@ -208,7 +209,7 @@ const AdminSettings = () => {
               />
               <TextField
                 fullWidth
-                label="锁定时间 (分钟)"
+                label={t('settings.lockout_duration_label')}
                 type="number"
                 value={settings.security.lockoutDuration}
                 onChange={(e) => handleSettingChange('security', 'lockoutDuration', parseInt(e.target.value))}
@@ -221,7 +222,7 @@ const AdminSettings = () => {
                     onChange={(e) => handleSettingChange('security', 'requireStrongPassword', e.target.checked)}
                   />
                 }
-                label="要求强密码"
+                label={t('settings.require_strong_password_label')}
               />
             </CardContent>
           </Card>
@@ -231,7 +232,7 @@ const AdminSettings = () => {
         <Grid item xs={12} md={6}>
           <Card>
             <CardHeader
-              title="通知设置"
+              title={t('settings.notifications_title')}
               avatar={<Notifications />}
             />
             <CardContent>
@@ -242,7 +243,7 @@ const AdminSettings = () => {
                     onChange={(e) => handleSettingChange('notifications', 'emailNotifications', e.target.checked)}
                   />
                 }
-                label="邮件通知"
+                label={t('settings.email_notifications_label')}
               />
               <FormControlLabel
                 control={
@@ -251,7 +252,7 @@ const AdminSettings = () => {
                     onChange={(e) => handleSettingChange('notifications', 'smsNotifications', e.target.checked)}
                   />
                 }
-                label="短信通知"
+                label={t('settings.sms_notifications_label')}
               />
               <FormControlLabel
                 control={
@@ -260,7 +261,7 @@ const AdminSettings = () => {
                     onChange={(e) => handleSettingChange('notifications', 'appointmentReminders', e.target.checked)}
                   />
                 }
-                label="预约提醒"
+                label={t('settings.appointment_reminders_label')}
               />
               <FormControlLabel
                 control={
@@ -269,7 +270,7 @@ const AdminSettings = () => {
                     onChange={(e) => handleSettingChange('notifications', 'systemAlerts', e.target.checked)}
                   />
                 }
-                label="系统警报"
+                label={t('settings.system_alerts_label')}
               />
             </CardContent>
           </Card>
@@ -279,7 +280,7 @@ const AdminSettings = () => {
         <Grid item xs={12} md={6}>
           <Card>
             <CardHeader
-              title="备份设置"
+              title={t('settings.backup_title')}
               avatar={<Storage />}
             />
             <CardContent>
@@ -290,11 +291,11 @@ const AdminSettings = () => {
                     onChange={(e) => handleSettingChange('backup', 'autoBackup', e.target.checked)}
                   />
                 }
-                label="自动备份"
+                label={t('settings.auto_backup_label')}
               />
               <TextField
                 fullWidth
-                label="保留天数"
+                label={t('settings.retention_days_label')}
                 type="number"
                 value={settings.backup.retentionDays}
                 onChange={(e) => handleSettingChange('backup', 'retentionDays', parseInt(e.target.value))}
@@ -307,14 +308,14 @@ const AdminSettings = () => {
                   onClick={handleBackup}
                   sx={{ mr: 1 }}
                 >
-                  立即备份
+                  {t('settings.backup_now_button')}
                 </Button>
                 <Button
                   variant="outlined"
                   startIcon={<Restore />}
                   onClick={handleRestore}
                 >
-                  恢复数据
+                  {t('settings.restore_data_button')}
                 </Button>
               </Box>
             </CardContent>
@@ -329,7 +330,7 @@ const AdminSettings = () => {
             variant="outlined"
             onClick={fetchSettings}
           >
-            重置
+            {t('settings.reset_button')}
           </Button>
           <Button
             variant="contained"
@@ -337,7 +338,7 @@ const AdminSettings = () => {
             disabled={saving}
             startIcon={saving ? <CircularProgress size={20} /> : null}
           >
-            {saving ? '保存中...' : '保存设置'}
+            {saving ? t('settings.saving_text') : t('settings.save_settings_button')}
           </Button>
         </Box>
       </Paper>

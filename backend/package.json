@@ -4,7 +4,12 @@
   "description": "医疗预约系统后端服务",
   "main": "server.js",
   "scripts": {
-    "test": "mocha",
+    "test": "mocha test/**/*.test.js --timeout 10000",
+    "test:auth": "mocha test/auth.test.js --timeout 10000",
+    "test:admin": "mocha test/admin.test.js --timeout 10000",
+    "test:appointment": "mocha test/appointment.test.js --timeout 10000",
+    "test:medical-record": "mocha test/medical-record.test.js --timeout 10000",
+    "test:notice": "mocha test/notice.test.js --timeout 10000",
     "start": "node server.js",
     "dev": "nodemon server.js",
     "prod": "node server.js",

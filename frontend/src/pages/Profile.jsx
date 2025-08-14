@@ -30,6 +30,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import api from '../axiosConfig';
 import { toast } from 'react-hot-toast';
+import { t } from '../utils/i18n';
 
 const Profile = () => {
   const { user, updateUser } = useAuth();
@@ -78,11 +79,11 @@ const Profile = () => {
       const response = await api.put('/auth/profile', formData);
       updateUser(response.data);
       setEditing(false);
-      toast.success('个人信息更新成功');
+      toast.success(t('profile.updateSuccess'));
     } catch (error) {
       console.error('更新个人信息失败:', error);
-      setError(error.response?.data?.message || '更新失败');
-      toast.error('更新失败');
+      setError(error.response?.data?.message || t('profile.updateFailed'));
+      toast.error(t('profile.updateFailed'));
     } finally {
       setLoading(false);
     }
@@ -91,11 +92,11 @@ const Profile = () => {
   const getRoleLabel = (role) => {
     switch (role) {
       case 'patient':
-        return '患者';
+        return t('profile.patient');
       case 'doctor':
-        return '医生';
+        return t('profile.doctor');
       case 'admin':
-        return '管理员';
+        return t('profile.admin');
       default:
         return role;
     }
@@ -130,9 +131,9 @@ const Profile = () => {
   ];
 
   const genders = [
-    { value: 'male', label: '男' },
-    { value: 'female', label: '女' },
-    { value: 'other', label: '其他' },
+    { value: 'male', label: t('profile.male') },
+    { value: 'female', label: t('profile.female') },
+    { value: 'other', label: t('profile.other') },
   ];
 
   if (!user) {
@@ -148,7 +149,7 @@ const Profile = () => {
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" gutterBottom>
-        个人资料
+        {t('profile.personalInfo')}
       </Typography>
 
       <Card>
@@ -170,7 +171,7 @@ const Profile = () => {
                 sx={{ mr: 1 }}
               />
               <Typography variant="body2" color="textSecondary">
-                注册时间：{new Date(user.createdAt).toLocaleDateString()}
+                {t('profile.registrationDate')}: {new Date(user.createdAt).toLocaleDateString()}
               </Typography>
             </Box>
           </Box>
@@ -188,7 +189,7 @@ const Profile = () => {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="姓名"
+                  label={t('profile.name')}
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
@@ -202,7 +203,7 @@ const Profile = () => {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="邮箱"
+                  label={t('profile.email')}
                   name="email"
                   type="email"
                   value={formData.email}
@@ -217,7 +218,7 @@ const Profile = () => {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="手机号码"
+                  label={t('profile.phone')}
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
@@ -231,7 +232,7 @@ const Profile = () => {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="地址"
+                  label={t('profile.address')}
                   name="address"
                   value={formData.address}
                   onChange={handleChange}
@@ -242,7 +243,7 @@ const Profile = () => {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="出生日期"
+                  label={t('profile.dateOfBirth')}
                   name="dateOfBirth"
                   type="date"
                   value={formData.dateOfBirth}
@@ -256,11 +257,11 @@ const Profile = () => {
 
               <Grid item xs={12} sm={6}>
                 <FormControl fullWidth disabled={!editing}>
-                  <InputLabel>性别</InputLabel>
+                  <InputLabel>{t('profile.gender')}</InputLabel>
                   <Select
                     name="gender"
                     value={formData.gender}
-                    label="性别"
+                    label={t('profile.gender')}
                     onChange={handleChange}
                   >
                     {genders.map((gender) => (
@@ -276,11 +277,11 @@ const Profile = () => {
                 <>
                   <Grid item xs={12} sm={6}>
                     <FormControl fullWidth disabled={!editing}>
-                      <InputLabel>科室</InputLabel>
+                      <InputLabel>{t('profile.department')}</InputLabel>
                       <Select
                         name="department"
                         value={formData.department}
-                        label="科室"
+                        label={t('profile.department')}
                         onChange={handleChange}
                         startAdornment={<LocalHospital sx={{ mr: 1, color: 'text.secondary' }} />}
                       >
@@ -296,7 +297,7 @@ const Profile = () => {
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="专业特长"
+                      label={t('profile.specialization')}
                       name="specialization"
                       value={formData.specialization}
                       onChange={handleChange}
@@ -331,7 +332,7 @@ const Profile = () => {
                           });
                         }}
                       >
-                        取消
+                        {t('profile.cancel')}
                       </Button>
                       <Button
                         type="submit"
@@ -339,7 +340,7 @@ const Profile = () => {
                         startIcon={loading ? <CircularProgress size={20} /> : <Save />}
                         disabled={loading}
                       >
-                        保存
+                        {t('profile.save')}
                       </Button>
                     </>
                   ) : (
@@ -348,7 +349,7 @@ const Profile = () => {
                       startIcon={<Edit />}
                       onClick={() => setEditing(true)}
                     >
-                      编辑资料
+                      {t('profile.editInfo')}
                     </Button>
                   )}
                 </Box>
