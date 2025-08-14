@@ -483,6 +483,52 @@ const getDepartmentStats = async (req, res) => {
     }
 };
 
+// 更新预约信息
+const updateAppointment = async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: '无权限访问管理员功能' });
+        }
+
+        const { id } = req.params;
+        const { date, timeSlot, type, status, symptoms, notes } = req.body;
+
+        // 验证必填字段
+        if (!date || !timeSlot) {
+            return res.status(400).json({ message: '日期和时间段为必填字段' });
+        }
+
+        // 检查预约是否存在
+        const appointment = await Appointment.findById(id);
+        if (!appointment) {
+            return res.status(404).json({ message: '预约不存在' });
+        }
+
+        // 更新预约信息
+        appointment.date = new Date(date);
+        appointment.timeSlot = timeSlot;
+        appointment.type = type || appointment.type;
+        appointment.status = status || appointment.status;
+        appointment.symptoms = symptoms || appointment.symptoms;
+        appointment.notes = notes || appointment.notes;
+
+        await appointment.save();
+
+        // 返回更新后的预约信息
+        const updatedAppointment = await Appointment.findById(id)
+            .populate('patient', 'name email phone')
+            .populate('doctor', 'name email department');
+
+        res.json({
+            message: '预约信息更新成功',
+            appointment: updatedAppointment
+        });
+    } catch (error) {
+        console.error('更新预约错误:', error);
+        res.status(500).json({ message: '服务器错误', error: error.message });
+    }
+};
+
 module.exports = {
     getSystemStats,
     getRecentUsers,
@@ -494,5 +540,6 @@ module.exports = {
     deleteUser,
     getAppointments,
     getMedicalRecords,
-    getDepartmentStats
+    getDepartmentStats,
+    updateAppointment
 }; 

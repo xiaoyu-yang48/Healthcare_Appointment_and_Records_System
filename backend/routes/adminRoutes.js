@@ -10,7 +10,8 @@ const {
     deleteUser,
     getAppointments,
     getMedicalRecords,
-    getDepartmentStats
+    getDepartmentStats,
+    updateAppointment
 } = require('../controllers/adminController');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 
@@ -35,6 +36,7 @@ router.delete('/users/:id', deleteUser);
 // 预约管理
 router.get('/appointments', getAppointments);
 router.get('/appointments/recent', getRecentAppointments);
+router.put('/appointments/:id', updateAppointment);
 
 // 病历管理
 router.get('/medical-records', getMedicalRecords);

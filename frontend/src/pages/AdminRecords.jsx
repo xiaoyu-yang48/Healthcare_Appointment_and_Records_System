@@ -21,6 +21,11 @@ import {
   IconButton,
   CircularProgress,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Grid,
 } from '@mui/material';
 import {
   Search,
@@ -42,6 +47,8 @@ const AdminRecords = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalRecords, setTotalRecords] = useState(0);
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
   const [search, setSearch] = useState('');
 
   useEffect(() => {
@@ -82,6 +89,11 @@ const AdminRecords = () => {
       console.error('删除病历失败:', error);
       toast.error(t('delete_record_failed'));
     }
+  };
+
+  const handleViewDetails = (record) => {
+    setSelectedRecord(record);
+    setOpenDetailsDialog(true);
   };
 
   const handleExportRecord = async (recordId) => {
@@ -192,7 +204,7 @@ const AdminRecords = () => {
                   <TableCell>
                     <IconButton
                       size="small"
-                      onClick={() => toast.info(t('view_details_not_implemented'))}
+                      onClick={() => handleViewDetails(record)}
                     >
                       <Visibility />
                     </IconButton>
@@ -234,6 +246,93 @@ const AdminRecords = () => {
           labelDisplayedRows={({ from, to, count }) => `${from}-${to} ${t('of')} ${count}`}
         />
       </Paper>
+
+      {/* 病历详情对话框 */}
+      <Dialog open={openDetailsDialog} onClose={() => setOpenDetailsDialog(false)} maxWidth="md" fullWidth>
+        {selectedRecord && (
+          <>
+            <DialogTitle>
+              {t('medical_record_details')}
+            </DialogTitle>
+            <DialogContent>
+              <Grid container spacing={3} sx={{ pt: 1 }}>
+                <Grid item xs={12} md={6}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    {t('patient_info')}
+                  </Typography>
+                  <Box>
+                    <Typography variant="body2">
+                      <strong>{t('name')}:</strong> {selectedRecord.patient?.name || '-'}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>{t('email')}:</strong> {selectedRecord.patient?.email || '-'}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>{t('phone')}:</strong> {selectedRecord.patient?.phone || t('not_provided')}
+                    </Typography>
+                  </Box>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    {t('doctor_info')}
+                  </Typography>
+                  <Box>
+                    <Typography variant="body2">
+                      <strong>{t('name')}:</strong> {selectedRecord.doctor?.name || '-'}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>{t('department')}:</strong> {selectedRecord.doctor?.department || '-'}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>{t('specialization')}:</strong> {selectedRecord.doctor?.specialization || '-'}
+                    </Typography>
+                  </Box>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    {t('diagnosis_info')}
+                  </Typography>
+                  <Box>
+                    <Typography variant="body2">
+                      <strong>{t('diagnosis')}:</strong> {selectedRecord.diagnosis || '-'}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>{t('symptoms')}:</strong> {selectedRecord.symptoms || '-'}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>{t('treatment')}:</strong> {selectedRecord.treatment || '-'}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>{t('notes')}:</strong> {selectedRecord.notes || '-'}
+                    </Typography>
+                  </Box>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    {t('visit_info')}
+                  </Typography>
+                  <Box>
+                    <Typography variant="body2">
+                      <strong>{t('visit_date')}:</strong> {selectedRecord.visitDate ? format(new Date(selectedRecord.visitDate), 'yyyy-MM-dd') : '-'}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>{t('created_at')}:</strong> {selectedRecord.createdAt ? format(new Date(selectedRecord.createdAt), 'yyyy-MM-dd HH:mm') : '-'}
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setOpenDetailsDialog(false)}>
+                {t('close')}
+              </Button>
+            </DialogActions>
+          </>
+        )}
+      </Dialog>
     </Container>
   );
 };

@@ -78,6 +78,18 @@ const DoctorDashboard = () => {
       
     } catch (error) {
       console.error('获取仪表板数据失败:', error);
+      console.error('错误详情:', error.response?.data);
+      
+      // 如果是401错误，可能是token过期，重定向到登录页
+      if (error.response?.status === 401) {
+        toast.error('登录已过期，请重新登录');
+        // 清除本地存储并重定向到登录页
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        return;
+      }
+      
       toast.error(t('get_data_failed'));
     } finally {
       setLoading(false);

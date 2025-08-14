@@ -21,6 +21,11 @@ import {
   IconButton,
   CircularProgress,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Grid,
 } from '@mui/material';
 import {
   Search,
@@ -41,6 +46,17 @@ const AdminAppointments = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalAppointments, setTotalAppointments] = useState(0);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    date: '',
+    timeSlot: '',
+    type: 'consultation',
+    status: 'pending',
+    symptoms: '',
+    notes: ''
+  });
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
@@ -83,6 +99,49 @@ const AdminAppointments = () => {
       console.error('删除预约失败:', error);
       toast.error(t('delete_appointment_failed'));
     }
+  };
+
+  const handleViewDetails = (appointment) => {
+    setSelectedAppointment(appointment);
+    setOpenDetailsDialog(true);
+  };
+
+  const handleEditAppointment = (appointment) => {
+    setSelectedAppointment(appointment);
+    setEditFormData({
+      date: appointment.date ? format(new Date(appointment.date), 'yyyy-MM-dd') : '',
+      timeSlot: appointment.timeSlot || '',
+      type: appointment.type || 'consultation',
+      status: appointment.status || 'pending',
+      symptoms: appointment.symptoms || '',
+      notes: appointment.notes || ''
+    });
+    setOpenEditDialog(true);
+  };
+
+  const handleEditSubmit = async () => {
+    try {
+      console.log('提交的编辑数据:', editFormData);
+      console.log('预约ID:', selectedAppointment._id);
+      
+      const response = await api.put(`/admin/appointments/${selectedAppointment._id}`, editFormData);
+      console.log('更新成功:', response.data);
+      
+      toast.success(t('appointment_updated_success'));
+      setOpenEditDialog(false);
+      fetchAppointments();
+    } catch (error) {
+      console.error('更新预约失败:', error);
+      console.error('错误详情:', error.response?.data);
+      toast.error(error.response?.data?.message || t('update_appointment_failed'));
+    }
+  };
+
+  const handleEditChange = (field, value) => {
+    setEditFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   const getStatusLabel = (status) => {
@@ -218,13 +277,13 @@ const AdminAppointments = () => {
                   <TableCell>
                                         <IconButton
                       size="small"
-                     onClick={() => toast.info(t('view_details_not_implemented'))}
+                      onClick={() => handleViewDetails(appointment)}
                     >
                       <Visibility />
                     </IconButton>
                     <IconButton
                       size="small"
-                     onClick={() => toast.info(t('edit_not_implemented'))}
+                      onClick={() => handleEditAppointment(appointment)}
                     >
                       <Edit />
                     </IconButton>
@@ -254,6 +313,179 @@ const AdminAppointments = () => {
           labelDisplayedRows={({ from, to, count }) => `${from}-${to} ${t('of')} ${count}`}
         />
       </Paper>
+
+      {/* 预约详情对话框 */}
+      <Dialog open={openDetailsDialog} onClose={() => setOpenDetailsDialog(false)} maxWidth="md" fullWidth>
+        {selectedAppointment && (
+          <>
+            <DialogTitle>
+              {t('appointment_details')}
+            </DialogTitle>
+            <DialogContent>
+              <Grid container spacing={3} sx={{ pt: 1 }}>
+                <Grid item xs={12} md={6}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    {t('patient_info')}
+                  </Typography>
+                  <Box>
+                    <Typography variant="body2">
+                      <strong>{t('name')}:</strong> {selectedAppointment.patient?.name || '-'}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>{t('email')}:</strong> {selectedAppointment.patient?.email || '-'}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>{t('phone')}:</strong> {selectedAppointment.patient?.phone || t('not_provided')}
+                    </Typography>
+                  </Box>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    {t('appointment_info')}
+                  </Typography>
+                  <Box>
+                    <Typography variant="body2">
+                      <strong>{t('date')}:</strong> {selectedAppointment.date ? format(new Date(selectedAppointment.date), 'yyyy-MM-dd') : '-'}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>{t('time')}:</strong> {selectedAppointment.timeSlot || '-'}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>{t('type')}:</strong> {selectedAppointment.type || t('consultation')}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>{t('status')}:</strong> {getStatusLabel(selectedAppointment.status)}
+                    </Typography>
+                  </Box>
+                </Grid>
+
+                {selectedAppointment.symptoms && (
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle1" gutterBottom>
+                      {t('symptoms')}
+                    </Typography>
+                    <Typography variant="body2">
+                      {selectedAppointment.symptoms}
+                    </Typography>
+                  </Grid>
+                )}
+
+                {selectedAppointment.notes && (
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle1" gutterBottom>
+                      {t('notes')}
+                    </Typography>
+                    <Typography variant="body2">
+                      {selectedAppointment.notes}
+                    </Typography>
+                  </Grid>
+                )}
+              </Grid>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setOpenDetailsDialog(false)}>
+                {t('close')}
+              </Button>
+            </DialogActions>
+          </>
+        )}
+      </Dialog>
+
+      {/* 编辑预约对话框 */}
+      <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)} maxWidth="md" fullWidth>
+        {selectedAppointment && (
+          <>
+            <DialogTitle>
+              {t('edit_appointment')}
+            </DialogTitle>
+            <DialogContent>
+              <Box sx={{ pt: 1 }}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label={t('date')}
+                      type="date"
+                      value={editFormData.date}
+                      onChange={(e) => handleEditChange('date', e.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label={t('time')}
+                      value={editFormData.timeSlot}
+                      onChange={(e) => handleEditChange('timeSlot', e.target.value)}
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <FormControl fullWidth>
+                      <InputLabel>{t('type')}</InputLabel>
+                      <Select
+                        value={editFormData.type}
+                        label={t('type')}
+                        onChange={(e) => handleEditChange('type', e.target.value)}
+                      >
+                        <MenuItem value="consultation">{t('consultation')}</MenuItem>
+                        <MenuItem value="follow-up">{t('follow_up')}</MenuItem>
+                        <MenuItem value="emergency">{t('emergency')}</MenuItem>
+                        <MenuItem value="routine">{t('routine')}</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <FormControl fullWidth>
+                      <InputLabel>{t('status')}</InputLabel>
+                      <Select
+                        value={editFormData.status}
+                        label={t('status')}
+                        onChange={(e) => handleEditChange('status', e.target.value)}
+                      >
+                        <MenuItem value="pending">{t('status_pending')}</MenuItem>
+                        <MenuItem value="confirmed">{t('status_confirmed')}</MenuItem>
+                        <MenuItem value="completed">{t('status_completed')}</MenuItem>
+                        <MenuItem value="cancelled">{t('status_cancelled')}</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label={t('symptoms')}
+                      multiline
+                      rows={3}
+                      value={editFormData.symptoms}
+                      onChange={(e) => handleEditChange('symptoms', e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label={t('notes')}
+                      multiline
+                      rows={3}
+                      value={editFormData.notes}
+                      onChange={(e) => handleEditChange('notes', e.target.value)}
+                    />
+                  </Grid>
+                </Grid>
+              </Box>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setOpenEditDialog(false)}>
+                {t('cancel')}
+              </Button>
+              <Button onClick={handleEditSubmit} variant="contained">
+                {t('save')}
+              </Button>
+            </DialogActions>
+          </>
+        )}
+      </Dialog>
     </Container>
   );
 };
