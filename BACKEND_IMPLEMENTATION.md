@@ -1,4 +1,4 @@
-# 医疗预约系统后端实现总结
+// ...existing code...
 
 ## 概述
 
@@ -53,7 +53,61 @@
 - ✅ 病历管理
 - ✅ 部门统计
 
-## 技术实现
+## SysML 设计图说明
+
+### 1. Requirements Diagram
+后端需求包括用户管理、预约管理、病历管理、消息系统、安全性等。
+
+### 2. Block Definition Diagram (BDD)
+后端主要模块：User、Appointment、DoctorSchedule、MedicalRecord、Message，模块间通过 ObjectId 关联。
+
+### 3. Parametric Diagram
+描述预约流程、病历创建流程等关键业务逻辑的参数约束。
+
+（建议将实际绘制的 SysML 图以图片形式插入此处，或在报告中附上截图）
+
+---
+
+## CI/CD 流程说明
+
+### 1. 代码托管与分支管理
+- GitHub 主分支为生产分支，功能开发采用 feature 分支，PR 审核合并。
+
+### 2. 自动化测试
+- 可选：每次提交或 PR 时自动运行单元测试。
+
+### 3. 自动化部署
+- 使用 GitHub Actions 实现 CI/CD：
+	- 后端推送到 AWS EC2，自动重启服务。
+
+### 4. 工作流示例
+```yaml
+name: Backend CI/CD Pipeline
+on:
+	push:
+		branches: [ main ]
+	pull_request:
+		branches: [ main ]
+jobs:
+	build-and-deploy:
+		runs-on: ubuntu-latest
+		steps:
+			- uses: actions/checkout@v3
+			- name: Set up Node.js
+				uses: actions/setup-node@v3
+				with:
+					node-version: '18'
+			- name: Install dependencies
+				run: npm install
+			- name: Run tests
+				run: npm test
+			- name: Deploy to AWS EC2
+				run: |
+					# SSH 到 EC2 并执行部署脚本
+					# ...
+```
+
+---
 
 ### 技术栈
 - **Node.js**: 运行环境
