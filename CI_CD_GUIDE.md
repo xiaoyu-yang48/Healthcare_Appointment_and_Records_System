@@ -121,13 +121,13 @@ CORS_ORIGIN=https://your-domain.com
 ./scripts/deploy.sh production
 ```
 
-### 3. Docker 部署
+### 3. 本地部署
 ```bash
-# 构建并启动所有服务
-docker-compose up -d
+# 启动后端服务
+cd backend && npm start
 
-# 仅启动特定服务
-docker-compose up -d backend frontend
+# 启动前端服务
+cd frontend && npm start
 ```
 
 ## 监控和日志

@@ -65,20 +65,21 @@ else
     log_error "frontend/src/axiosConfig.jsx: API地址配置错误"
 fi
 
-# 检查 Docker 配置
-log_info "检查 Docker 配置..."
+# 检查本地服务配置
+log_info "检查本地服务配置..."
 
-# 检查 docker-compose.yml
-if grep -q "3001:3001" docker-compose.yml; then
-    log_success "docker-compose.yml: 后端端口映射正确 (3001)"
+# 检查后端端口配置
+if grep -q "PORT.*5001" backend/server.js; then
+    log_success "后端端口配置正确 (5001)"
 else
-    log_error "docker-compose.yml: 后端端口映射错误"
+    log_error "后端端口配置错误"
 fi
 
-if grep -q "80:80" docker-compose.yml; then
-    log_success "docker-compose.yml: 前端端口映射正确 (80)"
+# 检查前端端口配置
+if grep -q "PORT.*3000" frontend/package.json; then
+    log_success "前端端口配置正确 (3000)"
 else
-    log_error "docker-compose.yml: 前端端口映射错误"
+    log_error "前端端口配置错误"
 fi
 
 # 检查 nginx.conf
@@ -140,10 +141,10 @@ fi
 # 检查MongoDB配置
 log_info "检查MongoDB配置..."
 
-if grep -q "27017" docker-compose.yml; then
-    log_success "docker-compose.yml: MongoDB端口配置正确 (27017)"
+if curl -f http://192.168.0.202:27017 > /dev/null 2>&1; then
+    log_success "MongoDB服务器连接正常 (192.168.0.202:27017)"
 else
-    log_error "docker-compose.yml: MongoDB端口配置错误"
+    log_error "无法连接到MongoDB服务器"
 fi
 
 # 总结

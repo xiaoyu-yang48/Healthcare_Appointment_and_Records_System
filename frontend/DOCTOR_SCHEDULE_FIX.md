@@ -10,6 +10,7 @@
 2. **缺少更新API**: 后端缺少更新排班的路由
 3. **日期格式处理**: 日期格式在不同地方的处理不一致
 4. **字段映射错误**: 前端字段名与后端模型字段名不匹配
+5. **路由顺序错误**: 具体路径被参数路径错误匹配，导致"schedule"被当作ID处理
 
 ## 修复内容
 
@@ -55,7 +56,37 @@ const scheduleData = {
 };
 ```
 
-### 2. 添加更新排班API
+### 2. 修复路由顺序问题
+
+**问题**: 路由顺序错误导致`/schedule`被错误匹配到`/:id`路由
+
+**错误的路由顺序**:
+```javascript
+router.get('/:id', getDoctorById);           // 会匹配 /schedule
+router.get('/:id/schedule', getDoctorSchedule); // 会匹配 /schedule
+router.get('/available-slots', getAvailableTimeSlots);
+```
+
+**修复后的路由顺序**:
+```javascript
+router.get('/available-slots', getAvailableTimeSlots); // 具体路径在前
+router.get('/schedule', doctorOnly, getDoctorSchedule); // 具体路径在前
+router.get('/:id', getDoctorById);           // 参数路径在后
+router.get('/:id/schedule', getDoctorSchedule); // 参数路径在后
+```
+
+### 3. 修复getDoctorSchedule函数
+
+**问题**: 函数期望从`req.params.id`获取医生ID，但`/schedule`路由没有id参数
+
+**修复**: 添加逻辑处理两种情况
+```javascript
+// 如果没有id参数，使用当前登录用户的ID（医生查看自己的排班）
+const doctorId = id || req.user.id;
+let query = { doctor: doctorId };
+```
+
+### 4. 添加更新排班API
 
 **文件**: `backend/controllers/doctorController.js`
 
@@ -70,7 +101,7 @@ const scheduleData = {
 - 添加更新排班的路由
 - 使用医生权限中间件保护
 
-### 3. 修复编辑功能
+### 5. 修复编辑功能
 
 **文件**: `frontend/src/pages/DoctorSchedule.jsx`
 
@@ -93,7 +124,7 @@ const handleEditSchedule = (schedule) => {
 };
 ```
 
-### 4. 改进错误处理
+### 6. 改进错误处理
 
 **修复内容**:
 - 添加详细的错误日志
@@ -108,7 +139,7 @@ const handleEditSchedule = (schedule) => {
 }
 ```
 
-### 5. 修复日期格式处理
+### 7. 修复日期格式处理
 
 **问题**: 日期在不同地方的处理不一致
 
@@ -117,18 +148,79 @@ const handleEditSchedule = (schedule) => {
 ```javascript
 const getScheduleForDate = (date) => {
   const dateStr = format(date, 'yyyy-MM-dd');
-  return schedules.find(s => {
+  const schedule = schedules.find(s => {
     const scheduleDate = typeof s.date === 'string' ? s.date : format(new Date(s.date), 'yyyy-MM-dd');
     return scheduleDate === dateStr;
   });
+  console.log('Schedule for date', dateStr, ':', schedule);
+  return schedule;
 };
+```
+
+### 8. 修复前端显示问题
+
+**问题**: 前端不显示已排好的班
+
+**原因分析**:
+1. 字段名不匹配：前端检查`isAvailable`，后端返回`isWorkingDay`
+2. 时间槽格式不匹配：后端返回对象数组，前端期望字符串数组
+3. 缺少调试信息
+
+**修复内容**:
+
+1. **修复字段名匹配**:
+```javascript
+// 修复前
+label={schedule.isAvailable ? t('available') : t('unavailable')}
+{schedule.isAvailable && schedule.timeSlots && schedule.timeSlots.length > 0 && (
+
+// 修复后
+label={schedule.isWorkingDay ? t('available') : t('unavailable')}
+{schedule.isWorkingDay && schedule.timeSlots && schedule.timeSlots.length > 0 && (
+```
+
+2. **修复时间槽显示**:
+```javascript
+// 修复前
+label={slot}
+
+// 修复后
+label={slot.time || slot}
+```
+
+3. **添加调试日志**:
+```javascript
+console.log('Fetching schedules for:', startDate, 'to', endDate);
+console.log('Schedules received:', response.data);
+console.log('Schedule for date', dateStr, ':', schedule);
+```
+
+4. **修复后端默认值**:
+```javascript
+// 修复前
+res.json({
+  doctor: doctorId,
+  date: new Date(date),
+  timeSlots: [],
+  isWorkingDay: false,
+  isAvailable: false  // 多余的字段
+});
+
+// 修复后
+res.json({
+  doctor: doctorId,
+  date: new Date(date),
+  timeSlots: [],
+  isWorkingDay: false
+});
 ```
 
 ## 修复的文件
 
 1. `frontend/src/pages/DoctorSchedule.jsx` - 修复前端数据格式和错误处理
-2. `backend/controllers/doctorController.js` - 添加更新排班控制器
-3. `backend/routes/doctorRoutes.js` - 添加更新排班路由
+2. `backend/controllers/doctorController.js` - 修复getDoctorSchedule函数，添加更新排班控制器
+3. `backend/routes/doctorRoutes.js` - 修复路由顺序，添加更新排班路由
+4. `backend/scripts/test-doctor-schedule.js` - 新增测试脚本
 
 ## 数据流程
 
@@ -186,3 +278,23 @@ const getScheduleForDate = (date) => {
 3. **添加模板功能**: 支持保存和加载排班模板
 4. **改进时间选择**: 支持更灵活的时间段选择
 5. **添加冲突检测**: 检测排班时间冲突
+
+## 环境配置
+
+### MongoDB配置
+- **服务器地址**: 192.168.0.202:27017
+- **用户名**: admin
+- **密码**: 123123
+- **数据库**: emr
+- **连接字符串**: `mongodb://admin:123123@192.168.0.202:27017/emr?authSource=admin`
+
+### 启动服务
+```bash
+# 使用简化启动脚本
+./start-services.sh
+
+# 或手动启动
+cd backend && npm start
+cd frontend && npm start
+```
+

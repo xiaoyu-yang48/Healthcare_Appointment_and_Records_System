@@ -6,13 +6,13 @@
 - **开发环境**: 5001
 - **测试环境**: 5001  
 - **生产环境**: 5001
-- **Docker**: 5001
+- **本地**: 5001
 
 ### 前端服务 (Frontend)
 - **开发环境**: 3000 (React默认)
 - **测试环境**: 3000
 - **生产环境**: 80
-- **Docker**: 80
+- **本地**: 3000
 
 ### 数据库 (MongoDB)
 - **开发/测试/生产**: 27017
@@ -59,35 +59,27 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api
 }
 ```
 
-### 3. Docker配置
+### 3. 本地配置
 
-#### docker-compose.yml
-```yaml
-backend:
-  environment:
-    PORT: 5001
-  ports:
-    - "5001:5001"
-
-frontend:
-  ports:
-    - "80:80"
+#### 后端启动
+```bash
+cd backend
+npm install
+npm start
 ```
 
-#### frontend/Dockerfile
-```dockerfile
-EXPOSE 80
+#### 前端启动
+```bash
+cd frontend
+npm install
+npm start
 ```
 
-#### frontend/nginx.conf
-```nginx
-server {
-    listen 80;
-    # API代理到后端
-    location /api/ {
-        proxy_pass http://backend:5001;
-    }
-}
+#### MongoDB连接
+```bash
+# 使用内网测试服务器
+# 地址: 192.168.0.202:27017
+# 连接字符串: mongodb://admin:123123@192.168.0.202:27017/emr?authSource=admin
 ```
 
 ### 4. CI/CD配置
@@ -128,7 +120,7 @@ curl -f $FRONTEND_URL
 ```bash
 # 后端
 PORT=5001
-MONGODB_URI=mongodb://localhost:27017/emr
+MONGODB_URI=mongodb://admin:123123@192.168.0.202:27017/emr?authSource=admin
 
 # 前端
 REACT_APP_API_URL=http://localhost:5001/api
@@ -139,7 +131,7 @@ REACT_APP_API_URL=http://localhost:5001/api
 # 后端
 NODE_ENV=staging
 PORT=5001
-MONGODB_URI=mongodb://localhost:27017/emr_staging
+MONGODB_URI=mongodb://admin:123123@192.168.0.202:27017/emr?authSource=admin
 
 # 前端
 REACT_APP_API_URL=http://localhost:5001/api
@@ -150,7 +142,7 @@ REACT_APP_API_URL=http://localhost:5001/api
 # 后端
 NODE_ENV=production
 PORT=5001
-MONGODB_URI=mongodb://your-production-mongodb:27017/emr
+MONGODB_URI=mongodb://admin:123123@192.168.0.202:27017/emr?authSource=admin
 
 # 前端
 REACT_APP_API_URL=https://your-domain.com/api
