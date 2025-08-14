@@ -62,13 +62,13 @@ async function testPatientFeatures() {
       console.log('   3.2 获取患者预约列表...');
       const appointmentsResponse = await axios.get(`${API_BASE_URL}/appointments/patient`, { headers: patientHeaders });
       console.log('   ✅ 获取预约列表成功');
-      console.log(`   预约数量: ${appointmentsResponse.data.appointments.length}`);
+      console.log(`   预约数量: ${appointmentsResponse.data.length}`);
       
       // 3.3 取消预约
       console.log('   3.3 取消预约...');
       const cancelResponse = await axios.put(`${API_BASE_URL}/appointments/${appointmentId}/cancel`, {}, { headers: patientHeaders });
       console.log('   ✅ 取消预约成功');
-      console.log(`   状态: ${cancelResponse.data.appointment.status}`);
+      console.log(`   状态: ${cancelResponse.data.status}`);
       
     } catch (error) {
       console.log('   ❌ 预约功能测试失败:', error.response?.data?.message);
@@ -97,13 +97,13 @@ async function testPatientFeatures() {
       console.log('   4.2 患者获取病历列表...');
       const recordsResponse = await axios.get(`${API_BASE_URL}/medical-records/patient`, { headers: patientHeaders });
       console.log('   ✅ 获取病历列表成功');
-      console.log(`   病历数量: ${recordsResponse.data.records.length}`);
+      console.log(`   病历数量: ${recordsResponse.data.length}`);
       
       // 4.3 患者获取病历统计
       console.log('   4.3 患者获取病历统计...');
       const statsResponse = await axios.get(`${API_BASE_URL}/medical-records/patient/stats`, { headers: patientHeaders });
       console.log('   ✅ 获取病历统计成功');
-      console.log(`   总病历数: ${statsResponse.data.stats.totalRecords}`);
+      console.log(`   总病历数: ${statsResponse.data.totalRecords}`);
       
     } catch (error) {
       console.log('   ❌ 病历功能测试失败:', error.response?.data?.message);
@@ -122,13 +122,13 @@ async function testPatientFeatures() {
       
       const sendMessageResponse = await axios.post(`${API_BASE_URL}/messages`, messageData, { headers: patientHeaders });
       console.log('   ✅ 发送消息成功');
-      console.log(`   消息ID: ${sendMessageResponse.data.message._id}`);
+      console.log(`   消息ID: ${sendMessageResponse.data.data._id}`);
       
       // 5.2 患者获取与医生的对话
       console.log('   5.2 患者获取与医生的对话...');
       const conversationResponse = await axios.get(`${API_BASE_URL}/messages/conversation/${doctorId}`, { headers: patientHeaders });
       console.log('   ✅ 获取对话成功');
-      console.log(`   消息数量: ${conversationResponse.data.messages.length}`);
+      console.log(`   消息数量: ${conversationResponse.data.length}`);
       
       // 5.3 医生回复消息
       console.log('   5.3 医生回复消息...');
@@ -143,7 +143,7 @@ async function testPatientFeatures() {
       
       // 5.4 患者标记消息为已读
       console.log('   5.4 患者标记消息为已读...');
-      const markReadResponse = await axios.put(`${API_BASE_URL}/messages/${replyResponse.data.message._id}/read`, {}, { headers: patientHeaders });
+      const markReadResponse = await axios.put(`${API_BASE_URL}/messages/${replyResponse.data.data._id}/read`, {}, { headers: patientHeaders });
       console.log('   ✅ 标记已读成功');
       
     } catch (error) {
