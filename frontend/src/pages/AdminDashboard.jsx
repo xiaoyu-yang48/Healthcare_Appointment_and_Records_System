@@ -255,7 +255,7 @@ const AdminDashboard = () => {
                     {stats.appointments?.byStatus?.find(s => s._id === 'pending')?.count || 0}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
-                    待处理预约
+                    {t('pending_appointments')}
                   </Typography>
                 </Box>
               </Box>
@@ -267,7 +267,7 @@ const AdminDashboard = () => {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                系统状态
+                {t('system_status')}
               </Typography>
               <List dense>
                 <ListItem>
@@ -275,8 +275,8 @@ const AdminDashboard = () => {
                     <TrendingUp color="success" />
                   </ListItemIcon>
                   <ListItemText
-                    primary="系统运行正常"
-                    secondary="所有服务正常运行"
+                    primary={t('system_running_normal')}
+                    secondary={t('all_services_normal')}
                   />
                 </ListItem>
                 <ListItem>
@@ -284,8 +284,8 @@ const AdminDashboard = () => {
                     <MedicalServices color="primary" />
                   </ListItemIcon>
                   <ListItemText
-                    primary="数据库连接正常"
-                    secondary="MongoDB 连接状态良好"
+                    primary={t('database_connection_normal')}
+                    secondary={t('mongodb_connection_good')}
                   />
                 </ListItem>
               </List>
@@ -301,13 +301,13 @@ const AdminDashboard = () => {
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                 <Typography variant="h6">
-                  最近预约
+                  {t('recent_appointments')}
                 </Typography>
                 <Button
                   variant="outlined"
                   onClick={() => navigate('/admin/appointments')}
                 >
-                  查看全部
+                  {t('view_all')}
                 </Button>
               </Box>
               
@@ -316,10 +316,10 @@ const AdminDashboard = () => {
                   <Table size="small">
                     <TableHead>
                       <TableRow>
-                        <TableCell>患者</TableCell>
-                        <TableCell>医生</TableCell>
-                        <TableCell>状态</TableCell>
-                        <TableCell>时间</TableCell>
+                        <TableCell>{t('patient')}</TableCell>
+                        <TableCell>{t('doctor')}</TableCell>
+                        <TableCell>{t('status')}</TableCell>
+                        <TableCell>{t('time')}</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -344,7 +344,7 @@ const AdminDashboard = () => {
                 </TableContainer>
               ) : (
                 <Typography color="textSecondary" align="center" sx={{ py: 2 }}>
-                  暂无最近预约
+                  {t('no_recent_appointments')}
                 </Typography>
               )}
             </CardContent>
@@ -355,7 +355,7 @@ const AdminDashboard = () => {
       {/* 快速操作 */}
       <Paper sx={{ p: 3, mt: 3 }}>
         <Typography variant="h6" gutterBottom>
-          系统管理
+          {t('system_management')}
         </Typography>
         <Grid container spacing={2}>
           <Grid item>
@@ -364,7 +364,7 @@ const AdminDashboard = () => {
               startIcon={<People />}
               onClick={() => navigate('/admin/users')}
             >
-              用户管理
+              {t('user_management')}
             </Button>
           </Grid>
           <Grid item>
@@ -373,7 +373,7 @@ const AdminDashboard = () => {
               startIcon={<Schedule />}
               onClick={() => navigate('/admin/appointments')}
             >
-              预约管理
+              {t('appointment_management')}
             </Button>
           </Grid>
           <Grid item>
@@ -382,7 +382,7 @@ const AdminDashboard = () => {
               startIcon={<MedicalServices />}
               onClick={() => navigate('/admin/records')}
             >
-              病历管理
+              {t('medical_records_management')}
             </Button>
           </Grid>
           <Grid item>
@@ -391,7 +391,7 @@ const AdminDashboard = () => {
               startIcon={<Settings />}
               onClick={() => navigate('/admin/settings')}
             >
-              系统设置
+              {t('system_settings')}
             </Button>
           </Grid>
         </Grid>
