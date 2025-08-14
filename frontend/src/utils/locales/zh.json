@@ -315,7 +315,7 @@
   "record_deleted_success": "病历删除成功",
   "delete_record_failed": "删除病历失败",
   "get_medical_records_failed": "获取病历列表失败",
-  "settings": {
+  "settings_config": {
     "title": "系统设置",
     "system_title": "系统设置",
     "site_name_label": "系统名称",
@@ -349,7 +349,7 @@
     "restore_placeholder": "恢复功能待实现",
     "restore_failed": "恢复失败"
   },
-  "profile": {
+  "profile_config": {
     "personalInfo": "个人资料",
     "registrationDate": "注册时间",
     "name": "姓名",

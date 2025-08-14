@@ -130,8 +130,10 @@ const PatientAppointments = () => {
           },
         });
         const availableTimeSlots = response.data.timeSlots
-          .filter(slot => slot.isAvailable)
-          .map(slot => slot.time);
+          ? response.data.timeSlots
+              .filter(slot => slot.isAvailable)
+              .map(slot => slot.time)
+          : [];
         setAvailableSlots(availableTimeSlots);
       } catch (error) {
         console.error('Failed to get available time slots:', error);
@@ -150,8 +152,10 @@ const PatientAppointments = () => {
           },
         });
         const availableTimeSlots = response.data.timeSlots
-          .filter(slot => slot.isAvailable)
-          .map(slot => slot.time);
+          ? response.data.timeSlots
+              .filter(slot => slot.isAvailable)
+              .map(slot => slot.time)
+          : [];
         setAvailableSlots(availableTimeSlots);
       } catch (error) {
         console.error('Failed to get available time slots:', error);

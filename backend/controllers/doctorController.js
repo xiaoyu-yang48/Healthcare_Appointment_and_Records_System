@@ -85,7 +85,24 @@ const getDoctorSchedule = async (req, res) => {
         const schedules = await DoctorSchedule.find(query)
             .sort({ date: 1 });
 
-        res.json(schedules);
+        // 如果查询特定日期，返回单个排班记录
+        if (date) {
+            const schedule = schedules[0];
+            if (schedule) {
+                res.json(schedule);
+            } else {
+                // 如果没有排班记录，返回默认的空排班
+                res.json({
+                    doctor: id,
+                    date: new Date(date),
+                    timeSlots: [],
+                    isWorkingDay: false,
+                    isAvailable: false
+                });
+            }
+        } else {
+            res.json(schedules);
+        }
     } catch (error) {
         console.error('获取医生排班错误:', error);
         res.status(500).json({ message: '服务器错误', error: error.message });

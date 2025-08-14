@@ -79,11 +79,11 @@ const Profile = () => {
       const response = await api.put('/auth/profile', formData);
       updateUser(response.data);
       setEditing(false);
-      toast.success(t('profile.updateSuccess'));
+      toast.success(t('profile_config.updateSuccess'));
     } catch (error) {
       console.error('更新个人信息失败:', error);
-      setError(error.response?.data?.message || t('profile.updateFailed'));
-      toast.error(t('profile.updateFailed'));
+              setError(error.response?.data?.message || t('profile_config.updateFailed'));
+        toast.error(t('profile_config.updateFailed'));
     } finally {
       setLoading(false);
     }
@@ -92,11 +92,11 @@ const Profile = () => {
   const getRoleLabel = (role) => {
     switch (role) {
       case 'patient':
-        return t('profile.patient');
+        return t('profile_config.patient');
       case 'doctor':
-        return t('profile.doctor');
+        return t('profile_config.doctor');
       case 'admin':
-        return t('profile.admin');
+        return t('profile_config.admin');
       default:
         return role;
     }
@@ -131,9 +131,9 @@ const Profile = () => {
   ];
 
   const genders = [
-    { value: 'male', label: t('profile.male') },
-    { value: 'female', label: t('profile.female') },
-    { value: 'other', label: t('profile.other') },
+    { value: 'male', label: t('profile_config.male') },
+    { value: 'female', label: t('profile_config.female') },
+    { value: 'other', label: t('profile_config.other') },
   ];
 
   if (!user) {
@@ -149,7 +149,7 @@ const Profile = () => {
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" gutterBottom>
-        {t('profile.personalInfo')}
+        {t('profile_config.personalInfo')}
       </Typography>
 
       <Card>
@@ -171,7 +171,7 @@ const Profile = () => {
                 sx={{ mr: 1 }}
               />
               <Typography variant="body2" color="textSecondary">
-                {t('profile.registrationDate')}: {new Date(user.createdAt).toLocaleDateString()}
+                {t('profile_config.registrationDate')}: {new Date(user.createdAt).toLocaleDateString()}
               </Typography>
             </Box>
           </Box>
@@ -189,7 +189,7 @@ const Profile = () => {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label={t('profile.name')}
+                  label={t('profile_config.name')}
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
@@ -203,7 +203,7 @@ const Profile = () => {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label={t('profile.email')}
+                  label={t('profile_config.email')}
                   name="email"
                   type="email"
                   value={formData.email}
@@ -218,7 +218,7 @@ const Profile = () => {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label={t('profile.phone')}
+                  label={t('profile_config.phone')}
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
@@ -232,7 +232,7 @@ const Profile = () => {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label={t('profile.address')}
+                  label={t('profile_config.address')}
                   name="address"
                   value={formData.address}
                   onChange={handleChange}
@@ -243,7 +243,7 @@ const Profile = () => {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label={t('profile.dateOfBirth')}
+                  label={t('profile_config.dateOfBirth')}
                   name="dateOfBirth"
                   type="date"
                   value={formData.dateOfBirth}
@@ -257,11 +257,11 @@ const Profile = () => {
 
               <Grid item xs={12} sm={6}>
                 <FormControl fullWidth disabled={!editing}>
-                  <InputLabel>{t('profile.gender')}</InputLabel>
+                  <InputLabel>{t('profile_config.gender')}</InputLabel>
                   <Select
                     name="gender"
                     value={formData.gender}
-                    label={t('profile.gender')}
+                    label={t('profile_config.gender')}
                     onChange={handleChange}
                   >
                     {genders.map((gender) => (
@@ -277,11 +277,11 @@ const Profile = () => {
                 <>
                   <Grid item xs={12} sm={6}>
                     <FormControl fullWidth disabled={!editing}>
-                      <InputLabel>{t('profile.department')}</InputLabel>
+                      <InputLabel>{t('profile_config.department')}</InputLabel>
                       <Select
                         name="department"
                         value={formData.department}
-                        label={t('profile.department')}
+                        label={t('profile_config.department')}
                         onChange={handleChange}
                         startAdornment={<LocalHospital sx={{ mr: 1, color: 'text.secondary' }} />}
                       >
@@ -297,7 +297,7 @@ const Profile = () => {
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label={t('profile.specialization')}
+                      label={t('profile_config.specialization')}
                       name="specialization"
                       value={formData.specialization}
                       onChange={handleChange}
@@ -332,7 +332,7 @@ const Profile = () => {
                           });
                         }}
                       >
-                        {t('profile.cancel')}
+                        {t('profile_config.cancel')}
                       </Button>
                       <Button
                         type="submit"
@@ -340,7 +340,7 @@ const Profile = () => {
                         startIcon={loading ? <CircularProgress size={20} /> : <Save />}
                         disabled={loading}
                       >
-                        {t('profile.save')}
+                        {t('profile_config.save')}
                       </Button>
                     </>
                   ) : (
@@ -349,7 +349,7 @@ const Profile = () => {
                       startIcon={<Edit />}
                       onClick={() => setEditing(true)}
                     >
-                      {t('profile.editInfo')}
+                      {t('profile_config.editInfo')}
                     </Button>
                   )}
                 </Box>

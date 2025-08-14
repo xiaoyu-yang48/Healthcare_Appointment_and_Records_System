@@ -11,7 +11,18 @@ export function getLanguage() {
 
 export function t(key) {
   const lang = getLanguage();
-  return LANGUAGES[lang][key] || key;
+  const keys = key.split('.');
+  let value = LANGUAGES[lang];
+  
+  for (const k of keys) {
+    if (value && typeof value === 'object' && k in value) {
+      value = value[k];
+    } else {
+      return key; // 如果找不到对应的翻译，返回原始键
+    }
+  }
+  
+  return value || key;
 }
 
 export function setLanguage(lang) {

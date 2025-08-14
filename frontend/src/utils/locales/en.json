@@ -315,7 +315,7 @@
   "record_deleted_success": "Record deleted successfully",
   "delete_record_failed": "Failed to delete record",
   "get_medical_records_failed": "Failed to get medical records list",
-  "settings": {
+  "settings_config": {
     "title": "System Settings",
     "system_title": "System Settings",
     "site_name_label": "System Name",
@@ -349,7 +349,7 @@
     "restore_placeholder": "Restore feature not implemented",
     "restore_failed": "Restore failed"
   },
-  "profile": {
+  "profile_config": {
     "personalInfo": "Personal Information",
     "registrationDate": "Registration Date",
     "name": "Name",

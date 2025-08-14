@@ -70,10 +70,10 @@ const AdminSettings = () => {
       // setSettings(response.data);
       
       // 暂时使用默认设置
-      toast.info(t('settings.fetching_placeholder'));
+      toast.info(t('settings_config.fetching_placeholder'));
     } catch (error) {
       console.error('获取设置失败:', error);
-      toast.error(t('settings.fetch_failed'));
+      toast.error(t('settings_config.fetch_failed'));
     } finally {
       setLoading(false);
     }
@@ -85,10 +85,10 @@ const AdminSettings = () => {
       // 这里应该调用后端API保存设置
       // await api.put('/admin/settings', settings);
       
-      toast.success(t('settings.save_success'));
+      toast.success(t('settings_config.save_success'));
     } catch (error) {
       console.error('保存设置失败:', error);
-      toast.error(t('settings.save_failed'));
+      toast.error(t('settings_config.save_failed'));
     } finally {
       setSaving(false);
     }
@@ -96,19 +96,19 @@ const AdminSettings = () => {
 
   const handleBackup = async () => {
     try {
-      toast.info(t('settings.backup_placeholder'));
+      toast.info(t('settings_config.backup_placeholder'));
     } catch (error) {
       console.error('备份失败:', error);
-      toast.error(t('settings.backup_failed'));
+      toast.error(t('settings_config.backup_failed'));
     }
   };
 
   const handleRestore = async () => {
     try {
-      toast.info(t('settings.restore_placeholder'));
+      toast.info(t('settings_config.restore_placeholder'));
     } catch (error) {
       console.error('恢复失败:', error);
-      toast.error(t('settings.restore_failed'));
+      toast.error(t('settings_config.restore_failed'));
     }
   };
 
@@ -135,7 +135,7 @@ const AdminSettings = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" gutterBottom>
-        {t('settings.title')}
+        {t('settings_config.title')}
       </Typography>
 
       <Grid container spacing={3}>
@@ -143,20 +143,20 @@ const AdminSettings = () => {
         <Grid item xs={12} md={6}>
           <Card>
             <CardHeader
-              title={t('settings.system_title')}
+              title={t('settings_config.system_title')}
               avatar={<Settings />}
             />
             <CardContent>
               <TextField
                 fullWidth
-                label={t('settings.site_name_label')}
+                label={t('settings_config.site_name_label')}
                 value={settings.system.siteName}
                 onChange={(e) => handleSettingChange('system', 'siteName', e.target.value)}
                 margin="normal"
               />
               <TextField
                 fullWidth
-                label={t('settings.max_file_size_label')}
+                label={t('settings_config.max_file_size_label')}
                 type="number"
                 value={settings.system.maxFileSize}
                 onChange={(e) => handleSettingChange('system', 'maxFileSize', parseInt(e.target.value))}
@@ -164,7 +164,7 @@ const AdminSettings = () => {
               />
               <TextField
                 fullWidth
-                label={t('settings.session_timeout_label')}
+                label={t('settings_config.session_timeout_label')}
                 type="number"
                 value={settings.system.sessionTimeout}
                 onChange={(e) => handleSettingChange('system', 'sessionTimeout', parseInt(e.target.value))}
@@ -177,7 +177,7 @@ const AdminSettings = () => {
                     onChange={(e) => handleSettingChange('system', 'maintenanceMode', e.target.checked)}
                   />
                 }
-                label={t('settings.maintenance_mode_label')}
+                label={t('settings_config.maintenance_mode_label')}
               />
             </CardContent>
           </Card>
@@ -187,13 +187,13 @@ const AdminSettings = () => {
         <Grid item xs={12} md={6}>
           <Card>
             <CardHeader
-              title={t('settings.security_title')}
+              title={t('settings_config.security_title')}
               avatar={<Security />}
             />
             <CardContent>
               <TextField
                 fullWidth
-                label={t('settings.password_min_length_label')}
+                label={t('settings_config.password_min_length_label')}
                 type="number"
                 value={settings.security.passwordMinLength}
                 onChange={(e) => handleSettingChange('security', 'passwordMinLength', parseInt(e.target.value))}
@@ -201,7 +201,7 @@ const AdminSettings = () => {
               />
               <TextField
                 fullWidth
-                label={t('settings.max_login_attempts_label')}
+                label={t('settings_config.max_login_attempts_label')}
                 type="number"
                 value={settings.security.maxLoginAttempts}
                 onChange={(e) => handleSettingChange('security', 'maxLoginAttempts', parseInt(e.target.value))}
@@ -209,7 +209,7 @@ const AdminSettings = () => {
               />
               <TextField
                 fullWidth
-                label={t('settings.lockout_duration_label')}
+                label={t('settings_config.lockout_duration_label')}
                 type="number"
                 value={settings.security.lockoutDuration}
                 onChange={(e) => handleSettingChange('security', 'lockoutDuration', parseInt(e.target.value))}
@@ -222,7 +222,7 @@ const AdminSettings = () => {
                     onChange={(e) => handleSettingChange('security', 'requireStrongPassword', e.target.checked)}
                   />
                 }
-                label={t('settings.require_strong_password_label')}
+                label={t('settings_config.require_strong_password_label')}
               />
             </CardContent>
           </Card>
@@ -232,7 +232,7 @@ const AdminSettings = () => {
         <Grid item xs={12} md={6}>
           <Card>
             <CardHeader
-              title={t('settings.notifications_title')}
+              title={t('settings_config.notifications_title')}
               avatar={<Notifications />}
             />
             <CardContent>
@@ -243,7 +243,7 @@ const AdminSettings = () => {
                     onChange={(e) => handleSettingChange('notifications', 'emailNotifications', e.target.checked)}
                   />
                 }
-                label={t('settings.email_notifications_label')}
+                label={t('settings_config.email_notifications_label')}
               />
               <FormControlLabel
                 control={
@@ -252,7 +252,7 @@ const AdminSettings = () => {
                     onChange={(e) => handleSettingChange('notifications', 'smsNotifications', e.target.checked)}
                   />
                 }
-                label={t('settings.sms_notifications_label')}
+                label={t('settings_config.sms_notifications_label')}
               />
               <FormControlLabel
                 control={
@@ -261,7 +261,7 @@ const AdminSettings = () => {
                     onChange={(e) => handleSettingChange('notifications', 'appointmentReminders', e.target.checked)}
                   />
                 }
-                label={t('settings.appointment_reminders_label')}
+                label={t('settings_config.appointment_reminders_label')}
               />
               <FormControlLabel
                 control={
@@ -270,7 +270,7 @@ const AdminSettings = () => {
                     onChange={(e) => handleSettingChange('notifications', 'systemAlerts', e.target.checked)}
                   />
                 }
-                label={t('settings.system_alerts_label')}
+                label={t('settings_config.system_alerts_label')}
               />
             </CardContent>
           </Card>
@@ -280,7 +280,7 @@ const AdminSettings = () => {
         <Grid item xs={12} md={6}>
           <Card>
             <CardHeader
-              title={t('settings.backup_title')}
+              title={t('settings_config.backup_title')}
               avatar={<Storage />}
             />
             <CardContent>
@@ -291,11 +291,11 @@ const AdminSettings = () => {
                     onChange={(e) => handleSettingChange('backup', 'autoBackup', e.target.checked)}
                   />
                 }
-                label={t('settings.auto_backup_label')}
+                label={t('settings_config.auto_backup_label')}
               />
               <TextField
                 fullWidth
-                label={t('settings.retention_days_label')}
+                label={t('settings_config.retention_days_label')}
                 type="number"
                 value={settings.backup.retentionDays}
                 onChange={(e) => handleSettingChange('backup', 'retentionDays', parseInt(e.target.value))}
@@ -308,14 +308,14 @@ const AdminSettings = () => {
                   onClick={handleBackup}
                   sx={{ mr: 1 }}
                 >
-                  {t('settings.backup_now_button')}
+                  {t('settings_config.backup_now_button')}
                 </Button>
                 <Button
                   variant="outlined"
                   startIcon={<Restore />}
                   onClick={handleRestore}
                 >
-                  {t('settings.restore_data_button')}
+                  {t('settings_config.restore_data_button')}
                 </Button>
               </Box>
             </CardContent>
@@ -330,7 +330,7 @@ const AdminSettings = () => {
             variant="outlined"
             onClick={fetchSettings}
           >
-            {t('settings.reset_button')}
+            {t('settings_config.reset_button')}
           </Button>
           <Button
             variant="contained"
@@ -338,7 +338,7 @@ const AdminSettings = () => {
             disabled={saving}
             startIcon={saving ? <CircularProgress size={20} /> : null}
           >
-            {saving ? t('settings.saving_text') : t('settings.save_settings_button')}
+            {saving ? t('settings_config.saving_text') : t('settings_config.save_settings_button')}
           </Button>
         </Box>
       </Paper>
