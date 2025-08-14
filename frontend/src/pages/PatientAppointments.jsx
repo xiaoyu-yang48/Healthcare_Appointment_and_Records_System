@@ -1,3 +1,4 @@
+/* eslint-disable no-unreachable */
 import React, { useState, useEffect } from 'react';
 import {
   Container,
@@ -64,16 +65,16 @@ const PatientAppointments = () => {
     try {
       setLoading(true);
       
-      // 获取预约列表
+      // Get appointment list
       const appointmentsResponse = await api.get('/appointments/patient');
       setAppointments(appointmentsResponse.data);
       
-      // 获取医生列表
+      // Get doctor list
       const doctorsResponse = await api.get('/doctors');
       setDoctors(doctorsResponse.data);
       
     } catch (error) {
-      console.error('获取数据失败:', error);
+      console.error('Failed to get data:', error);
       toast.error(t('get_data_failed'));
     } finally {
       setLoading(false);
@@ -93,15 +94,15 @@ const PatientAppointments = () => {
       await api.post('/appointments', appointmentData);
       toast.success(t('appointment_success'));
       setOpenBookingDialog(false);
-      fetchData(); // 刷新数据
+      fetchData(); // Refresh data
       
-      // 重置表单
+      // Reset form
       setSelectedDoctor('');
       setSelectedDate(new Date());
       setSelectedTime('');
       
     } catch (error) {
-      console.error('预约失败:', error);
+      console.error('Appointment failed:', error);
       toast.error(error.response?.data?.message || t('appointment_failed'));
     }
   };
@@ -109,12 +110,12 @@ const PatientAppointments = () => {
   const handleCancelAppointment = async (appointmentId) => {
     try {
       await api.put(`/appointments/${appointmentId}/cancel`, {
-              reason: t('patient_cancelled')
-    });
-    toast.success(t('cancel_appointment_success'));
-      fetchData(); // 刷新数据
+        reason: t('patient_cancelled')
+      });
+      toast.success(t('cancel_appointment_success'));
+      fetchData(); // Refresh data
     } catch (error) {
-      console.error('取消预约失败:', error);
+      console.error('Failed to cancel appointment:', error);
       toast.error(t('cancel_appointment_failed'));
     }
   };
@@ -133,7 +134,7 @@ const PatientAppointments = () => {
           .map(slot => slot.time);
         setAvailableSlots(availableTimeSlots);
       } catch (error) {
-        console.error('获取可用时间失败:', error);
+        console.error('Failed to get available time slots:', error);
         setAvailableSlots([]);
       }
     }
@@ -153,7 +154,7 @@ const PatientAppointments = () => {
           .map(slot => slot.time);
         setAvailableSlots(availableTimeSlots);
       } catch (error) {
-        console.error('获取可用时间失败:', error);
+        console.error('Failed to get available time slots:', error);
         setAvailableSlots([]);
       }
     }
@@ -177,7 +178,6 @@ const PatientAppointments = () => {
   const getStatusLabel = (status) => {
     switch (status) {
       case 'confirmed':
-        return t('status_confirmed');
         return t('status_confirmed');
       case 'pending':
         return t('status_pending');
@@ -225,7 +225,7 @@ const PatientAppointments = () => {
         </Button>
       </Box>
 
-      {/* 预约列表 */}
+      {/* Appointment List */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>
@@ -289,7 +289,7 @@ const PatientAppointments = () => {
         </CardContent>
       </Card>
 
-      {/* 医生列表 */}
+      {/* Doctor List */}
       <Card>
         <CardContent>
           <Typography variant="h6" gutterBottom>
@@ -359,7 +359,7 @@ const PatientAppointments = () => {
         </CardContent>
       </Card>
 
-      {/* 预约对话框 */}
+      {/* Appointment Dialog */}
       <Dialog open={openBookingDialog} onClose={() => setOpenBookingDialog(false)} maxWidth="sm" fullWidth>
         <DialogTitle>{t('book_appointment')}</DialogTitle>
         <DialogContent>
@@ -400,10 +400,10 @@ const PatientAppointments = () => {
 
             {availableSlots.length > 0 && (
               <FormControl fullWidth margin="normal">
-                <InputLabel>选择时间</InputLabel>
+                <InputLabel>{t('select_time')}</InputLabel>
                 <Select
                   value={selectedTime}
-                  label="选择时间"
+                  label={t('select_time')}
                   onChange={(e) => setSelectedTime(e.target.value)}
                 >
                   {availableSlots.map((slot) => (
@@ -417,21 +417,21 @@ const PatientAppointments = () => {
 
             {selectedDoctor && selectedDate && availableSlots.length === 0 && (
               <Alert severity="info" sx={{ mt: 2 }}>
-                该日期暂无可用时间，请选择其他日期
+                {t('no_available_time')}
               </Alert>
             )}
           </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenBookingDialog(false)}>
-            取消
+            {t('cancel')}
           </Button>
           <Button
             onClick={handleBookAppointment}
             variant="contained"
             disabled={!selectedDoctor || !selectedTime}
           >
-            确认预约
+            {t('confirm_appointment')}
           </Button>
         </DialogActions>
       </Dialog>

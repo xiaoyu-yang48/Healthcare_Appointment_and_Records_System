@@ -35,6 +35,7 @@ import api from '../axiosConfig';
 import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
 import UserForm from '../components/UserForm';
+import { t } from '../utils/i18n';
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
@@ -66,8 +67,8 @@ const AdminUsers = () => {
       setUsers(response.data.users);
       setTotalUsers(response.data.pagination.totalUsers);
     } catch (error) {
-      console.error('获取用户列表失败:', error);
-      toast.error('获取用户列表失败');
+      console.error('Failed to get user list:', error);
+      toast.error(t('get_user_list_failed'));
     } finally {
       setLoading(false);
     }
@@ -83,17 +84,17 @@ const AdminUsers = () => {
         user._id === userId ? { ...user, isActive } : user
       ));
       
-      toast.success(`用户${isActive ? '启用' : '禁用'}成功`);
+      toast.success(t(isActive ? 'user_enabled_success' : 'user_disabled_success'));
     } catch (error) {
-      console.error('更新用户状态失败:', error);
-      toast.error('更新用户状态失败');
+      console.error('Failed to update user status:', error);
+      toast.error(t('update_user_status_failed'));
     } finally {
       setUpdating(prev => ({ ...prev, [userId]: false }));
     }
   };
 
   const handleDeleteUser = async (userId) => {
-    if (!window.confirm('确定要删除这个用户吗？此操作不可撤销。')) {
+    if (!window.confirm(t('confirm_delete_user'))) {
       return;
     }
 
@@ -101,21 +102,21 @@ const AdminUsers = () => {
       await api.delete(`/admin/users/${userId}`);
       setUsers(prev => prev.filter(user => user._id !== userId));
       setTotalUsers(prev => prev - 1);
-      toast.success('用户删除成功');
+      toast.success(t('user_deleted_success'));
     } catch (error) {
-      console.error('删除用户失败:', error);
-      toast.error('删除用户失败');
+      console.error('Failed to delete user:', error);
+      toast.error(t('delete_user_failed'));
     }
   };
 
   const getRoleLabel = (role) => {
     switch (role) {
       case 'patient':
-        return '患者';
+        return t('patient');
       case 'doctor':
-        return '医生';
+        return t('doctor');
       case 'admin':
-        return '管理员';
+        return t('admin');
       default:
         return role;
     }
@@ -175,14 +176,14 @@ const AdminUsers = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" gutterBottom>
-        用户管理
+        {t('user_management')}
       </Typography>
 
       {/* 搜索和筛选 */}
       <Paper sx={{ p: 3, mb: 3 }}>
         <Box display="flex" gap={2} alignItems="center" flexWrap="wrap">
           <TextField
-            label="搜索用户"
+            label={t('search_users')}
             variant="outlined"
             size="small"
             value={search}
@@ -194,16 +195,16 @@ const AdminUsers = () => {
           />
           
           <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>角色筛选</InputLabel>
+            <InputLabel>{t('role_filter')}</InputLabel>
             <Select
               value={roleFilter}
-              label="角色筛选"
+              label={t('role_filter')}
               onChange={(e) => setRoleFilter(e.target.value)}
             >
-              <MenuItem value="">全部</MenuItem>
-              <MenuItem value="patient">患者</MenuItem>
-              <MenuItem value="doctor">医生</MenuItem>
-              <MenuItem value="admin">管理员</MenuItem>
+              <MenuItem value="">{t('all')}</MenuItem>
+              <MenuItem value="patient">{t('patient')}</MenuItem>
+              <MenuItem value="doctor">{t('doctor')}</MenuItem>
+              <MenuItem value="admin">{t('admin')}</MenuItem>
             </Select>
           </FormControl>
 
@@ -212,7 +213,7 @@ const AdminUsers = () => {
             startIcon={<Refresh />}
             onClick={fetchUsers}
           >
-            刷新
+            {t('refresh')}
           </Button>
 
           <Button
@@ -220,7 +221,7 @@ const AdminUsers = () => {
             startIcon={<Add />}
             onClick={handleAddUser}
           >
-            添加用户
+            {t('add_user')}
           </Button>
         </Box>
       </Paper>
@@ -231,13 +232,13 @@ const AdminUsers = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>姓名</TableCell>
-                <TableCell>邮箱</TableCell>
-                <TableCell>角色</TableCell>
-                <TableCell>状态</TableCell>
-                <TableCell>注册时间</TableCell>
-                <TableCell>最后登录</TableCell>
-                <TableCell>操作</TableCell>
+                <TableCell>{t('name')}</TableCell>
+                <TableCell>{t('email')}</TableCell>
+                <TableCell>{t('role')}</TableCell>
+                <TableCell>{t('status')}</TableCell>
+                <TableCell>{t('registration_time')}</TableCell>
+                <TableCell>{t('last_login')}</TableCell>
+                <TableCell>{t('actions')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -295,7 +296,7 @@ const AdminUsers = () => {
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
-          labelRowsPerPage="每页行数:"
+          labelRowsPerPage={t('rows_per_page')}
           labelDisplayedRows={({ from, to, count }) => `${from}-${to} / ${count}`}
         />
       </Paper>
