@@ -69,9 +69,28 @@ const DoctorSchedule = () => {
       const startDate = format(startOfWeek(currentWeek), 'yyyy-MM-dd');
       const endDate = format(endOfWeek(currentWeek), 'yyyy-MM-dd');
       
+      console.log('Fetching schedules for:', startDate, 'to', endDate);
+      
       const response = await api.get('/doctors/schedule', {
         params: { startDate, endDate }
       });
+      
+      console.log('Schedules received:', response.data);
+      console.log('Schedules type:', typeof response.data);
+      console.log('Schedules length:', Array.isArray(response.data) ? response.data.length : 'not array');
+      
+      if (Array.isArray(response.data)) {
+        response.data.forEach((schedule, index) => {
+          console.log(`Schedule ${index}:`, {
+            id: schedule._id,
+            date: schedule.date,
+            dateType: typeof schedule.date,
+            isWorkingDay: schedule.isWorkingDay,
+            timeSlotsCount: schedule.timeSlots ? schedule.timeSlots.length : 0
+          });
+        });
+      }
+      
       setSchedules(response.data);
     } catch (error) {
       console.error('Failed to get schedules:', error);
@@ -171,10 +190,21 @@ const DoctorSchedule = () => {
 
   const getScheduleForDate = (date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    return schedules.find(s => {
-      const scheduleDate = typeof s.date === 'string' ? s.date : format(new Date(s.date), 'yyyy-MM-dd');
+    const schedule = schedules.find(s => {
+      // 处理不同的日期格式
+      let scheduleDate;
+      if (typeof s.date === 'string') {
+        // 如果是ISO字符串，提取日期部分
+        scheduleDate = s.date.split('T')[0];
+      } else {
+        // 如果是Date对象，格式化为yyyy-MM-dd
+        scheduleDate = format(new Date(s.date), 'yyyy-MM-dd');
+      }
+      console.log('Comparing:', dateStr, 'with', scheduleDate);
       return scheduleDate === dateStr;
     });
+    console.log('Schedule for date', dateStr, ':', schedule);
+    return schedule;
   };
 
   const getDayName = (date) => {
@@ -255,8 +285,8 @@ const DoctorSchedule = () => {
                     <Box>
                       <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
                         <Chip
-                          label={schedule.isAvailable ? t('available') : t('unavailable')}
-                          color={schedule.isAvailable ? 'success' : 'error'}
+                          label={schedule.isWorkingDay ? t('available') : t('unavailable')}
+                          color={schedule.isWorkingDay ? 'success' : 'error'}
                           size="small"
                         />
                         <Box>
@@ -280,7 +310,7 @@ const DoctorSchedule = () => {
                         </Box>
                       </Box>
 
-                      {schedule.isAvailable && schedule.timeSlots && schedule.timeSlots.length > 0 && (
+                      {schedule.isWorkingDay && schedule.timeSlots && schedule.timeSlots.length > 0 && (
                         <Box>
                           <Typography variant="caption" color="textSecondary">
                             {t('available_slots')}:
@@ -288,8 +318,8 @@ const DoctorSchedule = () => {
                           <Box display="flex" flexWrap="wrap" gap={0.5} mt={1}>
                             {schedule.timeSlots.map((slot) => (
                               <Chip
-                                key={slot}
-                                label={slot}
+                                key={slot.time || slot}
+                                label={slot.time || slot}
                                 size="small"
                                 variant="outlined"
                                 icon={<AccessTime />}
