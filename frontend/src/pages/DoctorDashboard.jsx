@@ -251,7 +251,7 @@ const DoctorDashboard = () => {
               {todayAppointments.length > 0 ? (
                 <List>
                   {todayAppointments.map((appointment) => (
-                    <ListItem key={appointment.id} divider>
+                    <ListItem key={appointment._id} divider>
                       <ListItemIcon>
                         {getStatusIcon(appointment.status)}
                       </ListItemIcon>
@@ -275,7 +275,7 @@ const DoctorDashboard = () => {
                           <Button
                             size="small"
                             variant="outlined"
-                            onClick={() => handleUpdateAppointmentStatus(appointment.id, 'confirmed')}
+                            onClick={() => handleUpdateAppointmentStatus(appointment._id, 'confirmed')}
                           >
                             确认
                           </Button>
@@ -284,7 +284,7 @@ const DoctorDashboard = () => {
                           <Button
                             size="small"
                             variant="outlined"
-                            onClick={() => handleUpdateAppointmentStatus(appointment.id, 'completed')}
+                            onClick={() => handleUpdateAppointmentStatus(appointment._id, 'completed')}
                           >
                             完成
                           </Button>
@@ -321,7 +321,7 @@ const DoctorDashboard = () => {
               {upcomingAppointments.length > 0 ? (
                 <List>
                   {upcomingAppointments.map((appointment) => (
-                    <ListItem key={appointment.id} divider>
+                    <ListItem key={appointment._id} divider>
                       <ListItemIcon>
                         <Person />
                       </ListItemIcon>

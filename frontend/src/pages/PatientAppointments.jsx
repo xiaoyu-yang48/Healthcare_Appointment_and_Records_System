@@ -244,14 +244,14 @@ const PatientAppointments = () => {
                 </TableHead>
                 <TableBody>
                   {appointments.map((appointment) => (
-                    <TableRow key={appointment.id}>
+                    <TableRow key={appointment._id}>
                       <TableCell>
                         <Box display="flex" alignItems="center">
                           <Person sx={{ mr: 1 }} />
                           {appointment.doctor?.name}
                         </Box>
                       </TableCell>
-                      <TableCell>{appointment.doctor?.department}</TableCell>
+                      <TableCell>{appointment.doctor?.department || '未设置'}</TableCell>
                       <TableCell>
                         {format(new Date(appointment.date), 'yyyy-MM-dd')} {appointment.timeSlot}
                       </TableCell>
@@ -267,7 +267,7 @@ const PatientAppointments = () => {
                           <Tooltip title="取消预约">
                             <IconButton
                               color="error"
-                              onClick={() => handleCancelAppointment(appointment.id)}
+                              onClick={() => handleCancelAppointment(appointment._id)}
                             >
                               <Cancel />
                             </IconButton>
@@ -325,14 +325,14 @@ const PatientAppointments = () => {
 
           <Grid container spacing={2}>
             {filteredDoctors.map((doctor) => (
-              <Grid item xs={12} sm={6} md={4} key={doctor.id}>
+              <Grid item xs={12} sm={6} md={4} key={doctor._id}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="h6" gutterBottom>
                       {doctor.name}
                     </Typography>
                     <Typography color="textSecondary" gutterBottom>
-                      {doctor.department}
+                      {doctor.department || '未设置科室'}
                     </Typography>
                     {doctor.specialization && (
                       <Typography variant="body2" color="textSecondary" gutterBottom>
@@ -343,7 +343,7 @@ const PatientAppointments = () => {
                       variant="outlined"
                       size="small"
                       onClick={() => {
-                        setSelectedDoctor(doctor.id);
+                        setSelectedDoctor(doctor._id);
                         setOpenBookingDialog(true);
                       }}
                     >
@@ -370,8 +370,8 @@ const PatientAppointments = () => {
                 onChange={(e) => handleDoctorChange(e.target.value)}
               >
                 {doctors.map((doctor) => (
-                  <MenuItem key={doctor.id} value={doctor.id}>
-                    {doctor.name} - {doctor.department}
+                  <MenuItem key={doctor._id} value={doctor._id}>
+                    {doctor.name} - {doctor.department || '未设置科室'}
                   </MenuItem>
                 ))}
               </Select>
