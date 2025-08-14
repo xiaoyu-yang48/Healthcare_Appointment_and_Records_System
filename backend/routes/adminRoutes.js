@@ -1,7 +1,11 @@
 const express = require('express');
 const {
     getSystemStats,
+    getRecentUsers,
+    getRecentAppointments,
     getUsers,
+    createUser,
+    updateUser,
     updateUserStatus,
     deleteUser,
     getAppointments,
@@ -23,6 +27,8 @@ router.get('/stats/departments', getDepartmentStats);
 // 用户管理
 router.get('/users', getUsers);
 router.get('/users/recent', getRecentUsers);
+router.post('/users', createUser);
+router.put('/users/:id', updateUser);
 router.put('/users/:id/status', updateUserStatus);
 router.delete('/users/:id', deleteUser);
 

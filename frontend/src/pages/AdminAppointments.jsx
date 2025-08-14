@@ -75,7 +75,7 @@ const AdminAppointments = () => {
 
     try {
       await api.delete(`/admin/appointments/${appointmentId}`);
-      setAppointments(prev => prev.filter(appointment => appointment.id !== appointmentId));
+      setAppointments(prev => prev.filter(appointment => appointment._id !== appointmentId));
       setTotalAppointments(prev => prev - 1);
       toast.success('预约删除成功');
     } catch (error) {
@@ -197,7 +197,7 @@ const AdminAppointments = () => {
             </TableHead>
             <TableBody>
               {appointments.map((appointment) => (
-                <TableRow key={appointment.id}>
+                <TableRow key={appointment._id}>
                   <TableCell>{appointment.patient?.name || '-'}</TableCell>
                   <TableCell>{appointment.doctor?.name || '-'}</TableCell>
                   <TableCell>
@@ -230,7 +230,7 @@ const AdminAppointments = () => {
                     <IconButton
                       size="small"
                       color="error"
-                      onClick={() => handleDeleteAppointment(appointment.id)}
+                      onClick={() => handleDeleteAppointment(appointment._id)}
                     >
                       <Delete />
                     </IconButton>

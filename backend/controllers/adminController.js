@@ -352,6 +352,108 @@ const getMedicalRecords = async (req, res) => {
     }
 };
 
+// 创建用户
+const createUser = async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: '无权限访问管理员功能' });
+        }
+
+        const { name, email, password, role, phone, specialization, department } = req.body;
+
+        // 验证必填字段
+        if (!name || !email || !password || !role) {
+            return res.status(400).json({ message: '姓名、邮箱、密码和角色为必填字段' });
+        }
+
+        // 检查邮箱是否已存在
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: '该邮箱已被注册' });
+        }
+
+        // 创建用户
+        const user = new User({
+            name,
+            email,
+            password,
+            role,
+            phone,
+            specialization,
+            department,
+            isActive: true
+        });
+
+        await user.save();
+
+        // 返回用户信息（不包含密码）
+        const userResponse = user.toObject();
+        delete userResponse.password;
+
+        res.status(201).json({
+            message: '用户创建成功',
+            user: userResponse
+        });
+    } catch (error) {
+        console.error('创建用户错误:', error);
+        res.status(500).json({ message: '服务器错误', error: error.message });
+    }
+};
+
+// 更新用户信息
+const updateUser = async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: '无权限访问管理员功能' });
+        }
+
+        const { id } = req.params;
+        const { name, email, role, phone, specialization, department, isActive } = req.body;
+
+        // 验证必填字段
+        if (!name || !email || !role) {
+            return res.status(400).json({ message: '姓名、邮箱和角色为必填字段' });
+        }
+
+        // 检查用户是否存在
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: '用户不存在' });
+        }
+
+        // 检查邮箱是否被其他用户使用
+        const existingUser = await User.findOne({ email, _id: { $ne: id } });
+        if (existingUser) {
+            return res.status(400).json({ message: '该邮箱已被其他用户使用' });
+        }
+
+        // 更新用户信息
+        user.name = name;
+        user.email = email;
+        user.role = role;
+        user.phone = phone;
+        user.specialization = specialization;
+        user.department = department;
+        if (typeof isActive === 'boolean') {
+            user.isActive = isActive;
+        }
+
+        await user.save();
+
+        // 返回用户信息（不包含密码）
+        const userResponse = user.toObject();
+        delete userResponse.password;
+
+        res.json({
+            message: '用户信息更新成功',
+            user: userResponse
+        });
+    } catch (error) {
+        console.error('更新用户错误:', error);
+        res.status(500).json({ message: '服务器错误', error: error.message });
+    }
+};
+
 // 获取部门统计
 const getDepartmentStats = async (req, res) => {
     try {
@@ -386,6 +488,8 @@ module.exports = {
     getRecentUsers,
     getRecentAppointments,
     getUsers,
+    createUser,
+    updateUser,
     updateUserStatus,
     deleteUser,
     getAppointments,

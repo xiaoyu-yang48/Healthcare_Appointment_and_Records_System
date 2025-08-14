@@ -74,7 +74,7 @@ const AdminRecords = () => {
 
     try {
       await api.delete(`/admin/medical-records/${recordId}`);
-      setRecords(prev => prev.filter(record => record.id !== recordId));
+      setRecords(prev => prev.filter(record => record._id !== recordId));
       setTotalRecords(prev => prev - 1);
       toast.success('病历删除成功');
     } catch (error) {
@@ -167,7 +167,7 @@ const AdminRecords = () => {
             </TableHead>
             <TableBody>
               {records.map((record) => (
-                <TableRow key={record.id}>
+                <TableRow key={record._id}>
                   <TableCell>{record.patient?.name || '-'}</TableCell>
                   <TableCell>{record.doctor?.name || '-'}</TableCell>
                   <TableCell>
@@ -197,7 +197,7 @@ const AdminRecords = () => {
                     </IconButton>
                     <IconButton
                       size="small"
-                      onClick={() => handleExportRecord(record.id)}
+                      onClick={() => handleExportRecord(record._id)}
                     >
                       <Download />
                     </IconButton>
@@ -210,7 +210,7 @@ const AdminRecords = () => {
                     <IconButton
                       size="small"
                       color="error"
-                      onClick={() => handleDeleteRecord(record.id)}
+                      onClick={() => handleDeleteRecord(record._id)}
                     >
                       <Delete />
                     </IconButton>

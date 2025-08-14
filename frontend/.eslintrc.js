@@ -23,7 +23,7 @@ module.exports = {
   rules: {
     'indent': ['warn', 2],
     'linebreak-style': ['error', 'unix'],
-    'quotes': ['error', 'single'],
+    'quotes': ['warn', 'single'],
     'semi': ['error', 'always'],
     'no-unused-vars': ['warn', { 'argsIgnorePattern': '^_' }],
     'react/prop-types': 'off',

@@ -34,6 +34,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../axiosConfig';
 import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
+import UserForm from '../components/UserForm';
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
@@ -44,6 +45,8 @@ const AdminUsers = () => {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [updating, setUpdating] = useState({});
+  const [userFormOpen, setUserFormOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
 
   useEffect(() => {
     fetchUsers();
@@ -77,7 +80,7 @@ const AdminUsers = () => {
       await api.put(`/admin/users/${userId}/status`, { isActive });
       
       setUsers(prev => prev.map(user => 
-        user.id === userId ? { ...user, isActive } : user
+        user._id === userId ? { ...user, isActive } : user
       ));
       
       toast.success(`用户${isActive ? '启用' : '禁用'}成功`);
@@ -96,7 +99,7 @@ const AdminUsers = () => {
 
     try {
       await api.delete(`/admin/users/${userId}`);
-      setUsers(prev => prev.filter(user => user.id !== userId));
+      setUsers(prev => prev.filter(user => user._id !== userId));
       setTotalUsers(prev => prev - 1);
       toast.success('用户删除成功');
     } catch (error) {
@@ -138,6 +141,25 @@ const AdminUsers = () => {
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
+  };
+
+  const handleAddUser = () => {
+    setEditingUser(null);
+    setUserFormOpen(true);
+  };
+
+  const handleEditUser = (user) => {
+    setEditingUser(user);
+    setUserFormOpen(true);
+  };
+
+  const handleUserFormSuccess = () => {
+    fetchUsers();
+  };
+
+  const handleUserFormClose = () => {
+    setUserFormOpen(false);
+    setEditingUser(null);
   };
 
   if (loading) {
@@ -196,7 +218,7 @@ const AdminUsers = () => {
           <Button
             variant="contained"
             startIcon={<Add />}
-            onClick={() => toast.info('用户注册功能待实现')}
+            onClick={handleAddUser}
           >
             添加用户
           </Button>
@@ -220,7 +242,7 @@ const AdminUsers = () => {
             </TableHead>
             <TableBody>
               {users.map((user) => (
-                <TableRow key={user.id}>
+                <TableRow key={user._id}>
                   <TableCell>{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
@@ -233,8 +255,8 @@ const AdminUsers = () => {
                   <TableCell>
                     <Switch
                       checked={user.isActive}
-                      onChange={(e) => handleStatusChange(user.id, e.target.checked)}
-                      disabled={updating[user.id]}
+                      onChange={(e) => handleStatusChange(user._id, e.target.checked)}
+                      disabled={updating[user._id]}
                     />
                   </TableCell>
                   <TableCell>
@@ -246,14 +268,14 @@ const AdminUsers = () => {
                   <TableCell>
                     <IconButton
                       size="small"
-                      onClick={() => toast.info('编辑功能待实现')}
+                      onClick={() => handleEditUser(user)}
                     >
                       <Edit />
                     </IconButton>
                     <IconButton
                       size="small"
                       color="error"
-                      onClick={() => handleDeleteUser(user.id)}
+                      onClick={() => handleDeleteUser(user._id)}
                       disabled={user.role === 'admin'}
                     >
                       <Delete />
@@ -277,6 +299,14 @@ const AdminUsers = () => {
           labelDisplayedRows={({ from, to, count }) => `${from}-${to} / ${count}`}
         />
       </Paper>
+
+      {/* 用户表单对话框 */}
+      <UserForm
+        open={userFormOpen}
+        onClose={handleUserFormClose}
+        user={editingUser}
+        onSuccess={handleUserFormSuccess}
+      />
     </Container>
   );
 };
