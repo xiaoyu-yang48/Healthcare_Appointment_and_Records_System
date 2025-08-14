@@ -19,6 +19,11 @@ import PatientAppointments from './pages/PatientAppointments';
 import PatientRecords from './pages/PatientRecords';
 import PatientMessages from './pages/PatientMessages';
 import DoctorDashboard from './pages/DoctorDashboard';
+import DoctorAppointments from './pages/DoctorAppointments';
+import DoctorSchedule from './pages/DoctorSchedule';
+import DoctorPatients from './pages/DoctorPatients';
+import DoctorRecords from './pages/DoctorRecords';
+import DoctorMessages from './pages/DoctorMessages';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminUsers from './pages/AdminUsers';
 import AdminAppointments from './pages/AdminAppointments';
@@ -165,6 +170,31 @@ const AppContent = () => {
         <Route path="/doctor/dashboard" element={
           <ProtectedRoute allowedRoles={['doctor']}>
             <DoctorDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/doctor/appointments" element={
+          <ProtectedRoute allowedRoles={['doctor']}>
+            <DoctorAppointments />
+          </ProtectedRoute>
+        } />
+        <Route path="/doctor/schedule" element={
+          <ProtectedRoute allowedRoles={['doctor']}>
+            <DoctorSchedule />
+          </ProtectedRoute>
+        } />
+        <Route path="/doctor/patients" element={
+          <ProtectedRoute allowedRoles={['doctor']}>
+            <DoctorPatients />
+          </ProtectedRoute>
+        } />
+        <Route path="/doctor/records" element={
+          <ProtectedRoute allowedRoles={['doctor']}>
+            <DoctorRecords />
+          </ProtectedRoute>
+        } />
+        <Route path="/doctor/messages" element={
+          <ProtectedRoute allowedRoles={['doctor']}>
+            <DoctorMessages />
           </ProtectedRoute>
         } />
         
