@@ -75,7 +75,8 @@ const DoctorSchedule = () => {
       setSchedules(response.data);
     } catch (error) {
       console.error('Failed to get schedules:', error);
-      toast.error(t('get_schedule_failed'));
+      console.error('错误详情:', error.response?.data);
+      toast.error(error.response?.data?.message || t('get_schedule_failed'));
     } finally {
       setLoading(false);
     }
@@ -87,6 +88,8 @@ const DoctorSchedule = () => {
       date: format(new Date(), 'yyyy-MM-dd'),
       timeSlots: [],
       isAvailable: true,
+      notes: '',
+      maxAppointments: 20,
     });
     setOpenDialog(true);
   };
@@ -95,8 +98,10 @@ const DoctorSchedule = () => {
     setEditingSchedule(schedule);
     setFormData({
       date: schedule.date,
-      timeSlots: schedule.timeSlots || [],
-      isAvailable: schedule.isAvailable,
+      timeSlots: schedule.timeSlots ? schedule.timeSlots.map(slot => slot.time) : [],
+      isAvailable: schedule.isWorkingDay,
+      notes: schedule.notes || '',
+      maxAppointments: schedule.maxAppointments || 20,
     });
     setOpenDialog(true);
   };
@@ -118,18 +123,31 @@ const DoctorSchedule = () => {
 
   const handleSaveSchedule = async () => {
     try {
+      // 转换数据格式以匹配后端期望
+      const scheduleData = {
+        date: formData.date,
+        timeSlots: formData.timeSlots.map(slot => ({
+          time: slot,
+          isAvailable: true
+        })),
+        isWorkingDay: formData.isAvailable,
+        notes: formData.notes || '',
+        maxAppointments: formData.maxAppointments || 20
+      };
+
       if (editingSchedule) {
-        await api.put(`/doctors/schedule/${editingSchedule._id}`, formData);
+        await api.put(`/doctors/schedule/${editingSchedule._id}`, scheduleData);
         toast.success(t('schedule_updated_success'));
       } else {
-        await api.post('/doctors/schedule', formData);
+        await api.post('/doctors/schedule', scheduleData);
         toast.success(t('schedule_created_success'));
       }
       setOpenDialog(false);
       fetchSchedules();
     } catch (error) {
       console.error('Failed to save schedule:', error);
-      toast.error(t('save_schedule_failed'));
+      console.error('错误详情:', error.response?.data);
+      toast.error(error.response?.data?.message || t('save_schedule_failed'));
     }
   };
 
@@ -153,7 +171,10 @@ const DoctorSchedule = () => {
 
   const getScheduleForDate = (date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    return schedules.find(s => s.date === dateStr);
+    return schedules.find(s => {
+      const scheduleDate = typeof s.date === 'string' ? s.date : format(new Date(s.date), 'yyyy-MM-dd');
+      return scheduleDate === dateStr;
+    });
   };
 
   const getDayName = (date) => {

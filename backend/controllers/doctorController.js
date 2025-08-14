@@ -145,6 +145,51 @@ const setDoctorSchedule = async (req, res) => {
     }
 };
 
+// 更新医生排班
+const updateDoctorSchedule = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { date, timeSlots, isWorkingDay, notes, maxAppointments } = req.body;
+
+        // 验证是否为医生
+        if (req.user.role !== 'doctor') {
+            return res.status(403).json({ message: '只有医生可以更新排班' });
+        }
+
+        // 检查排班是否存在且属于当前医生
+        const existingSchedule = await DoctorSchedule.findById(id);
+        if (!existingSchedule) {
+            return res.status(404).json({ message: '排班不存在' });
+        }
+
+        if (existingSchedule.doctor.toString() !== req.user.id) {
+            return res.status(403).json({ message: '只能更新自己的排班' });
+        }
+
+        const scheduleData = {
+            date: new Date(date),
+            timeSlots,
+            isWorkingDay,
+            notes,
+            maxAppointments
+        };
+
+        const schedule = await DoctorSchedule.findByIdAndUpdate(
+            id,
+            scheduleData,
+            { new: true }
+        );
+
+        res.json({
+            message: '排班更新成功',
+            schedule
+        });
+    } catch (error) {
+        console.error('更新医生排班错误:', error);
+        res.status(500).json({ message: '服务器错误', error: error.message });
+    }
+};
+
 // 获取医生统计信息
 const getDoctorStats = async (req, res) => {
     try {
@@ -256,6 +301,7 @@ module.exports = {
     getDoctorById,
     getDoctorSchedule,
     setDoctorSchedule,
+    updateDoctorSchedule,
     getDoctorStats,
     getAvailableTimeSlots
 }; 

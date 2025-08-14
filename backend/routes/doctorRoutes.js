@@ -4,6 +4,7 @@ const {
     getDoctorById,
     getDoctorSchedule,
     setDoctorSchedule,
+    updateDoctorSchedule,
     getDoctorStats,
     getAvailableTimeSlots
 } = require('../controllers/doctorController');
@@ -20,6 +21,7 @@ router.get('/available-slots', getAvailableTimeSlots);
 // 需要医生权限的路由
 router.use(protect);
 router.post('/schedule', doctorOnly, setDoctorSchedule);
+router.put('/schedule/:id', doctorOnly, updateDoctorSchedule);
 router.get('/stats', doctorOnly, getDoctorStats);
 
 module.exports = router; 
