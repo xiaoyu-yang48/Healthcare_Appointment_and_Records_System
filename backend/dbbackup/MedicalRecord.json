@@ -3,14 +3,17 @@
     "_id": "689d32a2878cf2d53a8ec46e",
     "patient": "689d2e6d878cf2d53a8ec454",
     "doctor": "689d1fda627f6ca8d12e6383",
-    "symptoms": "无特殊症状",
-    "diagnosis": "健康体检",
-    "treatment": "建议定期体检",
-    "labResults": [],
-    "notes": "患者身体状况良好",
-    "isActive": true,
     "visitDate": "2025-08-14T00:49:38.104Z",
+    "symptoms": "normal",
+    "diagnosis": "1",
+    "treatment": "2",
+    "prescription": {
+      "medications": []
+    },
+    "labResults": [],
     "attachments": [],
+    "notes": "good",
+    "isActive": true,
     "createdAt": "2025-08-14T00:49:38.106Z",
     "updatedAt": "2025-08-14T00:49:38.106Z",
     "__v": 0
@@ -19,19 +22,40 @@
     "_id": "689d3b99878cf2d53a8ec52a",
     "patient": "689d2e6d878cf2d53a8ec454",
     "doctor": "689d1fda627f6ca8d12e6383",
-    "symptoms": "测试症状",
-    "diagnosis": "测试诊断",
-    "treatment": "测试治疗",
+    "visitDate": "2025-08-14T01:27:53.508Z",
+    "symptoms": "test",
+    "diagnosis": "test diagnosis\n",
+    "treatment": "test",
     "prescription": {
       "medications": []
     },
     "labResults": [],
-    "notes": "医生端测试病历",
-    "isActive": true,
-    "visitDate": "2025-08-14T01:27:53.508Z",
     "attachments": [],
+    "notes": "test",
+    "isActive": true,
     "createdAt": "2025-08-14T01:27:53.508Z",
     "updatedAt": "2025-08-14T01:27:53.508Z",
+    "__v": 0
+  },
+  {
+    "_id": "689e7a6a04cd954ab0a5e0a6",
+    "patient": "689d2e6d878cf2d53a8ec454",
+    "doctor": "689dd16f060a5b24e6dbd6a9",
+    "symptoms": "22222",
+    "diagnosis": "1111",
+    "treatment": "1111",
+    "prescription": {
+      "medications": []
+    },
+    "labResults": [],
+    "notes": "111",
+    "followUpDate": "2025-08-15T00:00:00.000Z",
+    "followUpNotes": "2222",
+    "isActive": true,
+    "visitDate": "2025-08-15T00:08:10.089Z",
+    "attachments": [],
+    "createdAt": "2025-08-15T00:08:10.090Z",
+    "updatedAt": "2025-08-15T00:08:10.090Z",
     "__v": 0
   }
 ]

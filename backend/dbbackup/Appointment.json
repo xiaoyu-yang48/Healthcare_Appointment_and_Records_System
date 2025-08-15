@@ -12,5 +12,48 @@
     "createdAt": "2025-08-14T00:49:38.074Z",
     "updatedAt": "2025-08-14T01:27:43.997Z",
     "__v": 0
+  },
+  {
+    "_id": "689e79fa04cd954ab0a5dfa0",
+    "patient": "689d2e6d878cf2d53a8ec454",
+    "doctor": "689dd16f060a5b24e6dbd6a9",
+    "date": "2025-08-15T00:00:00.000Z",
+    "timeSlot": "09:00-09:30",
+    "status": "confirmed",
+    "type": "consultation",
+    "symptoms": "",
+    "reminderSent": false,
+    "createdAt": "2025-08-15T00:06:18.383Z",
+    "updatedAt": "2025-08-15T00:06:41.003Z",
+    "__v": 0
+  },
+  {
+    "_id": "689e805204cd954ab0a5e23c",
+    "patient": "689e8051685711501654bb1a",
+    "doctor": "689e6ca530f94fe714149e5a",
+    "date": "2025-08-25T00:00:00.000Z",
+    "timeSlot": "09:00-09:30",
+    "status": "confirmed",
+    "type": "consultation",
+    "symptoms": "Headache",
+    "reminderSent": false,
+    "createdAt": "2025-08-15T00:33:22.222Z",
+    "updatedAt": "2025-08-15T00:33:24.358Z",
+    "__v": 0,
+    "notes": "Appointment confirmed"
+  },
+  {
+    "_id": "689e805304cd954ab0a5e24f",
+    "patient": "689e8051685711501654bb1a",
+    "doctor": "689e6ca530f94fe714149e5a",
+    "date": "2025-08-26T00:00:00.000Z",
+    "timeSlot": "10:00-10:30",
+    "status": "pending",
+    "type": "consultation",
+    "symptoms": "头痛",
+    "reminderSent": false,
+    "createdAt": "2025-08-15T00:33:23.307Z",
+    "updatedAt": "2025-08-15T00:33:23.307Z",
+    "__v": 0
   }
 ]
