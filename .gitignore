@@ -9,7 +9,7 @@
 /coverage
 
 # production
-/build
+#
 
 # misc
 .DS_Store
@@ -26,3 +26,5 @@ frontend/pnpm-lock.yaml
 backend/pnpm-lock.yaml
 frontend/package-lock.json
 backend/package-lock.json
+frontend/yarn.lock
+
