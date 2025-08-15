@@ -6,17 +6,18 @@ const {
   clearTestDB, 
   createTestUser,
   setupTestEnv,
-  resetTestEnv
+  resetTestEnv,
+  generateTestToken
 } = require('./test-setup');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 chai.use(chaiHttp);
 
-// 导入模型和服务器
+// Import models and server
 const User = require('../models/User');
 const app = require('../server');
 
-describe('认证接口测试', () => {
+describe('Authentication API Tests', () => {
   let server;
   let testAdmin, testDoctor, testPatient;
 
@@ -34,14 +35,14 @@ describe('认证接口测试', () => {
 
   beforeEach(async () => {
     await clearTestDB();
-    // 创建测试用户
+    // Create test users
     testAdmin = await createTestUser(User, testUsers.admin);
     testDoctor = await createTestUser(User, testUsers.doctor);
     testPatient = await createTestUser(User, testUsers.patient);
   });
 
   describe('POST /api/auth/register', () => {
-    it('应该成功注册新用户', async () => {
+    it('should successfully register a new user', async () => {
       const newUser = {
         name: 'New User',
         email: 'newuser@test.com',
@@ -61,7 +62,7 @@ describe('认证接口测试', () => {
       expect(res.body.user).to.not.have.property('password');
     });
 
-    it('应该拒绝重复邮箱注册', async () => {
+    it('should reject duplicate email registration', async () => {
       const duplicateUser = {
         name: 'Duplicate User',
         email: testUsers.patient.email,
@@ -78,10 +79,10 @@ describe('认证接口测试', () => {
       expect(res.body).to.have.property('message');
     });
 
-    it('应该验证必填字段', async () => {
+    it('should validate required fields', async () => {
       const invalidUser = {
         name: 'Invalid User',
-        // 缺少 email 和 password
+        // Missing email and password
         role: 'patient'
       };
 
@@ -93,11 +94,11 @@ describe('认证接口测试', () => {
       expect(res.body).to.have.property('success', false);
     });
 
-    it('应该验证密码长度', async () => {
+    it('should validate password length', async () => {
       const shortPasswordUser = {
         name: 'Short Password User',
         email: 'short@test.com',
-        password: '123', // 太短
+        password: '123', // Too short
         role: 'patient'
       };
 
@@ -108,10 +109,30 @@ describe('认证接口测试', () => {
       expect(res).to.have.status(400);
       expect(res.body).to.have.property('success', false);
     });
+
+    it('should register doctor with specialization', async () => {
+      const doctorUser = {
+        name: 'Test Doctor',
+        email: 'doctor2@test.com',
+        password: 'password123',
+        role: 'doctor',
+        specialization: 'Cardiology',
+        department: 'Cardiology Department'
+      };
+
+      const res = await chai.request(server)
+        .post('/api/auth/register')
+        .send(doctorUser);
+
+      expect(res).to.have.status(201);
+      expect(res.body).to.have.property('success', true);
+      expect(res.body.user).to.have.property('role', 'doctor');
+      expect(res.body.user).to.have.property('specialization', doctorUser.specialization);
+    });
   });
 
   describe('POST /api/auth/login', () => {
-    it('应该成功登录有效用户', async () => {
+    it('should successfully login valid user', async () => {
       const loginData = {
         email: testUsers.patient.email,
         password: testUsers.patient.password
@@ -128,7 +149,7 @@ describe('认证接口测试', () => {
       expect(res.body.user).to.not.have.property('password');
     });
 
-    it('应该拒绝错误的密码', async () => {
+    it('should reject wrong password', async () => {
       const loginData = {
         email: testUsers.patient.email,
         password: 'wrongpassword'
@@ -142,7 +163,7 @@ describe('认证接口测试', () => {
       expect(res.body).to.have.property('success', false);
     });
 
-    it('应该拒绝不存在的用户', async () => {
+    it('should reject non-existent user', async () => {
       const loginData = {
         email: 'nonexistent@test.com',
         password: 'password123'
@@ -156,10 +177,10 @@ describe('认证接口测试', () => {
       expect(res.body).to.have.property('success', false);
     });
 
-    it('应该验证必填字段', async () => {
+    it('should validate required fields', async () => {
       const loginData = {
         email: testUsers.patient.email
-        // 缺少 password
+        // Missing password
       };
 
       const res = await chai.request(server)
@@ -172,8 +193,8 @@ describe('认证接口测试', () => {
   });
 
   describe('GET /api/auth/profile', () => {
-    it('应该返回已认证用户的资料', async () => {
-      // 先登录获取 token
+    it('should return authenticated user profile', async () => {
+      // First login to get token
       const loginRes = await chai.request(server)
         .post('/api/auth/login')
         .send({
@@ -193,14 +214,14 @@ describe('认证接口测试', () => {
       expect(res.body.user).to.have.property('name', testUsers.patient.name);
     });
 
-    it('应该拒绝未认证的请求', async () => {
+    it('should reject unauthenticated requests', async () => {
       const res = await chai.request(server)
         .get('/api/auth/profile');
 
       expect(res).to.have.status(401);
     });
 
-    it('应该拒绝无效的 token', async () => {
+    it('should reject invalid token', async () => {
       const res = await chai.request(server)
         .get('/api/auth/profile')
         .set('Authorization', 'Bearer invalid-token');
@@ -210,8 +231,8 @@ describe('认证接口测试', () => {
   });
 
   describe('PUT /api/auth/profile', () => {
-    it('应该成功更新用户资料', async () => {
-      // 先登录获取 token
+    it('should successfully update user profile', async () => {
+      // First login to get token
       const loginRes = await chai.request(server)
         .post('/api/auth/login')
         .send({
@@ -238,8 +259,8 @@ describe('认证接口测试', () => {
       expect(res.body.user).to.have.property('address', updateData.address);
     });
 
-    it('应该拒绝更新其他用户的资料', async () => {
-      // 使用患者 token 尝试更新医生资料
+    it('should reject updating other user profiles', async () => {
+      // Use patient token to try updating doctor profile
       const loginRes = await chai.request(server)
         .post('/api/auth/login')
         .send({
@@ -257,14 +278,14 @@ describe('认证接口测试', () => {
         .set('Authorization', `Bearer ${token}`)
         .send(updateData);
 
-      // 这个测试可能需要根据实际的业务逻辑调整
-      expect(res).to.have.status(200); // 或者 403，取决于实现
+      // This test may need adjustment based on actual business logic
+      expect(res).to.have.status(200); // or 403, depending on implementation
     });
   });
 
   describe('PUT /api/auth/change-password', () => {
-    it('应该成功修改密码', async () => {
-      // 先登录获取 token
+    it('should successfully change password', async () => {
+      // First login to get token
       const loginRes = await chai.request(server)
         .post('/api/auth/login')
         .send({
@@ -286,7 +307,7 @@ describe('认证接口测试', () => {
       expect(res).to.have.status(200);
       expect(res.body).to.have.property('success', true);
 
-      // 验证新密码可以登录
+      // Verify new password can be used to login
       const newLoginRes = await chai.request(server)
         .post('/api/auth/login')
         .send({
@@ -297,7 +318,7 @@ describe('认证接口测试', () => {
       expect(newLoginRes).to.have.status(200);
     });
 
-    it('应该拒绝错误的当前密码', async () => {
+    it('should reject wrong current password', async () => {
       const loginRes = await chai.request(server)
         .post('/api/auth/login')
         .send({
@@ -320,7 +341,7 @@ describe('认证接口测试', () => {
       expect(res.body).to.have.property('success', false);
     });
 
-    it('应该验证新密码长度', async () => {
+    it('should validate new password length', async () => {
       const loginRes = await chai.request(server)
         .post('/api/auth/login')
         .send({
@@ -331,7 +352,7 @@ describe('认证接口测试', () => {
       const token = loginRes.body.token;
       const passwordData = {
         currentPassword: testUsers.patient.password,
-        newPassword: '123' // 太短
+        newPassword: '123' // Too short
       };
 
       const res = await chai.request(server)

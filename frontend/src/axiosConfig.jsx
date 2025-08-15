@@ -1,25 +1,25 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http:///3.25.53.90:5001/api';
 
 // 调试工具
 const debug = {
   logRequest: (config) => {
-    console.log(`🔍 发送请求: ${config.method?.toUpperCase()} ${config.url}`, {
+    console.log(`🔍 send request: ${config.method?.toUpperCase()} ${config.url}`, {
       data: config.data,
       headers: config.headers
     });
   },
   
   logResponse: (response) => {
-    console.log(`✅ 收到响应: ${response.config.method?.toUpperCase()} ${response.config.url}`, {
+    console.log(`✅ receive response: ${response.config.method?.toUpperCase()} ${response.config.url}`, {
       status: response.status,
       data: response.data
     });
   },
   
   logError: (error) => {
-    console.error(`❌ 请求错误: ${error.config?.method?.toUpperCase()} ${error.config?.url}`, {
+    console.error(`❌ request error: ${error.config?.method?.toUpperCase()} ${error.config?.url}`, {
       status: error.response?.status,
       data: error.response?.data,
       message: error.message
@@ -74,9 +74,9 @@ api.interceptors.response.use(
     }
     
     if (error.response?.status === 401) {
-      console.log('检测到401错误，清除认证信息并重定向到登录页');
-      console.log('当前URL:', window.location.href);
-      console.log('用户信息:', localStorage.getItem('user'));
+      console.log('detected 401 error, clear authentication information and redirect to login page');
+      console.log('current URL:', window.location.href);
+      console.log('user information:', localStorage.getItem('user'));
       
       localStorage.removeItem('token');
       localStorage.removeItem('user');

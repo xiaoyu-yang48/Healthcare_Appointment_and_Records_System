@@ -4,21 +4,37 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+    return jwt.sign({ id }, process.env.JWT_SECRET || 'test-secret-key', { expiresIn: '30d' });
 };
 
 const registerUser = async (req, res) => {
-    const { name, email, password, role, phone, address, dateOfBirth, gender } = req.body;
+    const { name, email, password, role, phone, address, dateOfBirth, gender, specialization, department } = req.body;
     
     try {
+        // 验证必填字段
+        if (!name || !email || !password) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Name, email and password are required' 
+            });
+        }
+
+        // 验证密码长度
+        if (password.length < 6) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Password must be at least 6 characters long' 
+            });
+        }
+
         const userExists = await User.findOne({ email });
         if (userExists) {
-            return res.status(400).json({ message: '用户已存在' });
+            return res.status(400).json({ success: false, message: 'User already exists' });
         }
 
         // 验证角色
         if (role && !['patient', 'doctor', 'admin'].includes(role)) {
-            return res.status(400).json({ message: '无效的用户角色' });
+            return res.status(400).json({ success: false, message: 'Invalid user role' });
         }
 
         const userData = {
@@ -29,7 +45,9 @@ const registerUser = async (req, res) => {
             phone,
             address,
             dateOfBirth,
-            gender
+            gender,
+            specialization,
+            department
         };
 
         const user = await User.create(userData);
@@ -46,17 +64,20 @@ const registerUser = async (req, res) => {
             phone: user.phone,
             address: user.address,
             dateOfBirth: user.dateOfBirth,
-            gender: user.gender
+            gender: user.gender,
+            specialization: user.specialization,
+            department: user.department
         };
 
         res.status(201).json({
-            message: '注册成功',
+            success: true,
+            message: 'Registration successful',
             token: generateToken(user._id),
             user: userResponse
         });
     } catch (error) {
-        console.error('注册错误:', error);
-        res.status(500).json({ message: '服务器错误', error: error.message });
+        console.error('Registration error:', error);
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
     }
 };
 
@@ -64,6 +85,13 @@ const loginUser = async (req, res) => {
     const { email, password } = req.body;
     
     try {
+        // 验证必填字段
+        if (!email || !password) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Email and password are required' 
+            });
+        }
         // 临时固定密码管理员登录（仅用于调试）
         if (email === 'admin@healthcare.com' && password === 'admin123') {
             const adminUser = {
@@ -81,7 +109,8 @@ const loginUser = async (req, res) => {
             };
 
             res.json({
-                message: '管理员登录成功（临时模式）',
+                success: true,
+                message: 'Admin login successful (temporary mode)',
                 token: generateToken(adminUser.id),
                 user: adminUser
             });
@@ -91,16 +120,16 @@ const loginUser = async (req, res) => {
         const user = await User.findOne({ email }).select('+password');
         
         if (!user) {
-            return res.status(401).json({ message: '邮箱或密码错误' });
+            return res.status(401).json({ success: false, message: 'Invalid email or password' });
         }
 
         if (!user.isActive) {
-            return res.status(401).json({ message: '账户已被禁用' });
+            return res.status(401).json({ success: false, message: 'Account is disabled' });
         }
 
         const isMatch = await user.matchPassword(password);
         if (!isMatch) {
-            return res.status(401).json({ message: '邮箱或密码错误' });
+            return res.status(401).json({ success: false, message: 'Invalid email or password' });
         }
 
         // 更新最后登录时间
@@ -122,13 +151,14 @@ const loginUser = async (req, res) => {
         };
 
         res.json({
-            message: '登录成功',
+            success: true,
+            message: 'Login successful',
             token: generateToken(user._id),
             user: userResponse
         });
     } catch (error) {
-        console.error('登录错误:', error);
-        res.status(500).json({ message: '服务器错误', error: error.message });
+        console.error('Login error:', error);
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
     }
 };
 
@@ -187,10 +217,13 @@ const getProfile = async (req, res) => {
             lastLogin: user.lastLogin
         };
 
-        res.status(200).json(userResponse);
+        res.status(200).json({
+            success: true,
+            user: userResponse
+        });
     } catch (error) {
-        console.error('获取用户资料错误:', error);
-        res.status(500).json({ message: '服务器错误', error: error.message });
+        console.error('Get user profile error:', error);
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
     }
 };
 
@@ -256,12 +289,13 @@ const updateUserProfile = async (req, res) => {
         };
 
         res.json({
-            message: '资料更新成功',
+            success: true,
+            message: 'Profile updated successfully',
             user: userResponse
         });
     } catch (error) {
-        console.error('更新用户资料错误:', error);
-        res.status(500).json({ message: '服务器错误', error: error.message });
+        console.error('Update user profile error:', error);
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
     }
 };
 
@@ -271,21 +305,21 @@ const changePassword = async (req, res) => {
         
         const user = await User.findById(req.user.id).select('+password');
         if (!user) {
-            return res.status(404).json({ message: '用户不存在' });
+            return res.status(404).json({ success: false, message: 'User not found' });
         }
 
         const isMatch = await user.matchPassword(currentPassword);
         if (!isMatch) {
-            return res.status(400).json({ message: '当前密码错误' });
+            return res.status(400).json({ success: false, message: 'Current password is incorrect' });
         }
 
         user.password = newPassword;
         await user.save();
 
-        res.json({ message: '密码修改成功' });
+        res.json({ success: true, message: 'Password changed successfully' });
     } catch (error) {
-        console.error('修改密码错误:', error);
-        res.status(500).json({ message: '服务器错误', error: error.message });
+        console.error('Change password error:', error);
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
     }
 };
 

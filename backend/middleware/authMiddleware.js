@@ -26,20 +26,20 @@ const protect = async (req, res, next) => {
             req.user = await User.findById(decoded.id).select('-password');
             
             if (!req.user) {
-                return res.status(401).json({ message: '用户不存在' });
+                return res.status(401).json({ success: false, message: 'User not found' });
             }
 
             if (!req.user.isActive) {
-                return res.status(401).json({ message: '账户已被禁用' });
+                return res.status(401).json({ success: false, message: 'Account is disabled' });
             }
 
             next();
         } catch (error) {
-            console.error('Token验证错误:', error);
-            res.status(401).json({ message: '认证失败，请重新登录' });
+            console.error('Token verification error:', error);
+            res.status(401).json({ success: false, message: 'Authentication failed, please login again' });
         }
     } else {
-        res.status(401).json({ message: '未提供认证令牌' });
+        res.status(401).json({ success: false, message: 'No authentication token provided' });
     }
 };
 
@@ -47,12 +47,13 @@ const protect = async (req, res, next) => {
 const authorize = (...roles) => {
     return (req, res, next) => {
         if (!req.user) {
-            return res.status(401).json({ message: '请先登录' });
+            return res.status(401).json({ success: false, message: 'Please login first' });
         }
 
         if (!roles.includes(req.user.role)) {
             return res.status(403).json({ 
-                message: `需要 ${roles.join(' 或 ')} 权限才能访问此功能` 
+                success: false,
+                message: `Requires ${roles.join(' or ')} permissions to access this feature` 
             });
         }
 
