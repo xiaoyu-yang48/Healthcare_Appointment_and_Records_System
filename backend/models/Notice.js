@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { getNoticeText } = require('../utils/i18n');
 
 const noticeSchema = new mongoose.Schema({
   recipientId: {
@@ -49,65 +50,70 @@ noticeSchema.index({ recipientId: 1, createdAt: -1 });
 noticeSchema.index({ type: 1, relatedId: 1 });
 
 // 静态方法：创建预约请求通知
-noticeSchema.statics.createAppointmentRequest = function(doctorId, patientId, appointmentId, patientName) {
+noticeSchema.statics.createAppointmentRequest = function(doctorId, patientId, appointmentId, patientName, language = 'en') {
+  const { title, content } = getNoticeText('appointment_request', language, { patientName });
   return this.create({
     recipientId: doctorId,
     senderId: patientId,
     type: 'appointment_request',
-    title: '新的预约请求',
-    content: `患者 ${patientName} 提交了新的预约请求，请及时处理。`,
+    title,
+    content,
     relatedId: appointmentId,
     relatedType: 'appointment'
   });
 };
 
 // 静态方法：创建预约确认通知
-noticeSchema.statics.createAppointmentConfirmed = function(patientId, doctorId, appointmentId, doctorName) {
+noticeSchema.statics.createAppointmentConfirmed = function(patientId, doctorId, appointmentId, doctorName, language = 'en') {
+  const { title, content } = getNoticeText('appointment_confirmed', language, { doctorName });
   return this.create({
     recipientId: patientId,
     senderId: doctorId,
     type: 'appointment_confirmed',
-    title: '预约已确认',
-    content: `您的预约已被 ${doctorName} 医生确认。`,
+    title,
+    content,
     relatedId: appointmentId,
     relatedType: 'appointment'
   });
 };
 
 // 静态方法：创建预约取消通知
-noticeSchema.statics.createAppointmentCancelled = function(recipientId, senderId, appointmentId, senderName) {
+noticeSchema.statics.createAppointmentCancelled = function(recipientId, senderId, appointmentId, senderName, language = 'en') {
+  const { title, content } = getNoticeText('appointment_cancelled', language, { senderName });
   return this.create({
     recipientId,
     senderId,
     type: 'appointment_cancelled',
-    title: '预约已取消',
-    content: `${senderName} 取消了预约。`,
+    title,
+    content,
     relatedId: appointmentId,
     relatedType: 'appointment'
   });
 };
 
 // 静态方法：创建病历添加通知
-noticeSchema.statics.createMedicalRecordAdded = function(patientId, doctorId, recordId, doctorName) {
+noticeSchema.statics.createMedicalRecordAdded = function(patientId, doctorId, recordId, doctorName, language = 'en') {
+  const { title, content } = getNoticeText('medical_record_added', language, { doctorName });
   return this.create({
     recipientId: patientId,
     senderId: doctorId,
     type: 'medical_record_added',
-    title: '新的病历记录',
-    content: `${doctorName} 医生为您添加了新的病历记录。`,
+    title,
+    content,
     relatedId: recordId,
     relatedType: 'medical_record'
   });
 };
 
 // 静态方法：创建新消息通知
-noticeSchema.statics.createNewMessage = function(recipientId, senderId, messageId, senderName) {
+noticeSchema.statics.createNewMessage = function(recipientId, senderId, messageId, senderName, language = 'en') {
+  const { title, content } = getNoticeText('new_message', language, { senderName });
   return this.create({
     recipientId,
     senderId,
     type: 'new_message',
-    title: '新消息',
-    content: `您收到了来自 ${senderName} 的新消息。`,
+    title,
+    content,
     relatedId: messageId,
     relatedType: 'message'
   });
