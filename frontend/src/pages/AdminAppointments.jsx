@@ -410,6 +410,7 @@ const AdminAppointments = () => {
                       value={editFormData.date}
                       onChange={(e) => handleEditChange('date', e.target.value)}
                       InputLabelProps={{ shrink: true }}
+                      inputProps={{ lang: 'en' }}
                       required
                     />
                   </Grid>

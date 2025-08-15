@@ -206,32 +206,7 @@
 │ + updateVitalSigns(signs): void                                │
 │ + addLabResult(result): void                                   │
 └─────────────────────────────────────────────────────────────────┘
-                                │
-                                │ 1
-                                │
-┌─────────────────────────────────────────────────────────────────┐
-│                         Message                                 │
-├─────────────────────────────────────────────────────────────────┤
-│ - _id: ObjectId                                                 │
-│ - sender: ObjectId (ref: User)                                 │
-│ - recipient: ObjectId (ref: User)                              │
-│ - content: String                                               │
-│ - messageType: String (text|image|file|system)                 │
-│ - attachments: [Object]                                         │
-│ - isRead: Boolean                                               │
-│ - readAt: Date                                                  │
-│ - isSystemMessage: Boolean                                      │
-│ - relatedAppointment: ObjectId (ref: Appointment)              │
-│ - relatedMedicalRecord: ObjectId (ref: MedicalRecord)          │
-│ - createdAt: Date                                               │
-│ - updatedAt: Date                                               │
-├─────────────────────────────────────────────────────────────────┤
-│ + markAsRead(): void                                           │
-│ + addAttachment(file): void                                    │
-└─────────────────────────────────────────────────────────────────┘
-                                │
-                                │ 1
-                                │
+
 ┌─────────────────────────────────────────────────────────────────┐
 │                      DoctorSchedule                             │
 ├─────────────────────────────────────────────────────────────────┤

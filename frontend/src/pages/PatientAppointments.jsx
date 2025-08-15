@@ -42,7 +42,12 @@ import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { registerLocale } from 'react-datepicker';
+import en from 'date-fns/locale/en-US';
 import { t } from '../utils/i18n';
+
+// 注册英文locale
+registerLocale('en', en);
 
 const PatientAppointments = () => {
   const { user } = useAuth();
@@ -392,6 +397,7 @@ const PatientAppointments = () => {
                 onChange={handleDateChange}
                 minDate={new Date()}
                 dateFormat="yyyy-MM-dd"
+                locale="en"
                 customInput={
                   <TextField
                     fullWidth

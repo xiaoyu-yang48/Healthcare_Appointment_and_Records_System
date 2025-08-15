@@ -252,6 +252,7 @@ const Profile = () => {
                   InputLabelProps={{
                     shrink: true,
                   }}
+                  inputProps={{ lang: 'en' }}
                 />
               </Grid>
 
