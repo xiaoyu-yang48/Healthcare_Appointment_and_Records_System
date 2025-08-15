@@ -374,6 +374,7 @@ const DoctorSchedule = () => {
               onChange={(e) => setFormData({ ...formData, date: e.target.value })}
               margin="normal"
               InputLabelProps={{ shrink: true }}
+              inputProps={{ lang: 'en' }}
             />
 
             <FormControlLabel

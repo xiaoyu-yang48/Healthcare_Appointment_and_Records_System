@@ -345,6 +345,7 @@ const DoctorAppointments = () => {
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
             InputLabelProps={{ shrink: true }}
+            inputProps={{ lang: 'en' }}
           />
 
           <Button

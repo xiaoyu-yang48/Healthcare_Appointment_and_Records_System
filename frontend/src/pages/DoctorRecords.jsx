@@ -468,6 +468,7 @@ const DoctorRecords = () => {
                   onChange={(e) => setFormData({ ...formData, followUpDate: e.target.value })}
                   margin="normal"
                   InputLabelProps={{ shrink: true }}
+                  inputProps={{ lang: 'en' }}
                 />
               </Grid>
 
