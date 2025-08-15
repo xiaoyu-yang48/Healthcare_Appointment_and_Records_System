@@ -303,6 +303,14 @@ const changePassword = async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
         
+        // 验证新密码长度
+        if (!newPassword || newPassword.length < 6) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'New password must be at least 6 characters long' 
+            });
+        }
+        
         const user = await User.findById(req.user.id).select('+password');
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });

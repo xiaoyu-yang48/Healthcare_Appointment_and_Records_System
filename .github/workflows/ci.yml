@@ -38,8 +38,9 @@ jobs:
         echo "Secret 1 is: $MONGO_URI"
         echo "Secret 2 is: $JWT_SECRET"
         echo "Secret 3 is: $PORT"
-      
-    - run: pm2 stop all
+
+# Do not stop the current version to avoid downtime; ensure continuous service. If the build fails, do not deploy the new version.
+#    - run: pm2 stop all
 
     # Install dependencies for backend
     - name: Install Backend Dependencies
@@ -69,12 +70,17 @@ jobs:
       run: npm test
 
 
-    - run: npm ci
-    - run: | 
-        cd ./backend
-        touch .env
-        echo "${{ secrets.PROD }}" > .env
+    # - run: npm ci , write it by yourself, it will install the dependencies and lock the versions, which is more strict than install
+    # - name: Run Backend Tests in CI
+    #   working-directory: ./backend
+    #   run: npm test
 
-    - run: pm2 start all
+    # - name: Run Frontend Tests
+    #   working-directory: ./frontend
+    #
+    # - run: | 
+    #     cd ./backend
+    #     touch .env
+    #     echo "${{ secrets.PROD }}" > .env
 
     - run: pm2 restart all

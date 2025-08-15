@@ -5,14 +5,14 @@ const sinon = require('sinon');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
-// 配置 chai
+// Configure chai
 chai.use(chaiHttp);
 const expect = chai.expect;
 
-// 测试数据库配置
+// Test database configuration
 const TEST_DB_URI = process.env.TEST_MONGODB_URI || 'mongodb+srv://Brian:H58aSudmEjd4C1GQ@cluster0.csox1pv.mongodb.net/emrt';
 
-// 测试用户数据
+// Test user data
 const testUsers = {
   admin: {
     email: 'admin@test.com',
@@ -25,8 +25,8 @@ const testUsers = {
     password: 'doctor123',
     name: 'Test Doctor',
     role: 'doctor',
-    department: '内科',
-    specialization: '内科疾病'
+  department: 'Internal Medicine',
+  specialization: 'Internal Medicine Diseases'
   },
   patient: {
     email: 'patient@test.com',
@@ -36,7 +36,7 @@ const testUsers = {
   }
 };
 
-// 测试数据
+// Test data
 const testData = {
   appointment: {
     date: '2024-12-25',
@@ -47,56 +47,56 @@ const testData = {
   },
   medicalRecord: {
     visitDate: '2024-12-20',
-    diagnosis: '感冒',
-    symptoms: '发烧、咳嗽',
-    treatment: '药物治疗',
-    notes: '测试病历'
+  diagnosis: 'Cold',
+  symptoms: 'Fever, Cough',
+  treatment: 'Medication',
+  notes: 'Test medical record'
   },
   message: {
-    content: '测试消息内容',
-    senderId: null, // 将在测试中设置
-    receiverId: null // 将在测试中设置
+  content: 'Test message content',
+  senderId: null, // Will be set in test
+  receiverId: null // Will be set in test
   }
 };
 
-// 连接测试数据库
+// Connect to test database
 const connectTestDB = async () => {
   try {
     await mongoose.connect(TEST_DB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true
     });
-    console.log('✅ 测试数据库连接成功');
+  console.log('✅ Test database connected successfully');
   } catch (error) {
-    console.error('❌ 测试数据库连接失败:', error);
+  console.error('❌ Failed to connect to test database:', error);
     throw error;
   }
 };
 
-// 断开测试数据库连接
+// Disconnect test database
 const disconnectTestDB = async () => {
   try {
     await mongoose.connection.close();
-    console.log('✅ 测试数据库连接已关闭');
+  console.log('✅ Test database connection closed');
   } catch (error) {
-    console.error('❌ 关闭测试数据库连接失败:', error);
+  console.error('❌ Failed to close test database connection:', error);
   }
 };
 
-// 清空测试数据库
+// Clear test database
 const clearTestDB = async () => {
   try {
     const collections = mongoose.connection.collections;
     for (const key in collections) {
       await collections[key].deleteMany({});
     }
-    console.log('✅ 测试数据库已清空');
+  console.log('✅ Test database cleared');
   } catch (error) {
-    console.error('❌ 清空测试数据库失败:', error);
+  console.error('❌ Failed to clear test database:', error);
   }
 };
 
-// 生成测试 JWT token
+// Generate test JWT token
 const generateTestToken = (user) => {
   return jwt.sign(
     { 
@@ -104,29 +104,25 @@ const generateTestToken = (user) => {
       email: user.email, 
       role: user.role 
     },
-    process.env.JWT_SECRET || 'test-secret',
+    process.env.JWT_SECRET || 'test-secret-key',
     { expiresIn: '1h' }
   );
 };
 
-// 创建测试用户
+// Create test user
 const createTestUser = async (User, userData) => {
-  const hashedPassword = await bcrypt.hash(userData.password, 10);
-  const user = new User({
-    ...userData,
-    password: hashedPassword
-  });
+  const user = new User(userData);
   return await user.save();
 };
 
-// 设置测试环境变量
+// Set test environment variables
 const setupTestEnv = () => {
   process.env.NODE_ENV = 'test';
   process.env.JWT_SECRET = 'test-secret-key';
   process.env.PORT = 5001;
 };
 
-// 重置测试环境
+// Reset test environment
 const resetTestEnv = () => {
   delete process.env.NODE_ENV;
   delete process.env.JWT_SECRET;
