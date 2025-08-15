@@ -24,6 +24,7 @@ import {
 } from '@mui/icons-material';
 import { t, setLanguage, getLanguage } from '../utils/i18n';
 import { useAuth } from '../context/AuthContext';
+import NoticeBell from './NoticeBell';
 
 const Navbar = () => {
   const { user, logout, isPatient, isDoctor, isAdmin } = useAuth();
@@ -114,6 +115,7 @@ const Navbar = () => {
               {item.label}
             </Button>
           ))}
+          <NoticeBell />
           <Chip
             label={getRoleLabel()}
             color="secondary"

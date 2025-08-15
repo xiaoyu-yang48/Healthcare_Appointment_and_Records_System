@@ -67,7 +67,11 @@ const DoctorPatients = () => {
   const fetchPatients = async () => {
     try {
       setLoading(true);
+      console.log('Fetching patients...');
+      
       const response = await api.get('/doctors/patients');
+      console.log('Patients response:', response.data);
+      
       setPatients(response.data);
       
       // 计算患者统计信息
@@ -79,10 +83,12 @@ const DoctorPatients = () => {
           return lastVisit && lastVisit > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
         }).length,
       };
+      console.log('Patient stats:', stats);
       setPatientStats(stats);
     } catch (error) {
       console.error('Failed to get patients:', error);
-      toast.error(t('get_patients_failed'));
+      console.error('Error details:', error.response?.data);
+      toast.error(error.response?.data?.message || t('get_patients_failed'));
     } finally {
       setLoading(false);
     }

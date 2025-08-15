@@ -348,7 +348,22 @@
     "backup_placeholder": "Backup feature not implemented",
     "backup_failed": "Backup failed",
     "restore_placeholder": "Restore feature not implemented",
-    "restore_failed": "Restore failed"
+    "restore_failed": "Restore failed",
+    "notifications": "Notifications",
+    "no_notices": "No notifications",
+    "mark_all_read": "Mark all as read",
+    "all_notices_marked_read": "All notifications marked as read",
+    "mark_all_read_failed": "Failed to mark all as read",
+    "notice_deleted": "Notification deleted",
+    "delete_notice_failed": "Failed to delete notification",
+    "get_notices_failed": "Failed to get notifications",
+    "appointment_request": "Appointment Request",
+    "appointment_confirmed": "Appointment Confirmed",
+    "appointment_cancelled": "Appointment Cancelled",
+    "medical_record_added": "Medical Record Added",
+    "new_message": "New Message",
+    "system_notice": "System Notice",
+    "notice": "Notice"
   },
   "profile_config": {
     "personalInfo": "Personal Information",

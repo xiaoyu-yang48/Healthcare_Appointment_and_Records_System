@@ -348,7 +348,22 @@
     "backup_placeholder": "备份功能待实现",
     "backup_failed": "备份失败",
     "restore_placeholder": "恢复功能待实现",
-    "restore_failed": "恢复失败"
+    "restore_failed": "恢复失败",
+    "notifications": "通知",
+    "no_notices": "暂无通知",
+    "mark_all_read": "全部标记为已读",
+    "all_notices_marked_read": "所有通知已标记为已读",
+    "mark_all_read_failed": "标记全部已读失败",
+    "notice_deleted": "通知已删除",
+    "delete_notice_failed": "删除通知失败",
+    "get_notices_failed": "获取通知失败",
+    "appointment_request": "预约请求",
+    "appointment_confirmed": "预约确认",
+    "appointment_cancelled": "预约取消",
+    "medical_record_added": "病历添加",
+    "new_message": "新消息",
+    "system_notice": "系统通知",
+    "notice": "通知"
   },
   "profile_config": {
     "personalInfo": "个人资料",
