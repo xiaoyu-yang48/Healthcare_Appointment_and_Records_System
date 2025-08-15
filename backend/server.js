@@ -27,32 +27,32 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 app.get('/api/health', (req, res) => {
     res.json({ 
         status: 'OK', 
-        message: '医疗预约系统后端服务运行正常',
+        message: 'service running...',
         timestamp: new Date().toISOString()
     });
 });
 
 // 404 处理
 app.use('*', (req, res) => {
-    res.status(404).json({ message: '接口不存在' });
+    res.status(404).json({ message: 'route not exist' });
 });
 
 // 错误处理中间件
 app.use((err, req, res, next) => {
-    console.error('服务器错误:', err);
+    console.error('middleware err:', err);
     res.status(500).json({ 
-        message: '服务器内部错误',
-        error: process.env.NODE_ENV === 'development' ? err.message : '请稍后重试'
+        message: 'inner err',
+        error: process.env.NODE_ENV === 'development' ? err.message : 'wait ...'
     });
 });
 
 // 启动服务器
 if (require.main === module) {
     connectDB();
-    const PORT = process.env.PORT || 3001;
+    const PORT = process.env.PORT || 5001;
     app.listen(PORT, () => {
-        console.log(`医疗预约系统后端服务运行在端口 ${PORT}`);
-        console.log(`健康检查: http://localhost:${PORT}/api/health`);
+        console.log(`Appointment Management System run On port: ${PORT}`);
+        console.log(`api health check: http://localhost:${PORT}/api/health`);
     });
 }
 
