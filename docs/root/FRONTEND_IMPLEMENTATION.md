@@ -1,4 +1,4 @@
-# 医疗预约系统前端实现总结
+// ...existing code...
 
 ## 概述
 
@@ -44,7 +44,63 @@
 - ✅ 消息提示
 - ✅ 路由保护
 
-## 技术实现
+## SysML 设计图说明
+
+### 1. Requirements Diagram
+前端需求包括用户界面、预约挂号、病历管理、消息交流、权限控制等。
+
+### 2. Block Definition Diagram (BDD)
+前端主要页面模块：Login/Register、PatientDashboard、DoctorDashboard、AdminDashboard、Appointment、MedicalRecord、Message。
+
+### 3. Parametric Diagram
+描述预约流程、病历创建流程等关键业务逻辑的参数约束。
+
+（建议将实际绘制的 SysML 图以图片形式插入此处，或在报告中附上截图）
+
+---
+
+## CI/CD 流程说明
+
+### 1. 代码托管与分支管理
+- GitHub 主分支为生产分支，功能开发采用 feature 分支，PR 审核合并。
+
+### 2. 自动化测试
+- 可选：每次提交或 PR 时自动运行前端单元测试。
+
+### 3. 自动化部署
+- 使用 GitHub Actions 实现 CI/CD：
+	- 前端推送到 AWS EC2，自动构建并部署静态文件。
+
+### 4. 工作流示例
+```yaml
+name: Frontend CI/CD Pipeline
+on:
+	push:
+		branches: [ main ]
+	pull_request:
+		branches: [ main ]
+jobs:
+	build-and-deploy:
+		runs-on: ubuntu-latest
+		steps:
+			- uses: actions/checkout@v3
+			- name: Set up Node.js
+				uses: actions/setup-node@v3
+				with:
+					node-version: '18'
+			- name: Install dependencies
+				run: npm install
+			- name: Run tests
+				run: npm test
+			- name: Build frontend
+				run: npm run build
+			- name: Deploy to AWS EC2
+				run: |
+					# SSH 到 EC2 并执行部署脚本
+					# ...
+```
+
+---
 
 ### 技术栈
 - **React 18**: 前端框架
@@ -156,7 +212,7 @@ npm install
 ### 2. 配置环境变量
 创建 `.env` 文件：
 ```
-REACT_APP_API_URL=http://localhost:5000/api
+REACT_APP_API_URL=http://localhost:3001/api
 ```
 
 ### 3. 启动开发服务器

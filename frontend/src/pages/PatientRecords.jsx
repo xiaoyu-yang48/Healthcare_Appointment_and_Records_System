@@ -33,6 +33,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../axiosConfig';
 import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
+import { t } from '../utils/i18n';
 
 const PatientRecords = () => {
   const [loading, setLoading] = useState(true);
@@ -50,8 +51,8 @@ const PatientRecords = () => {
       const response = await api.get('/medical-records/patient');
       setMedicalRecords(response.data);
     } catch (error) {
-      console.error('获取病历失败:', error);
-      toast.error('获取病历失败');
+      console.error('Failed to get medical records:', error);
+      toast.error(t('get_medical_records_failed'));
     } finally {
       setLoading(false);
     }
@@ -64,7 +65,7 @@ const PatientRecords = () => {
 
   const handleDownloadReport = async (recordId, fileName) => {
     try {
-      const response = await api.get(`/medical-records/${recordId}/download`, {
+      const response = await api.get(`/medical-records/${recordId}/attachments`, {
         responseType: 'blob',
       });
       
@@ -77,23 +78,23 @@ const PatientRecords = () => {
       link.remove();
       window.URL.revokeObjectURL(url);
       
-      toast.success('文件下载成功');
+      toast.success(t('file_download_success'));
     } catch (error) {
-      console.error('下载失败:', error);
-      toast.error('下载失败');
+      console.error('Download failed:', error);
+      toast.error(t('download_failed'));
     }
   };
 
   const getRecordTypeLabel = (type) => {
     switch (type) {
       case 'consultation':
-        return '门诊';
+        return t('consultation');
       case 'examination':
-        return '检查';
+        return t('examination');
       case 'treatment':
-        return '治疗';
+        return t('treatment');
       case 'surgery':
-        return '手术';
+        return t('surgery');
       default:
         return type;
     }
@@ -133,7 +134,7 @@ const PatientRecords = () => {
       {medicalRecords.length > 0 ? (
         <Grid container spacing={3}>
           {medicalRecords.map((record) => (
-            <Grid item xs={12} key={record._id}>
+            <Grid item xs={12} key={record.id}>
               <Card>
                 <CardContent>
                   <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
@@ -148,15 +149,15 @@ const PatientRecords = () => {
                           size="small"
                         />
                         <Typography variant="body2" color="textSecondary">
-                          {format(new Date(record.createdAt), 'yyyy-MM-dd HH:mm')}
+                          {format(new Date(record.visitDate), 'yyyy-MM-dd HH:mm')}
                         </Typography>
                       </Box>
                       <Typography variant="body2" color="textSecondary">
-                        主治医生：{record.doctor?.name || '未知'}
+                        {t('attending_doctor')}: {record.doctor?.name || t('unknown')}
                       </Typography>
                     </Box>
                     <Box>
-                      <Tooltip title="查看详情">
+                      <Tooltip title={t('view_details')}>
                         <IconButton
                           onClick={() => handleViewRecord(record)}
                           color="primary"
@@ -170,7 +171,7 @@ const PatientRecords = () => {
                   {record.symptoms && (
                     <Box mb={2}>
                       <Typography variant="subtitle2" gutterBottom>
-                        症状描述：
+                        {t('symptoms_description')}:
                       </Typography>
                       <Typography variant="body2" color="textSecondary">
                         {record.symptoms}
@@ -178,32 +179,45 @@ const PatientRecords = () => {
                     </Box>
                   )}
 
-                  {record.prescription && (
+                  {record.treatment && (
                     <Box mb={2}>
                       <Typography variant="subtitle2" gutterBottom>
-                        处方信息：
+                        {t('treatment_plan')}:
                       </Typography>
                       <Typography variant="body2" color="textSecondary">
-                        {record.prescription}
+                        {record.treatment}
                       </Typography>
                     </Box>
                   )}
 
-                  {record.attachments && record.attachments.length > 0 && (
+                  {record.prescription && record.prescription.medications && (
+                    <Box mb={2}>
+                      <Typography variant="subtitle2" gutterBottom>
+                        {t('prescription_info')}:
+                      </Typography>
+                      {record.prescription.medications.map((med, index) => (
+                        <Typography key={index} variant="body2" color="textSecondary">
+                          {med.name} - {med.dosage} - {med.frequency}
+                        </Typography>
+                      ))}
+                    </Box>
+                  )}
+
+                  {record.labResults && record.labResults.length > 0 && (
                     <Box>
                       <Typography variant="subtitle2" gutterBottom>
-                        检查报告：
+                        {t('examination_reports')}:
                       </Typography>
                       <Box display="flex" gap={1} flexWrap="wrap">
-                        {record.attachments.map((attachment, index) => (
+                        {record.labResults.map((result, index) => (
                           <Button
                             key={index}
                             variant="outlined"
                             size="small"
                             startIcon={<Download />}
-                            onClick={() => handleDownloadReport(record._id, attachment.name)}
+                            onClick={() => handleDownloadReport(record.id, `${result.testName}.pdf`)}
                           >
-                            {attachment.name || `报告${index + 1}`}
+                            {result.testName}
                           </Button>
                         ))}
                       </Box>
@@ -220,10 +234,10 @@ const PatientRecords = () => {
             <Box textAlign="center" py={4}>
               <MedicalServices sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
               <Typography variant="h6" color="textSecondary" gutterBottom>
-                暂无病历记录
+                {t('no_medical_records')}
               </Typography>
               <Typography variant="body2" color="textSecondary">
-                您还没有任何病历记录，请先预约医生进行就诊
+                {t('no_medical_records_message')}
               </Typography>
             </Box>
           </CardContent>
@@ -242,7 +256,7 @@ const PatientRecords = () => {
             <DialogTitle>
               <Box display="flex" justifyContent="space-between" alignItems="center">
                 <Typography variant="h6">
-                  病历详情
+                  {t('medical_record_details')}
                 </Typography>
                 <Chip
                   label={getRecordTypeLabel(selectedRecord.type)}
@@ -255,7 +269,7 @@ const PatientRecords = () => {
                 <Grid item xs={12} md={6}>
                   <Paper sx={{ p: 2 }}>
                     <Typography variant="subtitle1" gutterBottom>
-                      基本信息
+                      {t('basic_info')}
                     </Typography>
                     <List dense>
                       <ListItem>
@@ -263,8 +277,8 @@ const PatientRecords = () => {
                           <Person />
                         </ListItemIcon>
                         <ListItemText
-                          primary="主治医生"
-                          secondary={selectedRecord.doctor?.name || '未知'}
+                          primary={t('attending_doctor')}
+                          secondary={selectedRecord.doctor?.name || t('unknown')}
                         />
                       </ListItem>
                       <ListItem>
@@ -272,8 +286,8 @@ const PatientRecords = () => {
                           <CalendarToday />
                         </ListItemIcon>
                         <ListItemText
-                          primary="就诊时间"
-                          secondary={format(new Date(selectedRecord.createdAt), 'yyyy-MM-dd HH:mm')}
+                          primary={t('visit_time')}
+                          secondary={format(new Date(selectedRecord.visitDate), 'yyyy-MM-dd HH:mm')}
                         />
                       </ListItem>
                       <ListItem>
@@ -281,8 +295,8 @@ const PatientRecords = () => {
                           <LocalHospital />
                         </ListItemIcon>
                         <ListItemText
-                          primary="科室"
-                          secondary={selectedRecord.doctor?.department || '未知'}
+                          primary={t('department')}
+                          secondary={selectedRecord.doctor?.department || t('unknown')}
                         />
                       </ListItem>
                     </List>
@@ -292,7 +306,7 @@ const PatientRecords = () => {
                 <Grid item xs={12} md={6}>
                   <Paper sx={{ p: 2 }}>
                     <Typography variant="subtitle1" gutterBottom>
-                      诊断信息
+                      {t('diagnosis_info')}
                     </Typography>
                     {selectedRecord.diagnosis && (
                       <Typography variant="body2" color="textSecondary" paragraph>
@@ -302,7 +316,7 @@ const PatientRecords = () => {
                     {selectedRecord.symptoms && (
                       <Box>
                         <Typography variant="subtitle2" gutterBottom>
-                          症状描述：
+                          {t('symptoms_description')}:
                         </Typography>
                         <Typography variant="body2" color="textSecondary">
                           {selectedRecord.symptoms}
@@ -312,37 +326,69 @@ const PatientRecords = () => {
                   </Paper>
                 </Grid>
 
-                {selectedRecord.prescription && (
+                {selectedRecord.treatment && (
                   <Grid item xs={12}>
                     <Paper sx={{ p: 2 }}>
                       <Typography variant="subtitle1" gutterBottom>
-                        处方信息
+                        {t('treatment_plan')}
                       </Typography>
                       <Typography variant="body2" color="textSecondary">
-                        {selectedRecord.prescription}
+                        {selectedRecord.treatment}
                       </Typography>
                     </Paper>
                   </Grid>
                 )}
 
-                {selectedRecord.attachments && selectedRecord.attachments.length > 0 && (
+                {selectedRecord.prescription && selectedRecord.prescription.medications && (
                   <Grid item xs={12}>
                     <Paper sx={{ p: 2 }}>
                       <Typography variant="subtitle1" gutterBottom>
-                        检查报告
+                        {t('prescription_info')}
                       </Typography>
-                      <Box display="flex" gap={1} flexWrap="wrap">
-                        {selectedRecord.attachments.map((attachment, index) => (
-                          <Button
-                            key={index}
-                            variant="outlined"
-                            startIcon={<Download />}
-                            onClick={() => handleDownloadReport(selectedRecord._id, attachment.name)}
-                          >
-                            {attachment.name || `报告${index + 1}`}
-                          </Button>
-                        ))}
-                      </Box>
+                      {selectedRecord.prescription.medications.map((med, index) => (
+                        <Box key={index} mb={1}>
+                          <Typography variant="body2" color="textSecondary">
+                            <strong>{med.name}</strong> - {med.dosage} - {med.frequency}
+                          </Typography>
+                          {med.instructions && (
+                            <Typography variant="caption" color="textSecondary">
+                              {t('instructions')}: {med.instructions}
+                            </Typography>
+                          )}
+                        </Box>
+                      ))}
+                    </Paper>
+                  </Grid>
+                )}
+
+                {selectedRecord.vitalSigns && (
+                  <Grid item xs={12}>
+                    <Paper sx={{ p: 2 }}>
+                      <Typography variant="subtitle1" gutterBottom>
+                        {t('vital_signs')}
+                      </Typography>
+                      <Grid container spacing={2}>
+                        <Grid item xs={6} sm={3}>
+                          <Typography variant="body2" color="textSecondary">
+                            {t('blood_pressure')}: {selectedRecord.vitalSigns.bloodPressure}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={6} sm={3}>
+                          <Typography variant="body2" color="textSecondary">
+                            {t('heart_rate')}: {selectedRecord.vitalSigns.heartRate}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={6} sm={3}>
+                          <Typography variant="body2" color="textSecondary">
+                            {t('temperature')}: {selectedRecord.vitalSigns.temperature}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={6} sm={3}>
+                          <Typography variant="body2" color="textSecondary">
+                            {t('weight')}: {selectedRecord.vitalSigns.weight}kg
+                          </Typography>
+                        </Grid>
+                      </Grid>
                     </Paper>
                   </Grid>
                 )}
@@ -351,7 +397,7 @@ const PatientRecords = () => {
                   <Grid item xs={12}>
                     <Paper sx={{ p: 2 }}>
                       <Typography variant="subtitle1" gutterBottom>
-                        医生备注
+                        {t('doctor_notes')}
                       </Typography>
                       <Typography variant="body2" color="textSecondary">
                         {selectedRecord.notes}
@@ -359,11 +405,29 @@ const PatientRecords = () => {
                     </Paper>
                   </Grid>
                 )}
+
+                {selectedRecord.followUpDate && (
+                  <Grid item xs={12}>
+                    <Paper sx={{ p: 2 }}>
+                      <Typography variant="subtitle1" gutterBottom>
+                        {t('follow_up_info')}
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        {t('follow_up_date')}: {selectedRecord.followUpDate}
+                      </Typography>
+                      {selectedRecord.followUpNotes && (
+                        <Typography variant="body2" color="textSecondary">
+                          {t('follow_up_notes')}: {selectedRecord.followUpNotes}
+                        </Typography>
+                      )}
+                    </Paper>
+                  </Grid>
+                )}
               </Grid>
             </DialogContent>
             <DialogActions>
               <Button onClick={() => setOpenRecordDialog(false)}>
-                关闭
+                {t('close')}
               </Button>
             </DialogActions>
           </>

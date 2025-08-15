@@ -1,3 +1,4 @@
+/* eslint-disable no-unreachable */
 import React, { useState, useEffect } from 'react';
 import {
   Container,
@@ -41,6 +42,7 @@ import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { t } from '../utils/i18n';
 
 const PatientAppointments = () => {
   const { user } = useAuth();
@@ -63,17 +65,17 @@ const PatientAppointments = () => {
     try {
       setLoading(true);
       
-      // 获取预约列表
+      // Get appointment list
       const appointmentsResponse = await api.get('/appointments/patient');
       setAppointments(appointmentsResponse.data);
       
-      // 获取医生列表
+      // Get doctor list
       const doctorsResponse = await api.get('/doctors');
       setDoctors(doctorsResponse.data);
       
     } catch (error) {
-      console.error('获取数据失败:', error);
-      toast.error('获取数据失败');
+      console.error('Failed to get data:', error);
+      toast.error(t('get_data_failed'));
     } finally {
       setLoading(false);
     }
@@ -83,35 +85,38 @@ const PatientAppointments = () => {
     try {
       const appointmentData = {
         doctorId: selectedDoctor,
-        date: selectedDate,
-        time: selectedTime,
-        patientId: user._id,
+        date: format(selectedDate, 'yyyy-MM-dd'),
+        timeSlot: selectedTime,
+        symptoms: '',
+        type: 'consultation',
       };
 
       await api.post('/appointments', appointmentData);
-      toast.success('预约成功！');
+      toast.success(t('appointment_success'));
       setOpenBookingDialog(false);
-      fetchData(); // 刷新数据
+      fetchData(); // Refresh data
       
-      // 重置表单
+      // Reset form
       setSelectedDoctor('');
       setSelectedDate(new Date());
       setSelectedTime('');
       
     } catch (error) {
-      console.error('预约失败:', error);
-      toast.error(error.response?.data?.message || '预约失败');
+      console.error('Appointment failed:', error);
+      toast.error(error.response?.data?.message || t('appointment_failed'));
     }
   };
 
   const handleCancelAppointment = async (appointmentId) => {
     try {
-      await api.put(`/appointments/${appointmentId}/cancel`);
-      toast.success('预约已取消');
-      fetchData(); // 刷新数据
+      await api.put(`/appointments/${appointmentId}/cancel`, {
+        reason: t('patient_cancelled')
+      });
+      toast.success(t('cancel_appointment_success'));
+      fetchData(); // Refresh data
     } catch (error) {
-      console.error('取消预约失败:', error);
-      toast.error('取消预约失败');
+      console.error('Failed to cancel appointment:', error);
+      toast.error(t('cancel_appointment_failed'));
     }
   };
 
@@ -124,9 +129,14 @@ const PatientAppointments = () => {
             date: format(selectedDate, 'yyyy-MM-dd'),
           },
         });
-        setAvailableSlots(response.data.availableSlots || []);
+        const availableTimeSlots = response.data.timeSlots
+          ? response.data.timeSlots
+              .filter(slot => slot.isAvailable)
+              .map(slot => slot.time)
+          : [];
+        setAvailableSlots(availableTimeSlots);
       } catch (error) {
-        console.error('获取可用时间失败:', error);
+        console.error('Failed to get available time slots:', error);
         setAvailableSlots([]);
       }
     }
@@ -141,9 +151,14 @@ const PatientAppointments = () => {
             date: format(date, 'yyyy-MM-dd'),
           },
         });
-        setAvailableSlots(response.data.availableSlots || []);
+        const availableTimeSlots = response.data.timeSlots
+          ? response.data.timeSlots
+              .filter(slot => slot.isAvailable)
+              .map(slot => slot.time)
+          : [];
+        setAvailableSlots(availableTimeSlots);
       } catch (error) {
-        console.error('获取可用时间失败:', error);
+        console.error('Failed to get available time slots:', error);
         setAvailableSlots([]);
       }
     }
@@ -167,13 +182,13 @@ const PatientAppointments = () => {
   const getStatusLabel = (status) => {
     switch (status) {
       case 'confirmed':
-        return '已确认';
+        return t('status_confirmed');
       case 'pending':
-        return '待确认';
+        return t('status_pending');
       case 'cancelled':
-        return '已取消';
+        return t('status_cancelled');
       case 'completed':
-        return '已完成';
+        return t('status_completed');
       default:
         return status;
     }
@@ -203,22 +218,22 @@ const PatientAppointments = () => {
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4">
-          我的预约
+          {t('my_appointments')}
         </Typography>
         <Button
           variant="contained"
           startIcon={<Add />}
           onClick={() => setOpenBookingDialog(true)}
         >
-          预约挂号
+          {t('book_appointment')}
         </Button>
       </Box>
 
-      {/* 预约列表 */}
+      {/* Appointment List */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>
-            预约记录
+            {t('appointment_records')}
           </Typography>
           
           {appointments.length > 0 ? (
@@ -226,11 +241,11 @@ const PatientAppointments = () => {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>医生</TableCell>
-                    <TableCell>科室</TableCell>
-                    <TableCell>预约时间</TableCell>
-                    <TableCell>状态</TableCell>
-                    <TableCell>操作</TableCell>
+                    <TableCell>{t('doctor')}</TableCell>
+                    <TableCell>{t('department')}</TableCell>
+                    <TableCell>{t('appointment_time')}</TableCell>
+                    <TableCell>{t('status')}</TableCell>
+                    <TableCell>{t('actions')}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -242,9 +257,9 @@ const PatientAppointments = () => {
                           {appointment.doctor?.name}
                         </Box>
                       </TableCell>
-                      <TableCell>{appointment.department}</TableCell>
+                      <TableCell>{appointment.doctor?.department || t('not_set')}</TableCell>
                       <TableCell>
-                        {format(new Date(appointment.date), 'yyyy-MM-dd HH:mm')}
+                        {format(new Date(appointment.date), 'yyyy-MM-dd')} {appointment.timeSlot}
                       </TableCell>
                       <TableCell>
                         <Chip
@@ -255,7 +270,7 @@ const PatientAppointments = () => {
                       </TableCell>
                       <TableCell>
                         {appointment.status === 'confirmed' && (
-                          <Tooltip title="取消预约">
+                          <Tooltip title={t('cancel_appointment')}>
                             <IconButton
                               color="error"
                               onClick={() => handleCancelAppointment(appointment._id)}
@@ -272,23 +287,23 @@ const PatientAppointments = () => {
             </TableContainer>
           ) : (
             <Typography color="textSecondary" align="center" sx={{ py: 4 }}>
-              暂无预约记录
+              {t('no_appointment_records')}
             </Typography>
           )}
         </CardContent>
       </Card>
 
-      {/* 医生列表 */}
+      {/* Doctor List */}
       <Card>
         <CardContent>
           <Typography variant="h6" gutterBottom>
-            选择医生预约
+            {t('select_doctor_appointment')}
           </Typography>
           
           {/* 筛选和搜索 */}
           <Box display="flex" gap={2} mb={3}>
             <TextField
-              label="搜索医生"
+              label={t('search_doctor')}
               variant="outlined"
               size="small"
               value={searchTerm}
@@ -298,13 +313,13 @@ const PatientAppointments = () => {
               }}
             />
             <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel>科室</InputLabel>
+              <InputLabel>{t('department')}</InputLabel>
               <Select
                 value={filterDepartment}
-                label="科室"
+                label={t('department')}
                 onChange={(e) => setFilterDepartment(e.target.value)}
               >
-                <MenuItem value="">全部科室</MenuItem>
+                <MenuItem value="">{t('all_departments')}</MenuItem>
                 {departments.map((dept) => (
                   <MenuItem key={dept} value={dept}>
                     {dept}
@@ -323,11 +338,11 @@ const PatientAppointments = () => {
                       {doctor.name}
                     </Typography>
                     <Typography color="textSecondary" gutterBottom>
-                      {doctor.department}
+                      {doctor.department || t('department_not_set')}
                     </Typography>
                     {doctor.specialization && (
                       <Typography variant="body2" color="textSecondary" gutterBottom>
-                        专业：{doctor.specialization}
+                        {t('specialization')}: {doctor.specialization}
                       </Typography>
                     )}
                     <Button
@@ -338,7 +353,7 @@ const PatientAppointments = () => {
                         setOpenBookingDialog(true);
                       }}
                     >
-                      预约
+                      {t('book')}
                     </Button>
                   </CardContent>
                 </Card>
@@ -348,21 +363,21 @@ const PatientAppointments = () => {
         </CardContent>
       </Card>
 
-      {/* 预约对话框 */}
+      {/* Appointment Dialog */}
       <Dialog open={openBookingDialog} onClose={() => setOpenBookingDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>预约挂号</DialogTitle>
+        <DialogTitle>{t('book_appointment')}</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 1 }}>
             <FormControl fullWidth margin="normal">
-              <InputLabel>选择医生</InputLabel>
+              <InputLabel>{t('select_doctor')}</InputLabel>
               <Select
                 value={selectedDoctor}
-                label="选择医生"
+                label={t('select_doctor')}
                 onChange={(e) => handleDoctorChange(e.target.value)}
               >
                 {doctors.map((doctor) => (
                   <MenuItem key={doctor._id} value={doctor._id}>
-                    {doctor.name} - {doctor.department}
+                    {doctor.name} - {doctor.department || t('department_not_set')}
                   </MenuItem>
                 ))}
               </Select>
@@ -370,7 +385,7 @@ const PatientAppointments = () => {
 
             <Box sx={{ mt: 2 }}>
               <Typography variant="subtitle2" gutterBottom>
-                选择日期
+                {t('select_date')}
               </Typography>
               <DatePicker
                 selected={selectedDate}
@@ -389,10 +404,10 @@ const PatientAppointments = () => {
 
             {availableSlots.length > 0 && (
               <FormControl fullWidth margin="normal">
-                <InputLabel>选择时间</InputLabel>
+                <InputLabel>{t('select_time')}</InputLabel>
                 <Select
                   value={selectedTime}
-                  label="选择时间"
+                  label={t('select_time')}
                   onChange={(e) => setSelectedTime(e.target.value)}
                 >
                   {availableSlots.map((slot) => (
@@ -406,21 +421,21 @@ const PatientAppointments = () => {
 
             {selectedDoctor && selectedDate && availableSlots.length === 0 && (
               <Alert severity="info" sx={{ mt: 2 }}>
-                该日期暂无可用时间，请选择其他日期
+                {t('no_available_time')}
               </Alert>
             )}
           </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenBookingDialog(false)}>
-            取消
+            {t('cancel')}
           </Button>
           <Button
             onClick={handleBookAppointment}
             variant="contained"
             disabled={!selectedDoctor || !selectedTime}
           >
-            确认预约
+            {t('confirm_appointment')}
           </Button>
         </DialogActions>
       </Dialog>

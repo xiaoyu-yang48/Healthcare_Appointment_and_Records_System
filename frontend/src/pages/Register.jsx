@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { t, setLanguage, getLanguage } from '../utils/i18n';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   Container,
@@ -51,23 +52,23 @@ const Register = () => {
 
   const validateForm = () => {
     if (formData.password !== formData.confirmPassword) {
-      setError('密码确认不匹配');
+      setError(t('password_mismatch'));
       return false;
     }
     if (formData.password.length < 6) {
-      setError('密码至少需要6个字符');
+      setError(t('password_too_short'));
       return false;
     }
     if (!formData.name.trim()) {
-      setError('请输入姓名');
+      setError(t('name_required'));
       return false;
     }
     if (!formData.email.trim()) {
-      setError('请输入邮箱地址');
+      setError(t('email_required'));
       return false;
     }
     if (formData.role === 'doctor' && !formData.department) {
-      setError('请选择科室');
+      setError(t('department_required'));
       return false;
     }
     return true;
@@ -99,7 +100,7 @@ const Register = () => {
       const result = await register(userData);
       
       if (result.success) {
-        toast.success('注册成功！');
+        toast.success(t('register_success'));
         
         // 根据角色重定向到不同页面
         switch (result.user.role) {
@@ -117,8 +118,8 @@ const Register = () => {
         toast.error(result.error);
       }
     } catch (error) {
-      setError('注册失败，请重试');
-      toast.error('注册失败，请重试');
+      setError(t('register_failed'));
+      toast.error(t('register_failed'));
     } finally {
       setLoading(false);
     }
@@ -159,12 +160,19 @@ const Register = () => {
             width: '100%',
           }}
         >
+          {/* Language Switch Button at Top */}
+          <Box mt={-2} mb={2} textAlign="right" sx={{ width: '100%' }}>
+            <Button color="inherit" onClick={() => setLanguage(getLanguage() === 'en' ? 'zh' : 'en')}>
+              {getLanguage() === 'en' ? t('chinese') : t('english')}
+            </Button>
+          </Box>
+
           <Typography component="h1" variant="h4" gutterBottom>
-            医疗预约系统
+            {t('system_name')}
           </Typography>
-          
+
           <Typography variant="h6" color="textSecondary" gutterBottom>
-            用户注册
+            {t('register')}
           </Typography>
 
           <Tabs
@@ -172,8 +180,8 @@ const Register = () => {
             onChange={handleRoleChange}
             sx={{ marginBottom: 3 }}
           >
-            <Tab label="患者" value="patient" />
-            <Tab label="医生" value="doctor" />
+            <Tab label={t('patient')} value="patient" />
+            <Tab label={t('doctor')} value="doctor" />
           </Tabs>
 
           {error && (
@@ -188,56 +196,56 @@ const Register = () => {
               required
               fullWidth
               id="name"
-              label="姓名"
+              label={t('name')}
               name="name"
               autoComplete="name"
               autoFocus
               value={formData.name}
               onChange={handleChange}
             />
-            
+
             <TextField
               margin="normal"
               required
               fullWidth
               id="email"
-              label="邮箱地址"
+              label={t('email')}
               name="email"
               autoComplete="email"
               value={formData.email}
               onChange={handleChange}
             />
-            
+
             <TextField
               margin="normal"
               fullWidth
               id="phone"
-              label="手机号码"
+              label={t('phone')}
               name="phone"
               autoComplete="tel"
               value={formData.phone}
               onChange={handleChange}
             />
-            
+
             <TextField
               margin="normal"
               required
               fullWidth
               name="password"
-              label="密码"
+              label={t('password')}
               type="password"
               id="password"
               autoComplete="new-password"
               value={formData.password}
               onChange={handleChange}
             />
-            
+
             <TextField
               margin="normal"
               required
               fullWidth
               name="confirmPassword"
-              label="确认密码"
+              label={t('confirm_password')}
               type="password"
               id="confirmPassword"
               value={formData.confirmPassword}
@@ -247,13 +255,13 @@ const Register = () => {
             {formData.role === 'doctor' && (
               <>
                 <FormControl fullWidth margin="normal">
-                  <InputLabel id="department-label">科室</InputLabel>
+                  <InputLabel id="department-label">{t('department')}</InputLabel>
                   <Select
                     labelId="department-label"
                     id="department"
                     name="department"
                     value={formData.department}
-                    label="科室"
+                    label={t('department')}
                     onChange={handleChange}
                   >
                     {departments.map((dept) => (
@@ -263,19 +271,19 @@ const Register = () => {
                     ))}
                   </Select>
                 </FormControl>
-                
+
                 <TextField
                   margin="normal"
                   fullWidth
                   id="specialization"
-                  label="专业特长"
+                  label={t('specialization')}
                   name="specialization"
                   value={formData.specialization}
                   onChange={handleChange}
                 />
               </>
             )}
-            
+
             <Button
               type="submit"
               fullWidth
@@ -283,15 +291,12 @@ const Register = () => {
               sx={{ mt: 3, mb: 2 }}
               disabled={loading}
             >
-              {loading ? <CircularProgress size={24} /> : '注册'}
+              {loading ? <CircularProgress size={24} /> : t('register')}
             </Button>
-            
+
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="body2" color="textSecondary">
-                已有账号？{' '}
-                <Link to="/login" style={{ textDecoration: 'none' }}>
-                  立即登录
-                </Link>
+                {t('have_account')} <Link to="/login" style={{ textDecoration: 'none' }}>{t('login')}</Link>
               </Typography>
             </Box>
           </Box>

@@ -4,12 +4,21 @@
   "description": "医疗预约系统后端服务",
   "main": "server.js",
   "scripts": {
-    "test": "mocha",
+    "test": "mocha test/**/*.test.js --timeout 10000",
+    "test:auth": "mocha test/auth.test.js --timeout 10000",
+    "test:admin": "mocha test/admin.test.js --timeout 10000",
+    "test:appointment": "mocha test/appointment.test.js --timeout 10000",
+    "test:medical-record": "mocha test/medical-record.test.js --timeout 10000",
+    "test:notice": "mocha test/notice.test.js --timeout 10000",
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "prod": "node server.js"
+    "prod": "node server.js",
+    "init-admin": "node scripts/initAdmin.js",
+    "init-schedules": "node scripts/init-doctor-schedules.js",
+    "test-appointment": "node scripts/test-appointment.js"
   },
   "dependencies": {
+    "axios": "^1.11.0",
     "bcryptjs": "^2.4.3",
     "chai": "^4.5.0",
     "chai-http": "^4.4.0",

@@ -39,6 +39,8 @@ const getDoctors = async (req, res) => {
 const getDoctorById = async (req, res) => {
     try {
         const { id } = req.params;
+        
+        console.log('getDoctorById called with id:', id);
 
         const doctor = await User.findOne({ _id: id, role: 'doctor', isActive: true })
             .select('-password');
@@ -60,7 +62,13 @@ const getDoctorSchedule = async (req, res) => {
         const { id } = req.params;
         const { date, startDate, endDate } = req.query;
 
-        let query = { doctor: id };
+        console.log('getDoctorSchedule called with params:', { id, date, startDate, endDate });
+        console.log('req.user:', req.user);
+
+        // 如果没有id参数，使用当前登录用户的ID（医生查看自己的排班）
+        const doctorId = id || req.user.id;
+        console.log('Using doctorId:', doctorId);
+        let query = { doctor: doctorId };
 
         if (date) {
             const targetDate = new Date(date);
@@ -73,6 +81,7 @@ const getDoctorSchedule = async (req, res) => {
             const end = new Date(endDate);
             end.setDate(end.getDate() + 1);
             query.date = { $gte: start, $lt: end };
+            console.log('Date range query:', { startDate, endDate, start, end, query });
         } else {
             // 默认返回未来7天的排班
             const today = new Date();
@@ -85,7 +94,33 @@ const getDoctorSchedule = async (req, res) => {
         const schedules = await DoctorSchedule.find(query)
             .sort({ date: 1 });
 
-        res.json(schedules);
+        console.log('Found schedules:', schedules.length);
+        schedules.forEach((schedule, index) => {
+            console.log(`Schedule ${index}:`, {
+                id: schedule._id,
+                date: schedule.date,
+                doctor: schedule.doctor,
+                isWorkingDay: schedule.isWorkingDay
+            });
+        });
+
+        // 如果查询特定日期，返回单个排班记录
+        if (date) {
+            const schedule = schedules[0];
+            if (schedule) {
+                res.json(schedule);
+            } else {
+                            // 如果没有排班记录，返回默认的空排班
+            res.json({
+                doctor: doctorId,
+                date: new Date(date),
+                timeSlots: [],
+                isWorkingDay: false
+            });
+            }
+        } else {
+            res.json(schedules);
+        }
     } catch (error) {
         console.error('获取医生排班错误:', error);
         res.status(500).json({ message: '服务器错误', error: error.message });
@@ -124,6 +159,51 @@ const setDoctorSchedule = async (req, res) => {
         });
     } catch (error) {
         console.error('设置医生排班错误:', error);
+        res.status(500).json({ message: '服务器错误', error: error.message });
+    }
+};
+
+// 更新医生排班
+const updateDoctorSchedule = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { date, timeSlots, isWorkingDay, notes, maxAppointments } = req.body;
+
+        // 验证是否为医生
+        if (req.user.role !== 'doctor') {
+            return res.status(403).json({ message: '只有医生可以更新排班' });
+        }
+
+        // 检查排班是否存在且属于当前医生
+        const existingSchedule = await DoctorSchedule.findById(id);
+        if (!existingSchedule) {
+            return res.status(404).json({ message: '排班不存在' });
+        }
+
+        if (existingSchedule.doctor.toString() !== req.user.id) {
+            return res.status(403).json({ message: '只能更新自己的排班' });
+        }
+
+        const scheduleData = {
+            date: new Date(date),
+            timeSlots,
+            isWorkingDay,
+            notes,
+            maxAppointments
+        };
+
+        const schedule = await DoctorSchedule.findByIdAndUpdate(
+            id,
+            scheduleData,
+            { new: true }
+        );
+
+        res.json({
+            message: '排班更新成功',
+            schedule
+        });
+    } catch (error) {
+        console.error('更新医生排班错误:', error);
         res.status(500).json({ message: '服务器错误', error: error.message });
     }
 };
@@ -189,6 +269,46 @@ const getDoctorStats = async (req, res) => {
     }
 };
 
+// 获取医生的患者列表
+const getDoctorPatients = async (req, res) => {
+    try {
+        const doctorId = req.user.id;
+
+        // 获取该医生的所有预约，并关联患者信息
+        const appointments = await Appointment.find({ doctor: doctorId })
+            .populate('patient', 'name email phone dateOfBirth gender address isActive')
+            .sort({ createdAt: -1 });
+
+        // 去重患者，并添加最后就诊时间
+        const patientMap = new Map();
+        
+        appointments.forEach(appointment => {
+            const patientId = appointment.patient._id.toString();
+            if (!patientMap.has(patientId)) {
+                const patient = appointment.patient.toObject();
+                patient.lastVisit = appointment.date;
+                patient.lastAppointmentId = appointment._id;
+                patient.appointmentCount = 1;
+                patientMap.set(patientId, patient);
+            } else {
+                const existingPatient = patientMap.get(patientId);
+                if (appointment.date > existingPatient.lastVisit) {
+                    existingPatient.lastVisit = appointment.date;
+                    existingPatient.lastAppointmentId = appointment._id;
+                }
+                existingPatient.appointmentCount++;
+            }
+        });
+
+        const patients = Array.from(patientMap.values());
+
+        res.json(patients);
+    } catch (error) {
+        console.error('获取医生患者列表错误:', error);
+        res.status(500).json({ message: '服务器错误', error: error.message });
+    }
+};
+
 // 获取可用时间段
 const getAvailableTimeSlots = async (req, res) => {
     try {
@@ -239,6 +359,8 @@ module.exports = {
     getDoctorById,
     getDoctorSchedule,
     setDoctorSchedule,
+    updateDoctorSchedule,
     getDoctorStats,
+    getDoctorPatients,
     getAvailableTimeSlots
 }; 

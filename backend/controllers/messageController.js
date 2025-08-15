@@ -1,10 +1,12 @@
 const Message = require('../models/Message');
 const User = require('../models/User');
+const Notice = require('../models/Notice');
+const { getUserLanguage } = require('../utils/i18n');
 
 // 获取用户的所有对话
 const getConversations = async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = req.user._id;
 
         // 获取所有与当前用户相关的消息
         const messages = await Message.find({
@@ -57,7 +59,7 @@ const getConversations = async (req, res) => {
 const getConversationMessages = async (req, res) => {
     try {
         const { userId } = req.params;
-        const currentUserId = req.user.id;
+        const currentUserId = req.user._id;
 
         // 验证用户是否存在
         const otherUser = await User.findById(userId);
@@ -108,12 +110,12 @@ const sendMessage = async (req, res) => {
         }
 
         // 验证发送者和接收者不是同一个人
-        if (recipientId === req.user.id) {
+        if (recipientId === req.user._id) {
             return res.status(400).json({ message: '不能给自己发送消息' });
         }
 
         const message = await Message.create({
-            sender: req.user.id,
+            sender: req.user._id,
             recipient: recipientId,
             content,
             messageType: messageType || 'text',
@@ -124,10 +126,22 @@ const sendMessage = async (req, res) => {
             .populate('sender', 'name avatar role')
             .populate('recipient', 'name avatar role');
 
-        res.status(201).json({
-            message: '消息发送成功',
-            data: populatedMessage
-        });
+        // 创建新消息通知给接收者
+        try {
+            const language = getUserLanguage(req);
+            await Notice.createNewMessage(
+                recipientId,
+                req.user._id,
+                message._id,
+                req.user.name,
+                language
+            );
+        } catch (noticeError) {
+            console.error('创建消息通知失败:', noticeError);
+            // 通知失败不影响消息发送
+        }
+
+        res.status(201).json(populatedMessage);
     } catch (error) {
         console.error('发送消息错误:', error);
         res.status(500).json({ message: '服务器错误', error: error.message });
@@ -145,7 +159,7 @@ const markMessageAsRead = async (req, res) => {
         }
 
         // 验证权限
-        if (message.recipient.toString() !== req.user.id) {
+        if (message.recipient.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: '无权限操作此消息' });
         }
 
@@ -168,7 +182,7 @@ const markAllMessagesAsRead = async (req, res) => {
         await Message.updateMany(
             {
                 sender: userId,
-                recipient: req.user.id,
+                recipient: req.user._id,
                 isRead: false
             },
             {
@@ -195,7 +209,7 @@ const deleteMessage = async (req, res) => {
         }
 
         // 验证权限（只有发送者可以删除消息）
-        if (message.sender.toString() !== req.user.id) {
+        if (message.sender.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: '无权限删除此消息' });
         }
 
@@ -212,7 +226,7 @@ const deleteMessage = async (req, res) => {
 const getUnreadCount = async (req, res) => {
     try {
         const count = await Message.countDocuments({
-            recipient: req.user.id,
+            recipient: req.user._id,
             isRead: false
         });
 
@@ -234,7 +248,7 @@ const sendSystemMessage = async (req, res) => {
         }
 
         const message = await Message.create({
-            sender: req.user.id,
+            sender: req.user._id,
             recipient: recipientId,
             content,
             messageType: 'system',

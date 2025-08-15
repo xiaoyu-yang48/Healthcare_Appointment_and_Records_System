@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
 import { Toaster } from 'react-hot-toast';
+import { t } from './utils/i18n';
 
 // Context
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -19,7 +20,17 @@ import PatientAppointments from './pages/PatientAppointments';
 import PatientRecords from './pages/PatientRecords';
 import PatientMessages from './pages/PatientMessages';
 import DoctorDashboard from './pages/DoctorDashboard';
+import DoctorAppointments from './pages/DoctorAppointments';
+import DoctorSchedule from './pages/DoctorSchedule';
+import DoctorPatients from './pages/DoctorPatients';
+import DoctorRecords from './pages/DoctorRecords';
+import DoctorMessages from './pages/DoctorMessages';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminUsers from './pages/AdminUsers';
+import AdminAppointments from './pages/AdminAppointments';
+import AdminRecords from './pages/AdminRecords';
+import AdminSettings from './pages/AdminSettings';
+
 
 // 创建主题
 const theme = createTheme({
@@ -66,7 +77,7 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const { user, loading, isAuthenticated } = useAuth();
 
   if (loading) {
-    return <div>加载中...</div>;
+    return <div>{t('loading')}</div>;
   }
 
   if (!isAuthenticated()) {
@@ -90,14 +101,14 @@ const AppContent = () => {
     }
     
     switch (user?.role) {
-      case 'patient':
-        return '/patient/dashboard';
-      case 'doctor':
-        return '/doctor/dashboard';
-      case 'admin':
-        return '/admin/dashboard';
-      default:
-        return '/login';
+        case 'patient':
+            return '/patient/dashboard';
+        case 'doctor':
+            return '/doctor/dashboard';
+        case 'admin':
+            return '/admin/dashboard';
+        default:
+            return '/login';
     }
   };
 
@@ -125,6 +136,7 @@ const AppContent = () => {
         <Route path="/register" element={
           isAuthenticated() ? <Navigate to={getDefaultRoute()} replace /> : <Register />
         } />
+   
         
         {/* 受保护的路由 */}
         <Route path="/profile" element={
@@ -161,11 +173,56 @@ const AppContent = () => {
             <DoctorDashboard />
           </ProtectedRoute>
         } />
+        <Route path="/doctor/appointments" element={
+          <ProtectedRoute allowedRoles={['doctor']}>
+            <DoctorAppointments />
+          </ProtectedRoute>
+        } />
+        <Route path="/doctor/schedule" element={
+          <ProtectedRoute allowedRoles={['doctor']}>
+            <DoctorSchedule />
+          </ProtectedRoute>
+        } />
+        <Route path="/doctor/patients" element={
+          <ProtectedRoute allowedRoles={['doctor']}>
+            <DoctorPatients />
+          </ProtectedRoute>
+        } />
+        <Route path="/doctor/records" element={
+          <ProtectedRoute allowedRoles={['doctor']}>
+            <DoctorRecords />
+          </ProtectedRoute>
+        } />
+        <Route path="/doctor/messages" element={
+          <ProtectedRoute allowedRoles={['doctor']}>
+            <DoctorMessages />
+          </ProtectedRoute>
+        } />
         
         {/* 管理员路由 */}
         <Route path="/admin/dashboard" element={
           <ProtectedRoute allowedRoles={['admin']}>
             <AdminDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/users" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminUsers />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/appointments" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminAppointments />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/records" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminRecords />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/settings" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminSettings />
           </ProtectedRoute>
         } />
         

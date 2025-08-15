@@ -1,12 +1,17 @@
 const express = require('express');
 const {
     getSystemStats,
+    getRecentUsers,
+    getRecentAppointments,
     getUsers,
+    createUser,
+    updateUser,
     updateUserStatus,
     deleteUser,
     getAppointments,
     getMedicalRecords,
-    getDepartmentStats
+    getDepartmentStats,
+    updateAppointment
 } = require('../controllers/adminController');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 
@@ -23,12 +28,15 @@ router.get('/stats/departments', getDepartmentStats);
 // 用户管理
 router.get('/users', getUsers);
 router.get('/users/recent', getRecentUsers);
+router.post('/users', createUser);
+router.put('/users/:id', updateUser);
 router.put('/users/:id/status', updateUserStatus);
 router.delete('/users/:id', deleteUser);
 
 // 预约管理
 router.get('/appointments', getAppointments);
 router.get('/appointments/recent', getRecentAppointments);
+router.put('/appointments/:id', updateAppointment);
 
 // 病历管理
 router.get('/medical-records', getMedicalRecords);

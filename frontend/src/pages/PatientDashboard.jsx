@@ -27,6 +27,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../axiosConfig';
 import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
+import { t } from '../utils/i18n';
 
 const PatientDashboard = () => {
   const { user } = useAuth();
@@ -77,7 +78,7 @@ const PatientDashboard = () => {
       
     } catch (error) {
       console.error('获取仪表板数据失败:', error);
-      toast.error('获取数据失败');
+      toast.error(t('get_data_failed'));
     } finally {
       setLoading(false);
     }
@@ -101,13 +102,13 @@ const PatientDashboard = () => {
   const getStatusLabel = (status) => {
     switch (status) {
       case 'confirmed':
-        return '已确认';
+        return t('status_confirmed');
       case 'pending':
-        return '待确认';
+        return t('status_pending');
       case 'cancelled':
-        return '已取消';
+        return t('status_cancelled');
       case 'completed':
-        return '已完成';
+        return t('status_completed');
       default:
         return status;
     }
@@ -126,7 +127,7 @@ const PatientDashboard = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" gutterBottom>
-        欢迎回来，{user?.name}！
+        {t('welcome_back')}，{user?.name}！
       </Typography>
       
       {/* 统计卡片 */}
@@ -138,7 +139,7 @@ const PatientDashboard = () => {
                 <Schedule color="primary" sx={{ mr: 2 }} />
                 <Box>
                   <Typography color="textSecondary" gutterBottom>
-                    总预约数
+                    {t('total_appointments')}
                   </Typography>
                   <Typography variant="h4">
                     {stats.totalAppointments}
@@ -156,7 +157,7 @@ const PatientDashboard = () => {
                 <CalendarToday color="success" sx={{ mr: 2 }} />
                 <Box>
                   <Typography color="textSecondary" gutterBottom>
-                    即将到来
+                    {t('upcoming')}
                   </Typography>
                   <Typography variant="h4">
                     {stats.upcomingAppointments}
@@ -174,7 +175,7 @@ const PatientDashboard = () => {
                 <MedicalServices color="info" sx={{ mr: 2 }} />
                 <Box>
                   <Typography color="textSecondary" gutterBottom>
-                    已完成
+                    {t('completed')}
                   </Typography>
                   <Typography variant="h4">
                     {stats.completedAppointments}
@@ -192,7 +193,7 @@ const PatientDashboard = () => {
                 <Message color="secondary" sx={{ mr: 2 }} />
                 <Box>
                   <Typography color="textSecondary" gutterBottom>
-                    病历数量
+                    {t('medical_records_count')}
                   </Typography>
                   <Typography variant="h4">
                     {stats.totalRecords}
@@ -211,27 +212,27 @@ const PatientDashboard = () => {
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                 <Typography variant="h6">
-                  最近预约
+                  {t('recent_appointments')}
                 </Typography>
                 <Button
                   variant="outlined"
                   startIcon={<Add />}
                   onClick={() => navigate('/patient/appointments')}
                 >
-                  预约挂号
+                  {t('book_appointment')}
                 </Button>
               </Box>
               
               {appointments.length > 0 ? (
                 <List>
                   {appointments.map((appointment) => (
-                    <ListItem key={appointment._id} divider>
+                    <ListItem key={appointment.id} divider>
                       <ListItemIcon>
                         <Schedule />
                       </ListItemIcon>
                       <ListItemText
-                        primary={`${appointment.doctor?.name || '医生'} - ${appointment.department}`}
-                        secondary={`${format(new Date(appointment.date), 'yyyy-MM-dd HH:mm')}`}
+                        primary={`${appointment.doctor?.name || t('doctor')} - ${appointment.doctor?.department || t('department')}`}
+                        secondary={`${format(new Date(appointment.date), 'yyyy-MM-dd')} ${appointment.timeSlot}`}
                       />
                       <Chip
                         label={getStatusLabel(appointment.status)}
@@ -243,7 +244,7 @@ const PatientDashboard = () => {
                 </List>
               ) : (
                 <Typography color="textSecondary" align="center" sx={{ py: 2 }}>
-                  暂无预约记录
+                  {t('no_appointment_records')}
                 </Typography>
               )}
             </CardContent>
@@ -256,33 +257,33 @@ const PatientDashboard = () => {
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                 <Typography variant="h6">
-                  最近病历
+                  {t('recent_medical_records')}
                 </Typography>
                 <Button
                   variant="outlined"
                   onClick={() => navigate('/patient/records')}
                 >
-                  查看全部
+                  {t('view_all')}
                 </Button>
               </Box>
               
               {medicalRecords.length > 0 ? (
                 <List>
                   {medicalRecords.map((record) => (
-                    <ListItem key={record._id} divider>
+                    <ListItem key={record.id} divider>
                       <ListItemIcon>
                         <MedicalServices />
                       </ListItemIcon>
                       <ListItemText
-                        primary={record.diagnosis || '诊断信息'}
-                        secondary={`${record.doctor?.name || '医生'} - ${format(new Date(record.createdAt), 'yyyy-MM-dd')}`}
+                        primary={record.diagnosis || t('diagnosis_info')}
+                        secondary={`${record.doctor?.name || t('doctor')} - ${format(new Date(record.visitDate), 'yyyy-MM-dd')}`}
                       />
                     </ListItem>
                   ))}
                 </List>
               ) : (
                 <Typography color="textSecondary" align="center" sx={{ py: 2 }}>
-                  暂无病历记录
+                  {t('no_medical_records')}
                 </Typography>
               )}
             </CardContent>
@@ -293,7 +294,7 @@ const PatientDashboard = () => {
       {/* 快速操作 */}
       <Paper sx={{ p: 3, mt: 3 }}>
         <Typography variant="h6" gutterBottom>
-          快速操作
+          {t('quick_actions')}
         </Typography>
         <Grid container spacing={2}>
           <Grid item>
@@ -302,7 +303,7 @@ const PatientDashboard = () => {
               startIcon={<Add />}
               onClick={() => navigate('/patient/appointments')}
             >
-              预约挂号
+              {t('book_appointment')}
             </Button>
           </Grid>
           <Grid item>
@@ -311,7 +312,7 @@ const PatientDashboard = () => {
               startIcon={<MedicalServices />}
               onClick={() => navigate('/patient/records')}
             >
-              查看病历
+              {t('view_medical_records')}
             </Button>
           </Grid>
           <Grid item>
@@ -320,7 +321,7 @@ const PatientDashboard = () => {
               startIcon={<Message />}
               onClick={() => navigate('/patient/messages')}
             >
-              消息中心
+              {t('message_center')}
             </Button>
           </Grid>
         </Grid>

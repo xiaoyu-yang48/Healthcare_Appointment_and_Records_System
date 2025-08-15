@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../axiosConfig';
+import { debug } from '../utils/debug';
 
 const AuthContext = createContext();
 
@@ -22,6 +23,8 @@ export const AuthProvider = ({ children }) => {
     if (token && savedUser) {
       try {
         setUser(JSON.parse(savedUser));
+        // 验证token是否有效
+        validateToken();
       } catch (error) {
         console.error('Error parsing user data:', error);
         localStorage.removeItem('token');
@@ -31,17 +34,43 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
+  const validateToken = async () => {
+    try {
+      console.log('🔍 验证token...');
+      const response = await api.get('/auth/profile');
+      console.log('✅ Token验证成功:', response.data);
+    } catch (error) {
+      console.error('❌ Token validation failed:', error);
+      console.error('错误详情:', error.response?.data);
+      
+      // 只有在401错误时才清除认证信息
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
+      }
+    }
+  };
+
   const login = async (email, password) => {
     try {
+      debug.logApiRequest('POST', '/auth/login', { email, password: '***' });
+      
       const response = await api.post('/auth/login', { email, password });
       const { token, user: userData } = response.data;
+      
+      debug.logApiResponse(response);
+      debug.logUserState(userData);
       
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
       
+      debug.logLocalStorage();
+      
       return { success: true, user: userData };
     } catch (error) {
+      debug.logApiError(error);
       return { 
         success: false, 
         error: error.response?.data?.message || '登录失败' 
@@ -51,15 +80,23 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
+      debug.logApiRequest('POST', '/auth/register', { ...userData, password: '***' });
+      
       const response = await api.post('/auth/register', userData);
       const { token, user: newUser } = response.data;
+      
+      debug.logApiResponse(response);
+      debug.logUserState(newUser);
       
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(newUser));
       setUser(newUser);
       
+      debug.logLocalStorage();
+      
       return { success: true, user: newUser };
     } catch (error) {
+      debug.logApiError(error);
       return { 
         success: false, 
         error: error.response?.data?.message || '注册失败' 

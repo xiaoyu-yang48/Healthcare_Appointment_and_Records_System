@@ -31,6 +31,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../axiosConfig';
 import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
+import { t } from '../utils/i18n';
 
 const DoctorDashboard = () => {
   const { user } = useAuth();
@@ -59,7 +60,9 @@ const DoctorDashboard = () => {
       setTodayAppointments(todayData);
       
       // 获取即将到来的预约
-      const upcomingResponse = await api.get('/appointments/doctor/upcoming');
+      const upcomingResponse = await api.get('/appointments/doctor', {
+        params: { status: 'confirmed' }
+      });
       const upcomingData = upcomingResponse.data;
       setUpcomingAppointments(upcomingData.slice(0, 5)); // 只显示最近5个
       
@@ -67,15 +70,27 @@ const DoctorDashboard = () => {
       const statsResponse = await api.get('/doctors/stats');
       const statsData = statsResponse.data;
       setStats({
-        totalPatients: statsData.totalPatients || 0,
+        totalPatients: statsData.recentPatients?.length || 0,
         todayAppointments: todayData.length,
         completedToday: todayData.filter(apt => apt.status === 'completed').length,
-        pendingAppointments: statsData.pendingAppointments || 0,
+        pendingAppointments: statsData.statusStats?.find(s => s._id === 'pending')?.count || 0,
       });
       
     } catch (error) {
       console.error('获取仪表板数据失败:', error);
-      toast.error('获取数据失败');
+      console.error('错误详情:', error.response?.data);
+      
+      // 如果是401错误，可能是token过期，重定向到登录页
+      if (error.response?.status === 401) {
+        toast.error('登录已过期，请重新登录');
+        // 清除本地存储并重定向到登录页
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        return;
+      }
+      
+      toast.error(t('get_data_failed'));
     } finally {
       setLoading(false);
     }
@@ -84,11 +99,11 @@ const DoctorDashboard = () => {
   const handleUpdateAppointmentStatus = async (appointmentId, status) => {
     try {
       await api.put(`/appointments/${appointmentId}/status`, { status });
-      toast.success('预约状态更新成功');
+      toast.success(t('appointment_status_updated'));
       fetchDashboardData(); // 刷新数据
     } catch (error) {
       console.error('更新预约状态失败:', error);
-      toast.error('更新失败');
+      toast.error(t('update_failed'));
     }
   };
 
@@ -110,13 +125,13 @@ const DoctorDashboard = () => {
   const getStatusLabel = (status) => {
     switch (status) {
       case 'confirmed':
-        return '已确认';
+        return t('status_confirmed');
       case 'pending':
-        return '待确认';
+        return t('status_pending');
       case 'cancelled':
-        return '已取消';
+        return t('status_cancelled');
       case 'completed':
-        return '已完成';
+        return t('status_completed');
       default:
         return status;
     }
@@ -150,7 +165,7 @@ const DoctorDashboard = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" gutterBottom>
-        欢迎回来，{user?.name}医生！
+        {t('welcome_back')}，{user?.name} {t('doctor')}！
       </Typography>
       
       {/* 统计卡片 */}
@@ -162,7 +177,7 @@ const DoctorDashboard = () => {
                 <People color="primary" sx={{ mr: 2 }} />
                 <Box>
                   <Typography color="textSecondary" gutterBottom>
-                    总患者数
+                    {t('total_patients')}
                   </Typography>
                   <Typography variant="h4">
                     {stats.totalPatients}
@@ -180,7 +195,7 @@ const DoctorDashboard = () => {
                 <CalendarToday color="success" sx={{ mr: 2 }} />
                 <Box>
                   <Typography color="textSecondary" gutterBottom>
-                    今日预约
+                    {t('today_appointments')}
                   </Typography>
                   <Typography variant="h4">
                     {stats.todayAppointments}
@@ -198,7 +213,7 @@ const DoctorDashboard = () => {
                 <CheckCircle color="info" sx={{ mr: 2 }} />
                 <Box>
                   <Typography color="textSecondary" gutterBottom>
-                    已完成
+                    {t('completed')}
                   </Typography>
                   <Typography variant="h4">
                     {stats.completedToday}
@@ -216,7 +231,7 @@ const DoctorDashboard = () => {
                 <Pending color="warning" sx={{ mr: 2 }} />
                 <Box>
                   <Typography color="textSecondary" gutterBottom>
-                    待处理
+                    {t('pending')}
                   </Typography>
                   <Typography variant="h4">
                     {stats.pendingAppointments}
@@ -235,14 +250,14 @@ const DoctorDashboard = () => {
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                 <Typography variant="h6">
-                  今日预约 ({format(new Date(), 'MM-dd')})
+                  {t('today_appointments_title')} ({format(new Date(), 'MM-dd')})
                 </Typography>
                 <Button
                   variant="outlined"
                   startIcon={<Schedule />}
                   onClick={() => navigate('/doctor/schedule')}
                 >
-                  管理排班
+                  {t('manage_schedule')}
                 </Button>
               </Box>
               
@@ -266,7 +281,7 @@ const DoctorDashboard = () => {
                             />
                           </Box>
                         }
-                        secondary={`${format(new Date(appointment.date), 'HH:mm')} - ${appointment.department}`}
+                        secondary={`${appointment.timeSlot} - ${appointment.type || '咨询'}`}
                       />
                       <Box>
                         {appointment.status === 'pending' && (
@@ -275,7 +290,7 @@ const DoctorDashboard = () => {
                             variant="outlined"
                             onClick={() => handleUpdateAppointmentStatus(appointment._id, 'confirmed')}
                           >
-                            确认
+                            {t('confirm')}
                           </Button>
                         )}
                         {appointment.status === 'confirmed' && (
@@ -284,7 +299,7 @@ const DoctorDashboard = () => {
                             variant="outlined"
                             onClick={() => handleUpdateAppointmentStatus(appointment._id, 'completed')}
                           >
-                            完成
+                            {t('complete')}
                           </Button>
                         )}
                       </Box>
@@ -293,7 +308,7 @@ const DoctorDashboard = () => {
                 </List>
               ) : (
                 <Typography color="textSecondary" align="center" sx={{ py: 2 }}>
-                  今日暂无预约
+                  {t('no_appointments_today')}
                 </Typography>
               )}
             </CardContent>
@@ -306,13 +321,13 @@ const DoctorDashboard = () => {
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                 <Typography variant="h6">
-                  即将到来
+                  {t('upcoming_appointments')}
                 </Typography>
                 <Button
                   variant="outlined"
                   onClick={() => navigate('/doctor/appointments')}
                 >
-                  查看全部
+                  {t('view_all')}
                 </Button>
               </Box>
               
@@ -325,7 +340,7 @@ const DoctorDashboard = () => {
                       </ListItemIcon>
                       <ListItemText
                         primary={appointment.patient?.name}
-                        secondary={`${format(new Date(appointment.date), 'MM-dd HH:mm')} - ${appointment.department}`}
+                        secondary={`${format(new Date(appointment.date), 'MM-dd')} ${appointment.timeSlot}`}
                       />
                       <Chip
                         label={getStatusLabel(appointment.status)}
@@ -337,7 +352,7 @@ const DoctorDashboard = () => {
                 </List>
               ) : (
                 <Typography color="textSecondary" align="center" sx={{ py: 2 }}>
-                  暂无即将到来的预约
+                  {t('no_upcoming_appointments')}
                 </Typography>
               )}
             </CardContent>
@@ -348,7 +363,7 @@ const DoctorDashboard = () => {
       {/* 快速操作 */}
       <Paper sx={{ p: 3, mt: 3 }}>
         <Typography variant="h6" gutterBottom>
-          快速操作
+          {t('quick_actions')}
         </Typography>
         <Grid container spacing={2}>
           <Grid item>
@@ -357,7 +372,7 @@ const DoctorDashboard = () => {
               startIcon={<Schedule />}
               onClick={() => navigate('/doctor/schedule')}
             >
-              管理排班
+              {t('manage_schedule')}
             </Button>
           </Grid>
           <Grid item>
@@ -366,7 +381,7 @@ const DoctorDashboard = () => {
               startIcon={<People />}
               onClick={() => navigate('/doctor/patients')}
             >
-              患者管理
+              {t('patient_management')}
             </Button>
           </Grid>
           <Grid item>
@@ -375,7 +390,7 @@ const DoctorDashboard = () => {
               startIcon={<MedicalServices />}
               onClick={() => navigate('/doctor/records')}
             >
-              病历管理
+              {t('medical_records_management')}
             </Button>
           </Grid>
           <Grid item>
@@ -384,7 +399,7 @@ const DoctorDashboard = () => {
               startIcon={<Message />}
               onClick={() => navigate('/doctor/messages')}
             >
-              消息中心
+              {t('message_center')}
             </Button>
           </Grid>
         </Grid>

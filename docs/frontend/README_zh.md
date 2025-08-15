@@ -1,3 +1,7 @@
+# 说明文档 (中文版)
+
+> 注意：这是英文文档的中文翻译版本。如有疑问，请参考英文原版。
+
 # 医疗预约系统 - 前端
 
 这是医疗预约系统的前端部分，基于 React.js 和 Material-UI 构建。
@@ -116,7 +120,7 @@ src/
 创建 `.env` 文件并配置以下变量：
 
 ```
-REACT_APP_API_URL=http://localhost:5000/api
+REACT_APP_API_URL=http://localhost:3001/api
 ```
 
 ## 主要组件说明

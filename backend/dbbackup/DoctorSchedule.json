@@ -1,0 +1,227 @@
+[
+  {
+    "_id": "689d4b407d69b9c7f86bffc9",
+    "doctor": "689d1fda627f6ca8d12e6383",
+    "date": "2025-08-16T00:00:00.000Z",
+    "timeSlots": [
+      {
+        "time": "09:00-10:00",
+        "isAvailable": true,
+        "_id": "689d4b40878cf2d53a8ec550"
+      },
+      {
+        "time": "10:00-11:00",
+        "isAvailable": true,
+        "_id": "689d4b40878cf2d53a8ec551"
+      },
+      {
+        "time": "14:00-15:00",
+        "isAvailable": true,
+        "_id": "689d4b40878cf2d53a8ec552"
+      },
+      {
+        "time": "15:00-16:00",
+        "isAvailable": true,
+        "_id": "689d4b40878cf2d53a8ec553"
+      }
+    ],
+    "isWorkingDay": true,
+    "notes": "正常工作日",
+    "maxAppointments": 20,
+    "createdAt": "2025-08-14T02:34:40.482Z",
+    "updatedAt": "2025-08-14T02:34:40.482Z",
+    "__v": 0
+  },
+  {
+    "_id": "689dda4d7d69b9c7f86bffca",
+    "date": "2025-08-10T00:00:00.000Z",
+    "doctor": "689dd16f060a5b24e6dbd6a9",
+    "__v": 0,
+    "createdAt": "2025-08-14T12:45:01.087Z",
+    "isWorkingDay": true,
+    "maxAppointments": 20,
+    "notes": "",
+    "timeSlots": [
+      {
+        "time": "09:00-09:30",
+        "isAvailable": true,
+        "_id": "689dda4d060a5b24e6dbd6c2"
+      },
+      {
+        "time": "11:30-12:00",
+        "isAvailable": true,
+        "_id": "689dda4d060a5b24e6dbd6c3"
+      },
+      {
+        "time": "14:00-14:30",
+        "isAvailable": true,
+        "_id": "689dda4d060a5b24e6dbd6c4"
+      },
+      {
+        "time": "10:00-10:30",
+        "isAvailable": true,
+        "_id": "689dda4d060a5b24e6dbd6c5"
+      },
+      {
+        "time": "16:00-16:30",
+        "isAvailable": true,
+        "_id": "689dda4d060a5b24e6dbd6c6"
+      },
+      {
+        "time": "16:30-17:00",
+        "isAvailable": true,
+        "_id": "689dda4d060a5b24e6dbd6c7"
+      }
+    ],
+    "updatedAt": "2025-08-14T12:45:01.087Z"
+  },
+  {
+    "_id": "689e6d437d69b9c7f86bffcb",
+    "date": "2025-08-15T00:00:00.000Z",
+    "doctor": "689dd16f060a5b24e6dbd6a9",
+    "__v": 0,
+    "createdAt": "2025-08-14T23:12:03.477Z",
+    "isWorkingDay": true,
+    "maxAppointments": 20,
+    "notes": "",
+    "timeSlots": [
+      {
+        "time": "09:00-09:30",
+        "isAvailable": true,
+        "_id": "689e6d43032157dec901766e"
+      },
+      {
+        "time": "11:30-12:00",
+        "isAvailable": true,
+        "_id": "689e6d43032157dec901766f"
+      },
+      {
+        "time": "09:30-10:00",
+        "isAvailable": true,
+        "_id": "689e6d43032157dec9017670"
+      },
+      {
+        "time": "10:00-10:30",
+        "isAvailable": true,
+        "_id": "689e6d43032157dec9017671"
+      },
+      {
+        "time": "14:00-14:30",
+        "isAvailable": true,
+        "_id": "689e6d43032157dec9017672"
+      },
+      {
+        "time": "16:00-16:30",
+        "isAvailable": true,
+        "_id": "689e6d43032157dec9017673"
+      },
+      {
+        "time": "16:30-17:00",
+        "isAvailable": true,
+        "_id": "689e6d43032157dec9017674"
+      },
+      {
+        "time": "14:30-15:00",
+        "isAvailable": true,
+        "_id": "689e6d43032157dec9017675"
+      },
+      {
+        "time": "10:30-11:00",
+        "isAvailable": true,
+        "_id": "689e6d43032157dec9017676"
+      },
+      {
+        "time": "15:30-16:00",
+        "isAvailable": true,
+        "_id": "689e6d43032157dec9017677"
+      },
+      {
+        "time": "15:00-15:30",
+        "isAvailable": true,
+        "_id": "689e6d43032157dec9017678"
+      },
+      {
+        "time": "11:00-11:30",
+        "isAvailable": true,
+        "_id": "689e6d43032157dec9017679"
+      }
+    ],
+    "updatedAt": "2025-08-14T23:12:03.477Z"
+  },
+  {
+    "_id": "689e6da67d69b9c7f86bffcc",
+    "date": "2025-08-12T00:00:00.000Z",
+    "doctor": "689e6ca530f94fe714149e5a",
+    "__v": 0,
+    "createdAt": "2025-08-14T23:13:42.621Z",
+    "isWorkingDay": true,
+    "maxAppointments": 15,
+    "notes": "更新后的测试排班",
+    "timeSlots": [
+      {
+        "time": "09:00-09:30",
+        "isAvailable": true,
+        "_id": "689e6da6032157dec90176d8"
+      },
+      {
+        "time": "09:30-10:00",
+        "isAvailable": true,
+        "_id": "689e6da6032157dec90176d9"
+      },
+      {
+        "time": "10:00-10:30",
+        "isAvailable": true,
+        "_id": "689e6da6032157dec90176da"
+      },
+      {
+        "time": "14:00-14:30",
+        "isAvailable": true,
+        "_id": "689e6da6032157dec90176db"
+      }
+    ],
+    "updatedAt": "2025-08-14T23:13:42.633Z"
+  },
+  {
+    "_id": "689e6f4a7d69b9c7f86bffcd",
+    "date": "2025-08-16T00:00:00.000Z",
+    "doctor": "689dd16f060a5b24e6dbd6a9",
+    "__v": 0,
+    "createdAt": "2025-08-14T23:20:42.986Z",
+    "isWorkingDay": true,
+    "maxAppointments": 20,
+    "notes": "",
+    "timeSlots": [
+      {
+        "time": "09:30-10:00",
+        "isAvailable": true,
+        "_id": "689e6f4a032157dec90177a0"
+      },
+      {
+        "time": "11:30-12:00",
+        "isAvailable": true,
+        "_id": "689e6f4a032157dec90177a1"
+      },
+      {
+        "time": "15:30-16:00",
+        "isAvailable": true,
+        "_id": "689e6f4a032157dec90177a2"
+      },
+      {
+        "time": "16:00-16:30",
+        "isAvailable": true,
+        "_id": "689e6f4a032157dec90177a3"
+      },
+      {
+        "time": "10:00-10:30",
+        "isAvailable": true,
+        "_id": "689e6f4a032157dec90177a4"
+      },
+      {
+        "time": "14:00-14:30",
+        "isAvailable": true,
+        "_id": "689e6f4a032157dec90177a5"
+      }
+    ],
+    "updatedAt": "2025-08-14T23:20:42.986Z"
+  }
+]
