@@ -32,6 +32,16 @@ import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
 import { t } from '../utils/i18n';
 
+/**
+ * NoticeBell
+ * 
+ * Displays a notification bell with unread count and a dropdown menu for notices.
+ * Handles fetching, marking as read, and deleting notifications.
+ * 
+ * 显示通知铃，包含未读数量和通知列表菜单。支持获取、标记已读和删除通知。
+ * 
+ * @component
+ */
 const NoticeBell = () => {
   const { user } = useAuth();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -41,49 +51,46 @@ const NoticeBell = () => {
   const [loadingNotices, setLoadingNotices] = useState(false);
 
   const open = Boolean(anchorEl);
-
-  // 获取未读通知数量
+  // 获取未读通知数量 / Fetch unread notice count
   const fetchUnreadCount = async () => {
     try {
       const response = await api.get('/notices/unread-count');
       setUnreadCount(response.data.unreadCount);
     } catch (error) {
-      console.error('获取未读通知数量失败:', error);
+      console.error('获取未读通知数量失败 / Failed to fetch unread count:', error);
     }
   };
 
-  // 获取通知列表
+  // 获取通知列表 / Fetch notice list
   const fetchNotices = async () => {
     try {
       setLoadingNotices(true);
       const response = await api.get('/notices?limit=10');
       setNotices(response.data.notices);
     } catch (error) {
-      console.error('获取通知列表失败:', error);
+      console.error('获取通知列表失败 / Failed to fetch notices:', error);
       toast.error(t('get_notices_failed'));
     } finally {
       setLoadingNotices(false);
     }
   };
 
-  // 标记通知为已读
+  // 标记通知为已读 / Mark notice as read
   const markAsRead = async (noticeId) => {
     try {
       await api.put(`/notices/${noticeId}/read`);
-      // 更新本地状态
-      setNotices(prev => 
-        prev.map(notice => 
+      setNotices(prev =>
+        prev.map(notice =>
           notice._id === noticeId ? { ...notice, isRead: true } : notice
         )
       );
-      // 更新未读数量
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
-      console.error('标记通知已读失败:', error);
+      console.error('标记通知已读失败 / Failed to mark as read:', error);
     }
   };
 
-  // 标记所有通知为已读
+  // 标记所有通知为已读 / Mark all notices as read
   const markAllAsRead = async () => {
     try {
       setLoading(true);
@@ -92,26 +99,26 @@ const NoticeBell = () => {
       setUnreadCount(0);
       toast.success(t('all_notices_marked_read'));
     } catch (error) {
-      console.error('标记所有通知已读失败:', error);
+      console.error('标记所有通知已读失败 / Failed to mark all as read:', error);
       toast.error(t('mark_all_read_failed'));
     } finally {
       setLoading(false);
     }
   };
 
-  // 删除通知
+  // 删除通知 / Delete notice
   const deleteNotice = async (noticeId) => {
     try {
       await api.delete(`/notices/${noticeId}`);
       setNotices(prev => prev.filter(notice => notice._id !== noticeId));
       toast.success(t('notice_deleted'));
     } catch (error) {
-      console.error('删除通知失败:', error);
+      console.error('删除通知失败 / Failed to delete notice:', error);
       toast.error(t('delete_notice_failed'));
     }
   };
 
-  // 获取通知图标
+  // 获取通知图标 / Get notice icon
   const getNoticeIcon = (type) => {
     switch (type) {
       case 'appointment_request':
@@ -131,7 +138,7 @@ const NoticeBell = () => {
     }
   };
 
-  // 获取通知类型文本
+  // 获取通知类型文本 / Get notice type text
   const getNoticeTypeText = (type) => {
     switch (type) {
       case 'appointment_request':
@@ -151,31 +158,31 @@ const NoticeBell = () => {
     }
   };
 
-  // 处理菜单打开
+  // 打开菜单 / Open menu
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
     fetchNotices();
   };
 
-  // 处理菜单关闭
+  // 关闭菜单 / Close menu
   const handleClose = () => {
     setAnchorEl(null);
   };
 
-  // 处理通知点击
+  // 点击通知 / Handle notice click
   const handleNoticeClick = (notice) => {
     if (!notice.isRead) {
       markAsRead(notice._id);
     }
-    // 这里可以添加跳转到相关页面的逻辑
+    // 可添加跳转逻辑 / Add navigation logic here if needed
     handleClose();
   };
 
-  // 定期获取未读数量
+  // 定时获取未读数量 / Poll unread count
   useEffect(() => {
     if (user) {
       fetchUnreadCount();
-      const interval = setInterval(fetchUnreadCount, 30000); // 每30秒检查一次
+      const interval = setInterval(fetchUnreadCount, 30000); // 每30秒检查一次 / Every 30s
       return () => clearInterval(interval);
     }
   }, [user]);

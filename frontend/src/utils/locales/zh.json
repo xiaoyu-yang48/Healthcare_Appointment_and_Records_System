@@ -98,6 +98,42 @@
   "complete": "完成",
   "upcoming_appointments": "即将到来",
   "no_upcoming_appointments": "暂无即将到来的预约",
+  "user_form": {
+    "edit_user": "编辑用户",
+    "add_user": "添加用户",
+    "name": "姓名",
+    "email": "邮箱",
+    "password": "密码",
+    "role": "角色",
+    "phone": "手机号",
+    "specialization": "专业",
+    "department": "科室",
+    "enable_account": "启用账户",
+    "cancel": "取消",
+    "create": "创建",
+    "update": "更新",
+    "saving": "保存中...",
+    "patient": "患者",
+    "doctor": "医生",
+    "admin": "管理员",
+    "validation": {
+      "name_required": "姓名不能为空",
+      "email_required": "邮箱不能为空",
+      "email_invalid": "邮箱格式不正确",
+      "password_required": "密码不能为空",
+      "password_too_short": "密码至少6位",
+      "role_required": "请选择角色",
+      "specialization_required": "专业不能为空",
+      "department_required": "科室不能为空"
+    },
+    "messages": {
+      "password_hint": "留空则不修改密码",
+      "user_updated": "用户信息更新成功",
+      "user_created": "用户创建成功",
+      "save_failed": "保存用户失败",
+      "operation_failed": "操作失败"
+    }
+  }
   "patient_management": "患者管理",
   "medical_records_management": "病历管理",
   "system_management_dashboard": "系统管理仪表板",

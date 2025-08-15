@@ -31,33 +31,42 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
 
+  // 打开用户菜单 / Open user menu
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
+  // 关闭用户菜单 / Close user menu
   const handleClose = () => {
     setAnchorEl(null);
   };
 
+  // 处理用户登出 / Handle user logout
   const handleLogout = () => {
     logout();
     navigate('/login');
     handleClose();
   };
 
+  /**
+   * Get translated role label / 获取角色标签
+   */
   const getRoleLabel = () => {
     switch (user?.role) {
-      case 'patient':
+      case 'patient':  // Patient / 患者
         return t('patient');
-      case 'doctor':
+      case 'doctor':   // Doctor / 医生
         return t('doctor');
-      case 'admin':
+      case 'admin':    // Admin / 管理员
         return t('admin');
-      default:
+      default:         // User / 用户
         return t('user');
     }
   };
 
+  /**
+   * Get dashboard path by role / 获取仪表盘路径
+   */
   const getDashboardPath = () => {
     switch (user?.role) {
       case 'patient':
@@ -71,23 +80,26 @@ const Navbar = () => {
     }
   };
 
+  /**
+   * Get navigation items by role / 获取导航项
+   */
   const getNavItems = () => {
     if (isPatient()) {
       return [
-        { label: t('appointments'), path: '/patient/appointments', icon: <Schedule /> },
-        { label: t('records'), path: '/patient/records', icon: <MedicalServices /> },
-        { label: t('messages'), path: '/patient/messages', icon: <Message /> },
+        { label: t('appointments'), path: '/patient/appointments', icon: <Schedule /> }, // Appointments / 预约
+        { label: t('records'), path: '/patient/records', icon: <MedicalServices /> },    // Records / 病历
+        { label: t('messages'), path: '/patient/messages', icon: <Message /> },          // Messages / 消息
       ];
     } else if (isDoctor()) {
       return [
-        { label: t('schedule'), path: '/doctor/schedule', icon: <Schedule /> },
-        { label: t('patients'), path: '/doctor/patients', icon: <People /> },
-        { label: t('messages'), path: '/doctor/messages', icon: <Message /> },
+        { label: t('schedule'), path: '/doctor/schedule', icon: <Schedule /> },          // Schedule / 排班
+        { label: t('patients'), path: '/doctor/patients', icon: <People /> },            // Patients / 患者
+        { label: t('messages'), path: '/doctor/messages', icon: <Message /> },           // Messages / 消息
       ];
     } else if (isAdmin()) {
       return [
-        { label: t('patients'), path: '/admin/users', icon: <People /> },
-        { label: t('settings'), path: '/admin/settings', icon: <Settings /> },
+        { label: t('patients'), path: '/admin/users', icon: <People /> },                // Patients / 用户
+        { label: t('settings'), path: '/admin/settings', icon: <Settings /> },           // Settings / 设置
       ];
     }
     return [];

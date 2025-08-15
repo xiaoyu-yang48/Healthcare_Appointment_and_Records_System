@@ -98,6 +98,42 @@
   "complete": "Complete",
   "upcoming_appointments": "Upcoming Appointments",
   "no_upcoming_appointments": "No upcoming appointments",
+  "user_form": {
+    "edit_user": "Edit User",
+    "add_user": "Add User",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "role": "Role",
+    "phone": "Phone",
+    "specialization": "Specialization",
+    "department": "Department",
+    "enable_account": "Enable Account",
+    "cancel": "Cancel",
+    "create": "Create",
+    "update": "Update",
+    "saving": "Saving...",
+    "patient": "Patient",
+    "doctor": "Doctor",
+    "admin": "Admin",
+    "validation": {
+      "name_required": "Name is required",
+      "email_required": "Email is required",
+      "email_invalid": "Invalid email format",
+      "password_required": "Password is required",
+      "password_too_short": "Password must be at least 6 characters",
+      "role_required": "Please select a role",
+      "specialization_required": "Specialization is required",
+      "department_required": "Department is required"
+    },
+    "messages": {
+      "password_hint": "Leave blank to keep current password",
+      "user_updated": "User updated successfully",
+      "user_created": "User created successfully",
+      "save_failed": "Failed to save user",
+      "operation_failed": "Operation failed"
+    }
+  }
   "patient_management": "Patient Management",
   "medical_records_management": "Medical Records Management",
   "system_management_dashboard": "System Management Dashboard",
