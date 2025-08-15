@@ -10,7 +10,7 @@ chai.use(chaiHttp);
 const expect = chai.expect;
 
 // 测试数据库配置
-const TEST_DB_URI = process.env.TEST_MONGODB_URI || 'mongodb://localhost:27017/healthcare_test';
+const TEST_DB_URI = process.env.TEST_MONGODB_URI || 'mongodb+srv://Brian:H58aSudmEjd4C1GQ@cluster0.csox1pv.mongodb.net/emrt';
 
 // 测试用户数据
 const testUsers = {
