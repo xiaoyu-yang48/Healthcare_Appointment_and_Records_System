@@ -269,6 +269,46 @@ const getDoctorStats = async (req, res) => {
     }
 };
 
+// 获取医生的患者列表
+const getDoctorPatients = async (req, res) => {
+    try {
+        const doctorId = req.user.id;
+
+        // 获取该医生的所有预约，并关联患者信息
+        const appointments = await Appointment.find({ doctor: doctorId })
+            .populate('patient', 'name email phone dateOfBirth gender address isActive')
+            .sort({ createdAt: -1 });
+
+        // 去重患者，并添加最后就诊时间
+        const patientMap = new Map();
+        
+        appointments.forEach(appointment => {
+            const patientId = appointment.patient._id.toString();
+            if (!patientMap.has(patientId)) {
+                const patient = appointment.patient.toObject();
+                patient.lastVisit = appointment.date;
+                patient.lastAppointmentId = appointment._id;
+                patient.appointmentCount = 1;
+                patientMap.set(patientId, patient);
+            } else {
+                const existingPatient = patientMap.get(patientId);
+                if (appointment.date > existingPatient.lastVisit) {
+                    existingPatient.lastVisit = appointment.date;
+                    existingPatient.lastAppointmentId = appointment._id;
+                }
+                existingPatient.appointmentCount++;
+            }
+        });
+
+        const patients = Array.from(patientMap.values());
+
+        res.json(patients);
+    } catch (error) {
+        console.error('获取医生患者列表错误:', error);
+        res.status(500).json({ message: '服务器错误', error: error.message });
+    }
+};
+
 // 获取可用时间段
 const getAvailableTimeSlots = async (req, res) => {
     try {
@@ -321,5 +361,6 @@ module.exports = {
     setDoctorSchedule,
     updateDoctorSchedule,
     getDoctorStats,
+    getDoctorPatients,
     getAvailableTimeSlots
 }; 

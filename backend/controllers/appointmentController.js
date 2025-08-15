@@ -2,6 +2,7 @@ const Appointment = require('../models/Appointment');
 const User = require('../models/User');
 const DoctorSchedule = require('../models/DoctorSchedule');
 const Notice = require('../models/Notice');
+const { getUserLanguage } = require('../utils/i18n');
 
 // 获取患者预约列表
 const getPatientAppointments = async (req, res) => {
@@ -117,11 +118,13 @@ const createAppointment = async (req, res) => {
 
         // 创建预约请求通知给医生
         try {
+            const language = getUserLanguage(req);
             await Notice.createAppointmentRequest(
                 doctorId,
                 req.user.id,
                 appointment._id,
-                req.user.name
+                req.user.name,
+                language
             );
         } catch (noticeError) {
             console.error('创建预约通知失败:', noticeError);
@@ -175,11 +178,13 @@ const updateAppointmentStatus = async (req, res) => {
         // 如果状态更新为确认，创建确认通知给患者
         if (status === 'confirmed') {
             try {
+                const language = getUserLanguage(req);
                 await Notice.createAppointmentConfirmed(
                     appointment.patient,
                     req.user.id,
                     appointment._id,
-                    req.user.name
+                    req.user.name,
+                    language
                 );
             } catch (noticeError) {
                 console.error('创建确认通知失败:', noticeError);

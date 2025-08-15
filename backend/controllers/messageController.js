@@ -1,6 +1,7 @@
 const Message = require('../models/Message');
 const User = require('../models/User');
 const Notice = require('../models/Notice');
+const { getUserLanguage } = require('../utils/i18n');
 
 // 获取用户的所有对话
 const getConversations = async (req, res) => {
@@ -127,11 +128,13 @@ const sendMessage = async (req, res) => {
 
         // 创建新消息通知给接收者
         try {
+            const language = getUserLanguage(req);
             await Notice.createNewMessage(
                 recipientId,
                 req.user._id,
                 message._id,
-                req.user.name
+                req.user.name,
+                language
             );
         } catch (noticeError) {
             console.error('创建消息通知失败:', noticeError);
