@@ -1,5 +1,5 @@
 
-### **1. System Goal**  
+# **1. System Goal**  
 Develop a healthcare appointment system based on the **MERN stack** (MongoDB + Express + React + Node.js), supporting patient registration, doctor scheduling, electronic medical record management, and basic doctor-patient communication.  
 
 ---
@@ -46,7 +46,6 @@ Develop a healthcare appointment system based on the **MERN stack** (MongoDB + E
   - `GET /api/doctors` (Get list of doctors)  
   - `POST /api/appointments` (Create appointment)  
   - `GET /api/medical-records/:patientId` (Get medical record)  
-  - `POST /api/messages` (Send message)  
 
 - **Database (MongoDB)**  
 ```javascript

@@ -5,6 +5,7 @@ This directory contains all project documentation organized by category.
 ## 📁 Directory Structure
 
 ### 📂 Root Documentation (`docs/root/`)
+
 General project documentation and guides.
 
 | Document | English | Chinese |
