@@ -16,22 +16,22 @@ subgraph "Brain Du  12257451"
 
 
     subgraph "External Actors"
-        P[Patient<br/>患者]
-        D[Doctor<br/>医生]
-        A[Admin<br/>管理员]
+        P[Patient]
+        D[Doctor]
+        A[Admin]
     end
   
     subgraph "Healthcare Appointment System"
         subgraph "Core Modules"
-            Auth[Authentication Module<br/>认证模块]
-            Appt[Appointment Module<br/>预约模块]
-            Record[Medical Record Module<br/>病历模块]
-            Notice[Notice Module<br/>通知模块]
-            Schedule[Schedule Module<br/>排班模块]
+            Auth[Authentication Module]
+            Appt[Appointment Module]
+            Record[Medical Record Module]
+            Notice[Notice Module]
+            Schedule[Schedule Module]
         end
   
         subgraph "Database Layer"
-            DB[(MongoDB Database<br/>MongoDB数据库)]
+            DB[(MongoDB Database)]
         end
     end
   
@@ -230,7 +230,7 @@ graph TB
             P8[View Notices]
             P9[Download Records]
         end
-    
+  
         subgraph "Doctor Use Cases"
             D1[Login]
             D2[Manage Schedule]
@@ -241,7 +241,7 @@ graph TB
             D7[View Notices]
             D8[Update Profile]
         end
-    
+  
         subgraph "Admin Use Cases"
             A1[Login]
             A2[Manage Users]
