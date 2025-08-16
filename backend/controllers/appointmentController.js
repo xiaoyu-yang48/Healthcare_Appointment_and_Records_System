@@ -4,7 +4,7 @@ const DoctorSchedule = require('../models/DoctorSchedule');
 const Notice = require('../models/Notice');
 const { getUserLanguage } = require('../utils/i18n');
 
-// 获取患者预约列表
+// Get patient appointment list
 const getPatientAppointments = async (req, res) => {
     try {
         const appointments = await Appointment.find({ patient: req.user.id })
@@ -13,12 +13,12 @@ const getPatientAppointments = async (req, res) => {
 
         res.json(appointments);
     } catch (error) {
-        console.error('获取患者预约错误:', error);
-        res.status(500).json({ message: '服务器错误', error: error.message });
+        console.error('Error getting patient appointments:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
-// 获取医生预约列表
+// Get doctor appointment list
 const getDoctorAppointments = async (req, res) => {
     try {
         const { status, date } = req.query;
@@ -41,12 +41,12 @@ const getDoctorAppointments = async (req, res) => {
 
         res.json(appointments);
     } catch (error) {
-        console.error('获取医生预约错误:', error);
-        res.status(500).json({ message: '服务器错误', error: error.message });
+        console.error('Error getting doctor appointments:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
-// 获取今日预约
+// Get today's appointments
 const getTodayAppointments = async (req, res) => {
     try {
         const today = new Date();
@@ -63,23 +63,23 @@ const getTodayAppointments = async (req, res) => {
 
         res.json(appointments);
     } catch (error) {
-        console.error('获取今日预约错误:', error);
-        res.status(500).json({ message: '服务器错误', error: error.message });
+        console.error('Error getting today\'s appointments:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
-// 创建预约
+// Create appointment
 const createAppointment = async (req, res) => {
     try {
         const { doctorId, date, timeSlot, symptoms, type } = req.body;
 
-        // 验证医生是否存在
+        // Verify doctor exists
         const doctor = await User.findOne({ _id: doctorId, role: 'doctor' });
         if (!doctor) {
-            return res.status(404).json({ message: '医生不存在' });
+            return res.status(404).json({ message: 'Doctor not found' });
         }
 
-        // 检查预约时间是否可用
+        // Check if appointment time is available
         const existingAppointment = await Appointment.findOne({
             doctor: doctorId,
             date: new Date(date),
@@ -88,10 +88,10 @@ const createAppointment = async (req, res) => {
         });
 
         if (existingAppointment) {
-            return res.status(400).json({ message: '该时间段已被预约' });
+            return res.status(400).json({ message: 'This time slot is already booked' });
         }
 
-        // 检查患者是否在同一时间段有其他预约
+        // Check if patient has another appointment at the same time
         const patientConflict = await Appointment.findOne({
             patient: req.user.id,
             date: new Date(date),
@@ -100,7 +100,7 @@ const createAppointment = async (req, res) => {
         });
 
         if (patientConflict) {
-            return res.status(400).json({ message: '您在该时间段已有其他预约' });
+            return res.status(400).json({ message: 'You already have another appointment at this time slot' });
         }
 
         const appointment = await Appointment.create({
@@ -116,7 +116,7 @@ const createAppointment = async (req, res) => {
             .populate('doctor', 'name specialization department')
             .populate('patient', 'name phone');
 
-        // 创建预约请求通知给医生
+        // Create appointment request notification for doctor
         try {
             const language = getUserLanguage(req);
             await Notice.createAppointmentRequest(
@@ -127,21 +127,21 @@ const createAppointment = async (req, res) => {
                 language
             );
         } catch (noticeError) {
-            console.error('创建预约通知失败:', noticeError);
-            // 通知失败不影响预约创建
+            console.error('Failed to create appointment notification:', noticeError);
+            // Notification failure does not affect appointment creation
         }
 
         res.status(201).json({
-            message: '预约创建成功',
+            message: 'Appointment created successfully',
             appointment: populatedAppointment
         });
     } catch (error) {
-        console.error('创建预约错误:', error);
-        res.status(500).json({ message: '服务器错误', error: error.message });
+        console.error('Error creating appointment:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
-// 更新预约状态
+// Update appointment status
 const updateAppointmentStatus = async (req, res) => {
     try {
         const { id } = req.params;
@@ -149,16 +149,16 @@ const updateAppointmentStatus = async (req, res) => {
 
         const appointment = await Appointment.findById(id);
         if (!appointment) {
-            return res.status(404).json({ message: '预约不存在' });
+            return res.status(404).json({ message: 'Appointment not found' });
         }
 
-        // 验证权限
+        // Verify permissions
         if (req.user.role === 'doctor' && appointment.doctor.toString() !== req.user.id) {
-            return res.status(403).json({ message: '无权限操作此预约' });
+            return res.status(403).json({ message: 'No permission to operate on this appointment' });
         }
 
         if (req.user.role === 'patient' && appointment.patient.toString() !== req.user.id) {
-            return res.status(403).json({ message: '无权限操作此预约' });
+            return res.status(403).json({ message: 'No permission to operate on this appointment' });
         }
 
         appointment.status = status;
@@ -175,7 +175,7 @@ const updateAppointmentStatus = async (req, res) => {
             .populate('doctor', 'name specialization department')
             .populate('patient', 'name phone');
 
-        // 如果状态更新为确认，创建确认通知给患者
+        // If status updated to confirmed, create confirmation notification for patient
         if (status === 'confirmed') {
             try {
                 const language = getUserLanguage(req);
@@ -187,22 +187,22 @@ const updateAppointmentStatus = async (req, res) => {
                     language
                 );
             } catch (noticeError) {
-                console.error('创建确认通知失败:', noticeError);
-                // 通知失败不影响状态更新
+                console.error('Failed to create confirmation notification:', noticeError);
+                // Notification failure does not affect status update
             }
         }
 
         res.json({
-            message: '预约状态更新成功',
+            message: 'Appointment status updated successfully',
             appointment: updatedAppointment
         });
     } catch (error) {
-        console.error('更新预约状态错误:', error);
-        res.status(500).json({ message: '服务器错误', error: error.message });
+        console.error('Error updating appointment status:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
-// 取消预约
+// Cancel appointment
 const cancelAppointment = async (req, res) => {
     try {
         const { id } = req.params;
@@ -210,21 +210,21 @@ const cancelAppointment = async (req, res) => {
 
         const appointment = await Appointment.findById(id);
         if (!appointment) {
-            return res.status(404).json({ message: '预约不存在' });
+            return res.status(404).json({ message: 'Appointment not found' });
         }
 
-        // 验证权限
+        // Verify permissions
         if (req.user.role === 'doctor' && appointment.doctor.toString() !== req.user.id) {
-            return res.status(403).json({ message: '无权限操作此预约' });
+            return res.status(403).json({ message: 'No permission to operate on this appointment' });
         }
 
         if (req.user.role === 'patient' && appointment.patient.toString() !== req.user.id) {
-            return res.status(403).json({ message: '无权限操作此预约' });
+            return res.status(403).json({ message: 'No permission to operate on this appointment' });
         }
 
-        // 检查是否可以取消
+        // Check if can be cancelled
         if (appointment.status === 'cancelled' || appointment.status === 'completed') {
-            return res.status(400).json({ message: '该预约无法取消' });
+            return res.status(400).json({ message: 'This appointment cannot be cancelled' });
         }
 
         appointment.status = 'cancelled';
@@ -234,7 +234,7 @@ const cancelAppointment = async (req, res) => {
 
         await appointment.save();
 
-        // 创建取消通知
+        // Create cancellation notification
         try {
             const recipientId = req.user.role === 'doctor' ? appointment.patient : appointment.doctor;
             await Notice.createAppointmentCancelled(
@@ -244,18 +244,18 @@ const cancelAppointment = async (req, res) => {
                 req.user.name
             );
         } catch (noticeError) {
-            console.error('创建取消通知失败:', noticeError);
-            // 通知失败不影响取消操作
+            console.error('Failed to create cancellation notification:', noticeError);
+            // Notification failure does not affect cancellation
         }
 
-        res.json({ message: '预约取消成功' });
+        res.json({ message: 'Appointment cancelled successfully' });
     } catch (error) {
-        console.error('取消预约错误:', error);
-        res.status(500).json({ message: '服务器错误', error: error.message });
+        console.error('Error cancelling appointment:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
-// 获取预约详情
+// Get appointment details
 const getAppointmentById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -265,22 +265,22 @@ const getAppointmentById = async (req, res) => {
             .populate('patient', 'name phone address');
 
         if (!appointment) {
-            return res.status(404).json({ message: '预约不存在' });
+            return res.status(404).json({ message: 'Appointment not found' });
         }
 
-        // 验证权限
+        // Verify permissions
         if (req.user.role === 'doctor' && appointment.doctor._id.toString() !== req.user.id) {
-            return res.status(403).json({ message: '无权限查看此预约' });
+            return res.status(403).json({ message: 'No permission to view this appointment' });
         }
 
         if (req.user.role === 'patient' && appointment.patient._id.toString() !== req.user.id) {
-            return res.status(403).json({ message: '无权限查看此预约' });
+            return res.status(403).json({ message: 'No permission to view this appointment' });
         }
 
         res.json(appointment);
     } catch (error) {
-        console.error('获取预约详情错误:', error);
-        res.status(500).json({ message: '服务器错误', error: error.message });
+        console.error('Error getting appointment details:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
@@ -292,4 +292,4 @@ module.exports = {
     updateAppointmentStatus,
     cancelAppointment,
     getAppointmentById
-}; 
+};

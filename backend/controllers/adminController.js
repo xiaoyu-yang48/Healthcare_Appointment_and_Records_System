@@ -3,21 +3,21 @@ const Appointment = require('../models/Appointment');
 const MedicalRecord = require('../models/MedicalRecord');
 const Message = require('../models/Message');
 
-// 获取系统统计信息
+// Get system statistics
 const getSystemStats = async (req, res) => {
     try {
-        // 验证管理员权限
+        // Verify admin permission
         if (req.user.role !== 'admin') {
-            return res.status(403).json({ message: '无权限访问管理员功能' });
+            return res.status(403).json({ message: 'No permission to access admin features' });
         }
 
-        // 用户统计
+        // User statistics
         const totalUsers = await User.countDocuments();
         const totalPatients = await User.countDocuments({ role: 'patient' });
         const totalDoctors = await User.countDocuments({ role: 'doctor' });
         const activeUsers = await User.countDocuments({ isActive: true });
 
-        // 预约统计
+        // Appointment statistics
         const totalAppointments = await Appointment.countDocuments();
         const todayAppointments = await Appointment.countDocuments({
             date: {
@@ -30,7 +30,7 @@ const getSystemStats = async (req, res) => {
             { $group: { _id: '$status', count: { $sum: 1 } } }
         ]);
 
-        // 病历统计
+        // Medical record statistics
         const totalRecords = await MedicalRecord.countDocuments({ isActive: true });
         const thisMonthRecords = await MedicalRecord.countDocuments({
             isActive: true,
@@ -40,17 +40,17 @@ const getSystemStats = async (req, res) => {
             }
         });
 
-        // 消息统计
+        // Message statistics
         const totalMessages = await Message.countDocuments();
         const unreadMessages = await Message.countDocuments({ isRead: false });
 
-        // 最近注册的用户
+        // Recently registered users
         const recentUsers = await User.find()
             .select('name email role createdAt')
             .sort({ createdAt: -1 })
             .limit(5);
 
-        // 最近的预约
+        // Recent appointments
         const recentAppointments = await Appointment.find()
             .populate('patient', 'name')
             .populate('doctor', 'name')
@@ -82,15 +82,15 @@ const getSystemStats = async (req, res) => {
         });
     } catch (error) {
         console.error('stats error:', error);
-        res.status(500).json({ message: 'service error', error: error.message });
+        res.status(500).json({ message: 'Service error', error: error.message });
     }
 };
 
-// 获取最近预约
+// Get recent appointments
 const getRecentAppointments = async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
-            return res.status(403).json({ message: 'no permission to access admin features' });
+            return res.status(403).json({ message: 'No permission to access admin features' });
         }
 
         const { limit = 10 } = req.query;
@@ -107,15 +107,15 @@ const getRecentAppointments = async (req, res) => {
         });
     } catch (error) {
         console.error('recent appointments error:', error);
-        res.status(500).json({ message: 'server error', error: error.message });
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
-// 获取最近用户
+// Get recent users
 const getRecentUsers = async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
-            return res.status(403).json({ message: 'no permission to access admin features' });
+            return res.status(403).json({ message: 'No permission to access admin features' });
         }
 
         const { limit = 10 } = req.query;
@@ -131,15 +131,15 @@ const getRecentUsers = async (req, res) => {
         });
     } catch (error) {
         console.error('recent users error:', error);
-        res.status(500).json({ message: 'service error', error: error.message });
+        res.status(500).json({ message: 'Service error', error: error.message });
     }
 };
 
-// 获取用户列表
+// Get user list
 const getUsers = async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
-            return res.status(403).json({ message: 'no permission to access admin features' });
+            return res.status(403).json({ message: 'No permission to access admin features' });
         }
 
         const { role, search, page = 1, limit = 10 } = req.query;
@@ -175,15 +175,15 @@ const getUsers = async (req, res) => {
         });
     } catch (error) {
         console.error('recent users error:', error);
-        res.status(500).json({ message: 'server error', error: error.message });
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
-// 更新用户状态
+// Update user status
 const updateUserStatus = async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
-            return res.status(403).json({ message: 'no permission to access admin features' });
+            return res.status(403).json({ message: 'No permission to access admin features' });
         }
 
         const { id } = req.params;
@@ -191,19 +191,19 @@ const updateUserStatus = async (req, res) => {
 
         const user = await User.findById(id);
         if (!user) {
-            return res.status(404).json({ message: '用户不存在' });
+            return res.status(404).json({ message: 'User not found' });
         }
 
-        // 不能禁用自己
+        // Cannot disable yourself
         if (id === req.user.id) {
-            return res.status(400).json({ message: '不能禁用自己的账户' });
+            return res.status(400).json({ message: 'Cannot disable your own account' });
         }
 
         user.isActive = isActive;
         await user.save();
 
         res.json({
-            message: `用户${isActive ? '启用' : '禁用'}成功`,
+            message: `User ${isActive ? 'enabled' : 'disabled'} successfully`,
             user: {
                 id: user._id,
                 name: user.name,
@@ -213,31 +213,31 @@ const updateUserStatus = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('更新用户状态错误:', error);
-        res.status(500).json({ message: '服务器错误', error: error.message });
+        console.error('Update user status error:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
-// 删除用户
+// Delete user
 const deleteUser = async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
-            return res.status(403).json({ message: '无权限访问管理员功能' });
+            return res.status(403).json({ message: 'No permission to access admin features' });
         }
 
         const { id } = req.params;
 
-        // 不能删除自己
+        // Cannot delete yourself
         if (id === req.user.id) {
-            return res.status(400).json({ message: '不能删除自己的账户' });
+            return res.status(400).json({ message: 'Cannot delete your own account' });
         }
 
         const user = await User.findById(id);
         if (!user) {
-            return res.status(404).json({ message: '用户不存在' });
+            return res.status(404).json({ message: 'User not found' });
         }
 
-        // 检查用户是否有关联数据
+        // Check if user has related data
         const hasAppointments = await Appointment.findOne({
             $or: [{ patient: id }, { doctor: id }]
         });
@@ -252,24 +252,24 @@ const deleteUser = async (req, res) => {
 
         if (hasAppointments || hasRecords || hasMessages) {
             return res.status(400).json({ 
-                message: '该用户有关联数据，无法删除。建议禁用账户而不是删除。' 
+                message: 'User has related data and cannot be deleted. It is recommended to disable the account instead of deleting.' 
             });
         }
 
         await User.findByIdAndDelete(id);
 
-        res.json({ message: '用户删除成功' });
+        res.json({ message: 'User deleted successfully' });
     } catch (error) {
-        console.error('删除用户错误:', error);
-        res.status(500).json({ message: '服务器错误', error: error.message });
+        console.error('Delete user error:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
-// 获取预约列表
+// Get appointment list
 const getAppointments = async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
-            return res.status(403).json({ message: '无权限访问管理员功能' });
+            return res.status(403).json({ message: 'No permission to access admin features' });
         }
 
         const { status, doctorId, patientId, date, page = 1, limit = 10 } = req.query;
@@ -304,16 +304,16 @@ const getAppointments = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('获取预约列表错误:', error);
-        res.status(500).json({ message: '服务器错误', error: error.message });
+        console.error('Get appointment list error:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
-// 获取病历列表
+// Get medical record list
 const getMedicalRecords = async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
-            return res.status(403).json({ message: '无权限访问管理员功能' });
+            return res.status(403).json({ message: 'No permission to access admin features' });
         }
 
         const { doctorId, patientId, date, page = 1, limit = 10 } = req.query;
@@ -347,32 +347,32 @@ const getMedicalRecords = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('获取病历列表错误:', error);
-        res.status(500).json({ message: '服务器错误', error: error.message });
+        console.error('Get medical record list error:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
-// 创建用户
+// Create user
 const createUser = async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
-            return res.status(403).json({ message: '无权限访问管理员功能' });
+            return res.status(403).json({ message: 'No permission to access admin features' });
         }
 
         const { name, email, password, role, phone, specialization, department } = req.body;
 
-        // 验证必填字段
+        // Validate required fields
         if (!name || !email || !password || !role) {
-            return res.status(400).json({ message: '姓名、邮箱、密码和角色为必填字段' });
+            return res.status(400).json({ message: 'Name, email, password, and role are required fields' });
         }
 
-        // 检查邮箱是否已存在
+        // Check if email already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({ message: '该邮箱已被注册' });
+            return res.status(400).json({ message: 'Email is already registered' });
         }
 
-        // 创建用户
+        // Create user
         const user = new User({
             name,
             email,
@@ -386,48 +386,48 @@ const createUser = async (req, res) => {
 
         await user.save();
 
-        // 返回用户信息（不包含密码）
+        // Return user info (without password)
         const userResponse = user.toObject();
         delete userResponse.password;
 
         res.status(201).json({
-            message: '用户创建成功',
+            message: 'User created successfully',
             user: userResponse
         });
     } catch (error) {
-        console.error('创建用户错误:', error);
-        res.status(500).json({ message: '服务器错误', error: error.message });
+        console.error('Create user error:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
-// 更新用户信息
+// Update user info
 const updateUser = async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
-            return res.status(403).json({ message: '无权限访问管理员功能' });
+            return res.status(403).json({ message: 'No permission to access admin features' });
         }
 
         const { id } = req.params;
         const { name, email, role, phone, specialization, department, isActive } = req.body;
 
-        // 验证必填字段
+        // Validate required fields
         if (!name || !email || !role) {
-            return res.status(400).json({ message: '姓名、邮箱和角色为必填字段' });
+            return res.status(400).json({ message: 'Name, email, and role are required fields' });
         }
 
-        // 检查用户是否存在
+        // Check if user exists
         const user = await User.findById(id);
         if (!user) {
-            return res.status(404).json({ message: '用户不存在' });
+            return res.status(404).json({ message: 'User not found' });
         }
 
-        // 检查邮箱是否被其他用户使用
+        // Check if email is used by another user
         const existingUser = await User.findOne({ email, _id: { $ne: id } });
         if (existingUser) {
-            return res.status(400).json({ message: '该邮箱已被其他用户使用' });
+            return res.status(400).json({ message: 'Email is already used by another user' });
         }
 
-        // 更新用户信息
+        // Update user info
         user.name = name;
         user.email = email;
         user.role = role;
@@ -440,25 +440,25 @@ const updateUser = async (req, res) => {
 
         await user.save();
 
-        // 返回用户信息（不包含密码）
+        // Return user info (without password)
         const userResponse = user.toObject();
         delete userResponse.password;
 
         res.json({
-            message: '用户信息更新成功',
+            message: 'User information updated successfully',
             user: userResponse
         });
     } catch (error) {
-        console.error('更新用户错误:', error);
-        res.status(500).json({ message: '服务器错误', error: error.message });
+        console.error('Update user error:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
-// 获取部门统计
+// Get department statistics
 const getDepartmentStats = async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
-            return res.status(403).json({ message: '无权限访问管理员功能' });
+            return res.status(403).json({ message: 'No permission to access admin features' });
         }
 
         const departmentStats = await User.aggregate([
@@ -478,33 +478,33 @@ const getDepartmentStats = async (req, res) => {
             specializations: specializationStats
         });
     } catch (error) {
-        console.error('获取部门统计错误:', error);
-        res.status(500).json({ message: '服务器错误', error: error.message });
+        console.error('Get department statistics error:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
-// 更新预约信息
+// Update appointment info
 const updateAppointment = async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
-            return res.status(403).json({ message: '无权限访问管理员功能' });
+            return res.status(403).json({ message: 'No permission to access admin features' });
         }
 
         const { id } = req.params;
         const { date, timeSlot, type, status, symptoms, notes } = req.body;
 
-        // 验证必填字段
+        // Validate required fields
         if (!date || !timeSlot) {
-            return res.status(400).json({ message: '日期和时间段为必填字段' });
+            return res.status(400).json({ message: 'Date and time slot are required fields' });
         }
 
-        // 检查预约是否存在
+        // Check if appointment exists
         const appointment = await Appointment.findById(id);
         if (!appointment) {
-            return res.status(404).json({ message: '预约不存在' });
+            return res.status(404).json({ message: 'Appointment not found' });
         }
 
-        // 更新预约信息
+        // Update appointment info
         appointment.date = new Date(date);
         appointment.timeSlot = timeSlot;
         appointment.type = type || appointment.type;
@@ -514,18 +514,18 @@ const updateAppointment = async (req, res) => {
 
         await appointment.save();
 
-        // 返回更新后的预约信息
+        // Return updated appointment info
         const updatedAppointment = await Appointment.findById(id)
             .populate('patient', 'name email phone')
             .populate('doctor', 'name email department');
 
         res.json({
-            message: '预约信息更新成功',
+            message: 'Appointment information updated successfully',
             appointment: updatedAppointment
         });
     } catch (error) {
-        console.error('更新预约错误:', error);
-        res.status(500).json({ message: '服务器错误', error: error.message });
+        console.error('Update appointment error:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
@@ -542,4 +542,4 @@ module.exports = {
     getMedicalRecords,
     getDepartmentStats,
     updateAppointment
-}; 
+};
