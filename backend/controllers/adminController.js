@@ -81,8 +81,8 @@ const getSystemStats = async (req, res) => {
             recentAppointments
         });
     } catch (error) {
-        console.error('获取系统统计错误:', error);
-        res.status(500).json({ message: '服务器错误', error: error.message });
+        console.error('stats error:', error);
+        res.status(500).json({ message: 'service error', error: error.message });
     }
 };
 
@@ -90,7 +90,7 @@ const getSystemStats = async (req, res) => {
 const getRecentAppointments = async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
-            return res.status(403).json({ message: '无权限访问管理员功能' });
+            return res.status(403).json({ message: 'no permission to access admin features' });
         }
 
         const { limit = 10 } = req.query;
@@ -106,8 +106,8 @@ const getRecentAppointments = async (req, res) => {
             total: recentAppointments.length
         });
     } catch (error) {
-        console.error('获取最近预约错误:', error);
-        res.status(500).json({ message: '服务器错误', error: error.message });
+        console.error('recent appointments error:', error);
+        res.status(500).json({ message: 'server error', error: error.message });
     }
 };
 
@@ -115,7 +115,7 @@ const getRecentAppointments = async (req, res) => {
 const getRecentUsers = async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
-            return res.status(403).json({ message: '无权限访问管理员功能' });
+            return res.status(403).json({ message: 'no permission to access admin features' });
         }
 
         const { limit = 10 } = req.query;
@@ -130,8 +130,8 @@ const getRecentUsers = async (req, res) => {
             total: recentUsers.length
         });
     } catch (error) {
-        console.error('获取最近用户错误:', error);
-        res.status(500).json({ message: '服务器错误', error: error.message });
+        console.error('recent users error:', error);
+        res.status(500).json({ message: 'service error', error: error.message });
     }
 };
 
@@ -139,7 +139,7 @@ const getRecentUsers = async (req, res) => {
 const getUsers = async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
-            return res.status(403).json({ message: '无权限访问管理员功能' });
+            return res.status(403).json({ message: 'no permission to access admin features' });
         }
 
         const { role, search, page = 1, limit = 10 } = req.query;
@@ -174,8 +174,8 @@ const getUsers = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('获取用户列表错误:', error);
-        res.status(500).json({ message: '服务器错误', error: error.message });
+        console.error('recent users error:', error);
+        res.status(500).json({ message: 'server error', error: error.message });
     }
 };
 
@@ -183,7 +183,7 @@ const getUsers = async (req, res) => {
 const updateUserStatus = async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
-            return res.status(403).json({ message: '无权限访问管理员功能' });
+            return res.status(403).json({ message: 'no permission to access admin features' });
         }
 
         const { id } = req.params;
