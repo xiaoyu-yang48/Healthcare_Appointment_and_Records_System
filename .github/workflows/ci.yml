@@ -78,9 +78,9 @@ jobs:
     # - name: Run Frontend Tests
     #   working-directory: ./frontend
     #
-    # - run: | 
-    #     cd ./backend
-    #     touch .env
-    #     echo "${{ secrets.PROD }}" > .env
+    - run: | 
+        cd ./backend
+        touch .env
+        echo "${{ secrets.PROD }}" > .env
 
     - run: pm2 restart all
