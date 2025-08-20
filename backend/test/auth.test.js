@@ -24,7 +24,7 @@ describe('Authentication API Tests', () => {
   before(async () => {
     setupTestEnv();
     await connectTestDB();
-    server = app.listen(5001);
+    server = app.listen(5002);
   });
 
   after(async () => {
