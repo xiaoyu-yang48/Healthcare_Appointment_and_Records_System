@@ -116,18 +116,18 @@ const Profile = () => {
   };
 
   const departments = [
-    '内科',
-    '外科',
-    '儿科',
-    '妇产科',
-    '眼科',
-    '耳鼻喉科',
-    '皮肤科',
-    '神经科',
-    '心血管科',
-    '骨科',
-    '肿瘤科',
-    '急诊科',
+    'Internal Medicine',
+    'Surgery',
+    'Pediatrics',
+    'Obstetrics & Gynecology',
+    'Ophthalmology',
+    'Otorhinolaryngology',
+    'Dermatology',
+    'Neurology',
+    'Cardiology',
+    'Orthopedics',
+    'Oncology',
+    'Emergency',
   ];
 
   const genders = [
