@@ -83,7 +83,7 @@ const Login = () => {
       <Box sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <Paper elevation={3} sx={{ p: 3, width: '100%' }}>
           <Typography variant="h5" align="center" gutterBottom>
-            {t('login')}
+            {t('login')}EMR
           </Typography>
           <Tabs
             value={formData.role}
