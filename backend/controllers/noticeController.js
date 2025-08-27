@@ -13,7 +13,7 @@ const getUserNotices = async (req, res) => {
       query.isRead = false;
     }
 
-    // 分页查询
+    // 分页查询 gggg
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const notices = await Notice.find(query)
       .populate('senderId', 'name email role')
