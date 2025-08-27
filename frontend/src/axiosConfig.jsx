@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://3.24.136.37:5001/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://3.106.188.53:5001/api';
 
 // 调试工具
 const debug = {
