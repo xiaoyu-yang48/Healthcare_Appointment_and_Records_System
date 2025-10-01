@@ -6,8 +6,9 @@ This is a **minimal implementation** that demonstrates 7 design patterns and 5 O
 ## Implementation Details
 
 ### File Structure
-- **`/backend/patterns.js`** - Single file containing all patterns and OOP classes (minimal approach)
-- **`/backend/server.js`** - Added one endpoint `/api/patterns-demo` to demonstrate the patterns
+- **`/backend/design-patterns.js`** - Contains all 7 design patterns
+- **`/backend/oop-principles.js`** - Contains 5 OOP classes with SOLID principles
+- **`/backend/server.js`** - Added two endpoints for demonstration
 
 ### 7 Design Patterns Implemented
 
@@ -71,24 +72,39 @@ This is a **minimal implementation** that demonstrates 7 design patterns and 5 O
 
 ## Testing
 
-### Run the demonstration directly:
+### Run the demonstrations directly:
 ```bash
 cd backend
-node patterns.js
+
+# Test design patterns
+node design-patterns.js
+
+# Test OOP principles
+node oop-principles.js
 ```
 
-### Via API endpoint:
+### Via API endpoints:
 ```bash
+# Design patterns demo
 curl http://localhost:5001/api/patterns-demo
+
+# OOP principles demo
+curl http://localhost:5001/api/oop-demo
 ```
 
 ## Key Features
 
-- **Minimal implementation** - All patterns in a single file
+- **Separated concerns** - Design patterns and OOP principles in separate files
+- **Minimal implementation** - Two focused files for better organization
 - **No breaking changes** - Existing functionality preserved
-- **Easy to understand** - Clear demonstration of each pattern
+- **Easy to understand** - Clear demonstration of each concept
 - **Self-contained** - Can be removed without affecting the main application
 
 ## Notes
 
 This implementation is designed for **demonstration purposes only**. Each pattern and OOP principle is applied to at least one instance as required. The code is intentionally kept minimal while still meeting all requirements.
+
+### Files Summary:
+- `design-patterns.js` (~650 lines) - All 7 design patterns with detailed examples
+- `oop-principles.js` (~450 lines) - 5 OOP classes demonstrating SOLID principles
+- Total: ~1100 lines of well-organized, documented code

@@ -25,9 +25,11 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 
 // Design Patterns Demonstration Endpoint
 app.get('/api/patterns-demo', (req, res) => {
-    const patterns = require('./patterns');
-    // Run demonstration (output goes to console)
-    patterns.demonstratePatterns();
+    const designPatterns = require('./design-patterns');
+    
+    // Run design patterns demonstration
+    console.log('\n========== DESIGN PATTERNS DEMO ==========');
+    designPatterns.demonstrateDesignPatterns();
     
     res.json({
         message: 'Design patterns demonstration executed. Check server console for output.',
@@ -40,6 +42,20 @@ app.get('/api/patterns-demo', (req, res) => {
             '6. Repository Pattern - Data access layer',
             '7. Chain of Responsibility - Validation chain'
         ],
+        file: 'design-patterns.js'
+    });
+});
+
+// OOP Principles Demonstration Endpoint
+app.get('/api/oop-demo', (req, res) => {
+    const oopPrinciples = require('./oop-principles');
+    
+    // Run OOP principles demonstration
+    console.log('\n========== OOP PRINCIPLES DEMO ==========');
+    oopPrinciples.demonstrateOOPPrinciples();
+    
+    res.json({
+        message: 'OOP principles demonstration executed. Check server console for output.',
         oopClasses: [
             '1. BaseEntity - Abstract base class with encapsulation',
             '2. Person - Inheritance from BaseEntity',
@@ -48,12 +64,20 @@ app.get('/api/patterns-demo', (req, res) => {
             '5. Appointment - Composition and dependency inversion'
         ],
         solidPrinciples: [
-            'Single Responsibility', 
-            'Open/Closed',
-            'Liskov Substitution',
-            'Interface Segregation',
-            'Dependency Inversion'
-        ]
+            'Single Responsibility - Each class has one purpose', 
+            'Open/Closed - Open for extension, closed for modification',
+            'Liskov Substitution - Subclasses can replace base classes',
+            'Interface Segregation - Classes only implement needed methods',
+            'Dependency Inversion - Depend on abstractions'
+        ],
+        oopConcepts: [
+            'Encapsulation - Private properties with getters/setters',
+            'Inheritance - Class hierarchy (BaseEntity → Person → Patient/Doctor)',
+            'Polymorphism - Method overriding (getRole, validate)',
+            'Abstraction - Abstract methods in base classes',
+            'Composition - Appointment has-a Patient and Doctor'
+        ],
+        file: 'oop-principles.js'
     });
 });
 
