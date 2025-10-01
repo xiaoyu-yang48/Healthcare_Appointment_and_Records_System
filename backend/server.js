@@ -23,61 +23,18 @@ app.use('/api/notices', require('./routes/noticeRoutes'));
 app.use('/api/settings', require('./routes/settingsRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 
-// Design Patterns Demonstration Endpoint
+// Patterns Demo Endpoint (minimal)
 app.get('/api/patterns-demo', (req, res) => {
-    const designPatterns = require('./design-patterns');
-    
-    // Run design patterns demonstration
-    console.log('\n========== DESIGN PATTERNS DEMO ==========');
-    designPatterns.demonstrateDesignPatterns();
-    
     res.json({
-        message: 'Design patterns demonstration executed. Check server console for output.',
+        message: 'Design patterns and OOP principles implemented',
         patterns: [
-            '1. Singleton Pattern - DatabaseConnection',
-            '2. Factory Pattern - NotificationFactory', 
-            '3. Strategy Pattern - Authentication strategies',
-            '4. Observer Pattern - Appointment notifications',
-            '5. Decorator Pattern - Request handlers',
-            '6. Repository Pattern - Data access layer',
-            '7. Chain of Responsibility - Validation chain'
+            'Singleton', 'Factory', 'Strategy', 'Observer', 
+            'Decorator', 'Repository', 'Chain of Responsibility'
         ],
-        file: 'design-patterns.js'
-    });
-});
-
-// OOP Principles Demonstration Endpoint
-app.get('/api/oop-demo', (req, res) => {
-    const oopPrinciples = require('./oop-principles');
-    
-    // Run OOP principles demonstration
-    console.log('\n========== OOP PRINCIPLES DEMO ==========');
-    oopPrinciples.demonstrateOOPPrinciples();
-    
-    res.json({
-        message: 'OOP principles demonstration executed. Check server console for output.',
         oopClasses: [
-            '1. BaseEntity - Abstract base class with encapsulation',
-            '2. Person - Inheritance from BaseEntity',
-            '3. Patient - Polymorphism and inheritance from Person',
-            '4. Doctor - Single responsibility and inheritance',
-            '5. Appointment - Composition and dependency inversion'
+            'BaseEntity', 'Person', 'Patient', 'Doctor', 'Appointment'
         ],
-        solidPrinciples: [
-            'Single Responsibility - Each class has one purpose', 
-            'Open/Closed - Open for extension, closed for modification',
-            'Liskov Substitution - Subclasses can replace base classes',
-            'Interface Segregation - Classes only implement needed methods',
-            'Dependency Inversion - Depend on abstractions'
-        ],
-        oopConcepts: [
-            'Encapsulation - Private properties with getters/setters',
-            'Inheritance - Class hierarchy (BaseEntity → Person → Patient/Doctor)',
-            'Polymorphism - Method overriding (getRole, validate)',
-            'Abstraction - Abstract methods in base classes',
-            'Composition - Appointment has-a Patient and Doctor'
-        ],
-        file: 'oop-principles.js'
+        files: ['design-patterns.js', 'oop-principles.js']
     });
 });
 
