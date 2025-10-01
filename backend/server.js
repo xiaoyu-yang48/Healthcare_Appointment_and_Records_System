@@ -23,37 +23,83 @@ app.use('/api/notices', require('./routes/noticeRoutes'));
 app.use('/api/settings', require('./routes/settingsRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 
-// Design Patterns Demonstration Endpoint
-app.get('/api/patterns-demo', (req, res) => {
-    const patterns = require('./patterns');
-    // Run demonstration (output goes to console)
-    patterns.demonstratePatterns();
-    
-    res.json({
-        message: 'Design patterns demonstration executed. Check server console for output.',
-        patterns: [
-            '1. Singleton Pattern - DatabaseConnection',
-            '2. Factory Pattern - NotificationFactory', 
-            '3. Strategy Pattern - Authentication strategies',
-            '4. Observer Pattern - Appointment notifications',
-            '5. Decorator Pattern - Request handlers',
-            '6. Repository Pattern - Data access layer',
-            '7. Chain of Responsibility - Validation chain'
-        ],
-        oopClasses: [
-            '1. BaseEntity - Abstract base class with encapsulation',
-            '2. Person - Inheritance from BaseEntity',
-            '3. Patient - Polymorphism and inheritance from Person',
-            '4. Doctor - Single responsibility and inheritance',
-            '5. Appointment - Composition and dependency inversion'
-        ],
-        solidPrinciples: [
-            'Single Responsibility', 
-            'Open/Closed',
-            'Liskov Substitution',
-            'Interface Segregation',
-            'Dependency Inversion'
-        ]
+// Import patterns integration
+const patternsIntegration = require('./patterns-integration');
+
+// Apply Decorator Pattern as middleware (Pattern #5)
+app.use('/api/patterns/*', patternsIntegration.enhancedRequestHandler);
+
+// Pattern Demo Routes - Each using a different pattern
+
+// 1. Singleton Pattern - Database connection
+app.get('/api/patterns/db-status', async (req, res) => {
+    try {
+        const connection = await patternsIntegration.getDatabaseConnection();
+        res.json({ 
+            pattern: 'Singleton',
+            status: 'Connected',
+            message: 'Database connection managed by Singleton pattern'
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 2. Factory Pattern - Create entities
+app.post('/api/patterns/create-entity', (req, res) => {
+    const { type, data } = req.body;
+    try {
+        const entity = patternsIntegration.createEntity(type || 'user', data || {});
+        entity.save();
+        res.json({ 
+            pattern: 'Factory',
+            created: entity,
+            message: 'Entity created using Factory pattern'
+        });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+// 3. Strategy Pattern - Authentication
+app.post('/api/patterns/auth', (req, res) => {
+    const { email, password, useToken } = req.body;
+    const result = patternsIntegration.login(email, password, useToken);
+    res.json({ 
+        pattern: 'Strategy',
+        result,
+        strategy: useToken ? 'JWT' : 'Password',
+        message: 'Authentication using Strategy pattern'
+    });
+});
+
+// 4. Observer Pattern - Create appointment with notifications
+app.post('/api/patterns/appointment', (req, res) => {
+    const appointment = patternsIntegration.createAppointment(req.body);
+    res.json({ 
+        pattern: 'Observer',
+        appointment,
+        message: 'Appointment created, observers notified'
+    });
+});
+
+// 6. Repository Pattern - Data access
+app.get('/api/patterns/user/:id', async (req, res) => {
+    const user = await patternsIntegration.getUserById(req.params.id);
+    res.json({ 
+        pattern: 'Repository',
+        user,
+        message: 'User fetched using Repository pattern'
+    });
+});
+
+// 7. Chain of Responsibility - Validation
+app.post('/api/patterns/validate', (req, res) => {
+    const result = patternsIntegration.validateUserData(req.body);
+    res.json({ 
+        pattern: 'Chain of Responsibility',
+        validation: result,
+        message: 'Data validated using Chain of Responsibility pattern'
     });
 });
 

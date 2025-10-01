@@ -6,8 +6,9 @@ This is a **minimal implementation** that demonstrates 7 design patterns and 5 O
 ## Implementation Details
 
 ### File Structure
-- **`/backend/patterns.js`** - Single file containing all patterns and OOP classes (minimal approach)
-- **`/backend/server.js`** - Added one endpoint `/api/patterns-demo` to demonstrate the patterns
+- **`/backend/patterns.js`** - OOP classes and basic pattern demonstrations
+- **`/backend/patterns-integration.js`** - Design patterns applied to actual functions
+- **`/backend/server.js`** - API endpoints using each pattern
 
 ### 7 Design Patterns Implemented
 
@@ -71,15 +72,44 @@ This is a **minimal implementation** that demonstrates 7 design patterns and 5 O
 
 ## Testing
 
-### Run the demonstration directly:
+### Pattern Integration API Endpoints:
+
+Each pattern is applied to a functional endpoint:
+
+```bash
+# 1. Singleton - Database connection status
+curl http://localhost:5001/api/patterns/db-status
+
+# 2. Factory - Create entities
+curl -X POST http://localhost:5001/api/patterns/create-entity \
+  -H "Content-Type: application/json" \
+  -d '{"type": "user", "data": {"name": "John"}}'
+
+# 3. Strategy - Authentication
+curl -X POST http://localhost:5001/api/patterns/auth \
+  -H "Content-Type: application/json" \
+  -d '{"email": "test@test.com", "password": "password123"}'
+
+# 4. Observer - Create appointment (triggers notifications)
+curl -X POST http://localhost:5001/api/patterns/appointment \
+  -H "Content-Type: application/json" \
+  -d '{"patient": "John", "doctor": "Dr. Smith"}'
+
+# 5. Decorator - Applied as middleware (logs all /api/patterns/* requests)
+
+# 6. Repository - Get user by ID
+curl http://localhost:5001/api/patterns/user/123
+
+# 7. Chain of Responsibility - Validate user data
+curl -X POST http://localhost:5001/api/patterns/validate \
+  -H "Content-Type: application/json" \
+  -d '{"email": "test@test.com", "password": "pass123", "role": "patient"}'
+```
+
+### Run OOP demonstration:
 ```bash
 cd backend
 node patterns.js
-```
-
-### Via API endpoint:
-```bash
-curl http://localhost:5001/api/patterns-demo
 ```
 
 ## Key Features
