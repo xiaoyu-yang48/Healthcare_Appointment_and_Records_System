@@ -3,6 +3,13 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
+const { 
+    RequestHandler, 
+    LoggingDecorator, 
+    PerformanceDecorator, 
+    SecurityDecorator,
+    createDecoratedMiddleware 
+} = require('./patterns/RequestDecorator');
 
 dotenv.config();
 
@@ -13,6 +20,17 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Apply Decorator Pattern for request handling
+const decoratedMiddleware = createDecoratedMiddleware(
+    new RequestHandler(),
+    [
+        { class: SecurityDecorator },
+        { class: LoggingDecorator },
+        { class: PerformanceDecorator, options: { threshold: 1000 } }
+    ]
+);
+app.use(decoratedMiddleware);
+
 // 路由
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
@@ -22,6 +40,7 @@ app.use('/api/messages', require('./routes/messageRoutes'));
 app.use('/api/notices', require('./routes/noticeRoutes'));
 app.use('/api/settings', require('./routes/settingsRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/validation', require('./routes/validationRoutes')); // Chain of Responsibility demo
 
 // 健康检查端点
 app.get('/api/health', (req, res) => {

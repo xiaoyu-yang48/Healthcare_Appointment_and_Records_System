@@ -2,6 +2,8 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const { AuthContext, EmailPasswordStrategy, AdminOverrideStrategy } = require('../patterns/AuthStrategy');
+const { UserRepository } = require('../patterns/Repository');
 
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET || 'test-secret-key', { expiresIn: '30d' });
@@ -85,80 +87,39 @@ const loginUser = async (req, res) => {
     const { email, password } = req.body;
     
     try {
-        // 验证必填字段
-        if (!email || !password) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Email and password are required' 
-            });
-        }
-        // 临时固定密码管理员登录（仅用于调试）
-        if (email === 'admin@healthcare.com' && password === 'admin123') {
-            const adminUser = {
-                id: 'temp-admin-id',
-                name: '系统管理员',
-                email: 'admin@healthcare.com',
-                role: 'admin',
-                phone: '13800000000',
-                address: '',
-                dateOfBirth: null,
-                gender: null,
-                specialization: null,
-                department: null,
-                avatar: null
-            };
-
-            res.json({
-                success: true,
-                message: 'Admin login successful (temporary mode)',
-                token: generateToken(adminUser.id),
-                user: adminUser
-            });
-            return;
-        }
-
-        const user = await User.findOne({ email }).select('+password');
+        // Use Strategy Pattern for authentication
+        const authContext = new AuthContext();
         
-        if (!user) {
-            return res.status(401).json({ success: false, message: 'Invalid email or password' });
+        // Try admin override first
+        if (email === 'admin@healthcare.com' && password === 'admin123') {
+            authContext.setStrategy(new AdminOverrideStrategy());
+            const result = await authContext.authenticate({ email, password });
+            return res.json({
+                success: true,
+                ...result
+            });
         }
-
-        if (!user.isActive) {
-            return res.status(401).json({ success: false, message: 'Account is disabled' });
-        }
-
-        const isMatch = await user.matchPassword(password);
-        if (!isMatch) {
-            return res.status(401).json({ success: false, message: 'Invalid email or password' });
-        }
-
-        // 更新最后登录时间
-        user.lastLogin = new Date();
-        await user.save();
-
-        const userResponse = {
-            id: user._id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            phone: user.phone,
-            address: user.address,
-            dateOfBirth: user.dateOfBirth,
-            gender: user.gender,
-            specialization: user.specialization,
-            department: user.department,
-            avatar: user.avatar
-        };
-
+        
+        // Use email/password strategy for regular users
+        authContext.setStrategy(new EmailPasswordStrategy());
+        const result = await authContext.authenticate({ email, password });
+        
         res.json({
             success: true,
             message: 'Login successful',
-            token: generateToken(user._id),
-            user: userResponse
+            ...result
         });
     } catch (error) {
         console.error('Login error:', error);
-        res.status(500).json({ success: false, message: 'Server error', error: error.message });
+        
+        // Determine appropriate status code based on error
+        const statusCode = error.message.includes('required') ? 400 : 
+                          error.message.includes('Invalid') ? 401 : 500;
+        
+        res.status(statusCode).json({ 
+            success: false, 
+            message: error.message 
+        });
     }
 };
 
