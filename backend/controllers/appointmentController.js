@@ -3,9 +3,6 @@ const User = require('../models/User');
 const DoctorSchedule = require('../models/DoctorSchedule');
 const Notice = require('../models/Notice');
 const { getUserLanguage } = require('../utils/i18n');
-const { AppointmentRepository, UserRepository } = require('../patterns/Repository');
-const { getAppointmentSubject } = require('../patterns/AppointmentObserver');
-const { NotificationFactory } = require('../patterns/NotificationFactory');
 
 // Get patient appointment list
 const getPatientAppointments = async (req, res) => {
@@ -75,30 +72,27 @@ const getTodayAppointments = async (req, res) => {
 const createAppointment = async (req, res) => {
     try {
         const { doctorId, date, timeSlot, symptoms, type } = req.body;
-        
-        // Use Repository Pattern
-        const appointmentRepo = new AppointmentRepository();
-        const userRepo = new UserRepository();
 
         // Verify doctor exists
-        const doctor = await userRepo.findOne({ _id: doctorId, role: 'doctor' });
+        const doctor = await User.findOne({ _id: doctorId, role: 'doctor' });
         if (!doctor) {
             return res.status(404).json({ message: 'Doctor not found' });
         }
 
-        // Check if appointment time is available using repository
-        const isAvailable = await appointmentRepo.checkTimeSlotAvailability(
-            doctorId, 
-            date, 
-            timeSlot
-        );
-        
-        if (!isAvailable) {
+        // Check if appointment time is available
+        const existingAppointment = await Appointment.findOne({
+            doctor: doctorId,
+            date: new Date(date),
+            timeSlot,
+            status: { $in: ['pending', 'confirmed'] }
+        });
+
+        if (existingAppointment) {
             return res.status(400).json({ message: 'This time slot is already booked' });
         }
 
         // Check if patient has another appointment at the same time
-        const patientConflict = await appointmentRepo.findOne({
+        const patientConflict = await Appointment.findOne({
             patient: req.user.id,
             date: new Date(date),
             timeSlot,
@@ -109,7 +103,7 @@ const createAppointment = async (req, res) => {
             return res.status(400).json({ message: 'You already have another appointment at this time slot' });
         }
 
-        const appointment = await appointmentRepo.create({
+        const appointment = await Appointment.create({
             patient: req.user.id,
             doctor: doctorId,
             date: new Date(date),
@@ -118,16 +112,24 @@ const createAppointment = async (req, res) => {
             type: type || 'consultation'
         });
 
-        const populatedAppointment = await appointmentRepo.findById(appointment._id, {
-            populate: 'doctor patient'
-        });
+        const populatedAppointment = await Appointment.findById(appointment._id)
+            .populate('doctor', 'name specialization department')
+            .populate('patient', 'name phone');
 
-        // Use Observer Pattern to notify about appointment creation
-        const appointmentSubject = getAppointmentSubject();
-        appointmentSubject.notify(appointment, 'created', {
-            patientName: req.user.name,
-            language: getUserLanguage(req)
-        });
+        // Create appointment request notification for doctor
+        try {
+            const language = getUserLanguage(req);
+            await Notice.createAppointmentRequest(
+                doctorId,
+                req.user.id,
+                appointment._id,
+                req.user.name,
+                language
+            );
+        } catch (noticeError) {
+            console.error('Failed to create appointment notification:', noticeError);
+            // Notification failure does not affect appointment creation
+        }
 
         res.status(201).json({
             message: 'Appointment created successfully',
@@ -144,11 +146,8 @@ const updateAppointmentStatus = async (req, res) => {
     try {
         const { id } = req.params;
         const { status, notes } = req.body;
-        
-        // Use Repository Pattern
-        const appointmentRepo = new AppointmentRepository();
 
-        const appointment = await appointmentRepo.findById(id);
+        const appointment = await Appointment.findById(id);
         if (!appointment) {
             return res.status(404).json({ message: 'Appointment not found' });
         }
@@ -172,17 +171,26 @@ const updateAppointmentStatus = async (req, res) => {
 
         await appointment.save();
 
-        const updatedAppointment = await appointmentRepo.findById(id, {
-            populate: 'doctor patient'
-        });
+        const updatedAppointment = await Appointment.findById(id)
+            .populate('doctor', 'name specialization department')
+            .populate('patient', 'name phone');
 
-        // Use Observer Pattern for status changes
-        const appointmentSubject = getAppointmentSubject();
-        appointmentSubject.notify(appointment, status, {
-            doctorName: req.user.role === 'doctor' ? req.user.name : undefined,
-            patientName: req.user.role === 'patient' ? req.user.name : undefined,
-            language: getUserLanguage(req)
-        });
+        // If status updated to confirmed, create confirmation notification for patient
+        if (status === 'confirmed') {
+            try {
+                const language = getUserLanguage(req);
+                await Notice.createAppointmentConfirmed(
+                    appointment.patient,
+                    req.user.id,
+                    appointment._id,
+                    req.user.name,
+                    language
+                );
+            } catch (noticeError) {
+                console.error('Failed to create confirmation notification:', noticeError);
+                // Notification failure does not affect status update
+            }
+        }
 
         res.json({
             message: 'Appointment status updated successfully',
