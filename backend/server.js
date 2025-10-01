@@ -23,18 +23,37 @@ app.use('/api/notices', require('./routes/noticeRoutes'));
 app.use('/api/settings', require('./routes/settingsRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 
-// Patterns Demo Endpoint (minimal)
+// Design Patterns Demonstration Endpoint
 app.get('/api/patterns-demo', (req, res) => {
+    const patterns = require('./patterns');
+    // Run demonstration (output goes to console)
+    patterns.demonstratePatterns();
+    
     res.json({
-        message: 'Design patterns and OOP principles implemented',
+        message: 'Design patterns demonstration executed. Check server console for output.',
         patterns: [
-            'Singleton', 'Factory', 'Strategy', 'Observer', 
-            'Decorator', 'Repository', 'Chain of Responsibility'
+            '1. Singleton Pattern - DatabaseConnection',
+            '2. Factory Pattern - NotificationFactory', 
+            '3. Strategy Pattern - Authentication strategies',
+            '4. Observer Pattern - Appointment notifications',
+            '5. Decorator Pattern - Request handlers',
+            '6. Repository Pattern - Data access layer',
+            '7. Chain of Responsibility - Validation chain'
         ],
         oopClasses: [
-            'BaseEntity', 'Person', 'Patient', 'Doctor', 'Appointment'
+            '1. BaseEntity - Abstract base class with encapsulation',
+            '2. Person - Inheritance from BaseEntity',
+            '3. Patient - Polymorphism and inheritance from Person',
+            '4. Doctor - Single responsibility and inheritance',
+            '5. Appointment - Composition and dependency inversion'
         ],
-        files: ['design-patterns.js', 'oop-principles.js']
+        solidPrinciples: [
+            'Single Responsibility', 
+            'Open/Closed',
+            'Liskov Substitution',
+            'Interface Segregation',
+            'Dependency Inversion'
+        ]
     });
 });
 
