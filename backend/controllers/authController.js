@@ -2,6 +2,7 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const UserFactory = require('../patterns/UserFactory');
 
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET || 'test-secret-key', { expiresIn: '30d' });
@@ -37,18 +38,23 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Invalid user role' });
         }
 
-        const userData = {
+        // 使用Factory Pattern验证并创建用户数据
+        const validation = UserFactory.validateUserData(role || 'patient', { name, email, password, specialization, department });
+        if (!validation.valid) {
+            return res.status(400).json({ success: false, message: validation.message });
+        }
+
+        const userData = UserFactory.createUser(role || 'patient', {
             name,
             email,
             password,
-            role: role || 'patient',
             phone,
             address,
             dateOfBirth,
             gender,
             specialization,
             department
-        };
+        });
 
         const user = await User.create(userData);
         
