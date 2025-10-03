@@ -188,3 +188,105 @@ class EmailValidator extends ValidationHandler {
         return valid;
     }
 }
+
+// 8. OOP Principles Demo: Delivery System (5 interacting classes)
+// Abstraction: Base Transport defines the contract for delivery
+class Transport {
+    deliver(order) {
+        throw new Error("Transport.deliver must be implemented by subclass");
+    }
+}
+
+// Inheritance + Polymorphism: BikeTransport overrides deliver
+class BikeTransport extends Transport {
+    deliver(order) {
+        return `Bike delivering order ${order.getId()} to ${order.getDestination()}`;
+    }
+}
+
+// Inheritance + Polymorphism: CarTransport overrides deliver
+class CarTransport extends Transport {
+    deliver(order) {
+        return `Car delivering order ${order.getId()} to ${order.getDestination()}`;
+    }
+}
+
+// Encapsulation: private state via WeakMap, accessed through getters/setters
+const _orderState = new WeakMap();
+class DeliveryOrder {
+    constructor(id, destination, weightKg) {
+        _orderState.set(this, {
+            id,
+            destination,
+            weightKg: Number(weightKg) || 0
+        });
+    }
+
+    getId() {
+        return _orderState.get(this).id;
+    }
+
+    getDestination() {
+        return _orderState.get(this).destination;
+    }
+
+    setDestination(destination) {
+        const state = _orderState.get(this);
+        state.destination = destination;
+    }
+
+    getWeightKg() {
+        return _orderState.get(this).weightKg;
+    }
+
+    setWeightKg(weightKg) {
+        const state = _orderState.get(this);
+        state.weightKg = Number(weightKg) || 0;
+    }
+
+    getShippingClass() {
+        const weight = this.getWeightKg();
+        if (weight <= 1) return 'light';
+        if (weight <= 10) return 'standard';
+        return 'heavy';
+    }
+}
+
+// Encapsulation + Abstraction usage: Dispatcher holds a private registry and dispatches via Transport interface
+const _dispatcherState = new WeakMap();
+class Dispatcher {
+    constructor() {
+        _dispatcherState.set(this, {
+            registry: new Map()
+        });
+    }
+
+    registerTransport(name, transportInstance) {
+        if (!(transportInstance instanceof Transport)) {
+            throw new Error("transportInstance must extend Transport");
+        }
+        _dispatcherState.get(this).registry.set(name, transportInstance);
+        return this;
+    }
+
+    getTransport(name) {
+        return _dispatcherState.get(this).registry.get(name);
+    }
+
+    // Simple selection rule demonstrating abstraction/polymorphism
+    chooseTransportFor(order) {
+        if (order.getWeightKg() <= 5) {
+            return this.getTransport('bike') || this.getTransport('car');
+        }
+        return this.getTransport('car') || this.getTransport('bike');
+    }
+
+    dispatch(order, transportName) {
+        const transport = transportName ? this.getTransport(transportName) : this.chooseTransportFor(order);
+        if (!transport) {
+            throw new Error("No transport available");
+        }
+        // Polymorphic call: actual deliver implementation depends on concrete Transport
+        return transport.deliver(order);
+    }
+}
