@@ -41,6 +41,8 @@ class User {
     switch (doc.role) {
       case 'doctor':
         return new Doctor(doc);
+      case 'admin':
+        return new Admin(doc);
       default:
         return new Patient(doc);
     }
@@ -116,6 +118,14 @@ class Doctor extends User {
     });
     await record.save();
     return MedicalRecord.fromDoc(record);
+  }
+}
+
+// Admin extends User (Inheritance + Polymorphism)
+class Admin extends User {
+  can(_action) {
+    // Admin can perform all domain actions by default
+    return true;
   }
 }
 
@@ -226,6 +236,7 @@ module.exports = {
   User,
   Patient,
   Doctor,
+  Admin,
   Appointment,
   MedicalRecord
 };
