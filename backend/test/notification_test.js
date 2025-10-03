@@ -99,5 +99,48 @@ describe('Notice API Tests', () => {
       expect(res.body.notice.isRead).to.be.true;
     });
   });
-  
+  describe('PUT /api/notices/read-all', () => {
+    it('should mark all notices as read', async () => {
+      await Notice.create({
+        recipientId: testPatient._id,
+        type: 'system_notice',
+        title: 'Notice 1',
+        content: 'Content 1',
+        isRead: false
+      });
+
+      await Notice.create({
+        recipientId: testPatient._id,
+        type: 'system_notice',
+        title: 'Notice 2',
+        content: 'Content 2',
+        isRead: false
+      });
+
+      const res = await chai.request(server)
+        .put('/api/notices/read-all')
+        .set('Authorization', `Bearer ${patientToken}`);
+
+      expect(res).to.have.status(200);
+      expect(res.body).to.have.property('success', true);
+    });
+  });
+
+  describe('DELETE /api/notices/:id', () => {
+    it('should delete a notice', async () => {
+      const notice = await Notice.create({
+        recipientId: testPatient._id,
+        type: 'system_notice',
+        title: 'Delete Me',
+        content: 'This will be deleted'
+      });
+
+      const res = await chai.request(server)
+        .delete(`/api/notices/${notice._id}`)
+        .set('Authorization', `Bearer ${patientToken}`);
+
+      expect(res).to.have.status(200);
+      expect(res.body).to.have.property('success', true);
+    });
+  });
 });
