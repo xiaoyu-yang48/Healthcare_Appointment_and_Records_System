@@ -232,7 +232,7 @@ class MedicalRecord{
             throw new Error("Invalid attachment format");
         }
     }
-    \
+    
     static async createByDoctor(doctor, patient, payload){
         if(!doctor instanceof Doctor){
             throw new Error("Only doctors can create medical records");

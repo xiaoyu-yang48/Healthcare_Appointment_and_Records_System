@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Appointment = require('../models/Appointment');
 const Notice = require('../models/Notice');
 const { getUserLanguage } = require('../utils/i18n');
+const UserOOP = require('../models/UserOOP');
 
 // 获取患者病历列表
 const getPatientRecords = async (req, res) => {

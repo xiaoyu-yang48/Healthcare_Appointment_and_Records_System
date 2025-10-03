@@ -3,6 +3,7 @@ const User = require('../models/User');
 const DoctorSchedule = require('../models/DoctorSchedule');
 const Notice = require('../models/Notice');
 const { getUserLanguage } = require('../utils/i18n');
+const UserOOP = require('../models/UserOOP');
 
 // Get patient appointment list
 const getPatientAppointments = async (req, res) => {
@@ -78,6 +79,10 @@ const createAppointment = async (req, res) => {
         if (!doctor) {
             return res.status(404).json({ message: 'Doctor not found' });
         }
+
+        // Use OOP User model
+        const patientDomain = await UserOOP.User.fromUserId(req.user.id);
+        const doctorDomain = await UserOOP.User.fromUserDoc(doctor);
 
         // Check if appointment time is available
         const existingAppointment = await Appointment.findOne({
