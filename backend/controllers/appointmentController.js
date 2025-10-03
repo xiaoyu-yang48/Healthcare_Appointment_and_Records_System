@@ -3,13 +3,23 @@ const User = require('../models/User');
 const DoctorSchedule = require('../models/DoctorSchedule');
 const Notice = require('../models/Notice');
 const { getUserLanguage } = require('../utils/i18n');
+const { AppointmentSorter, DateSortStrategy, StatusSortStrategy } = require('../patterns/SortingStrategy');
+const { getNotificationCenter, InAppNotificationObserver } = require('../patterns/NotificationObserver');
 
 // Get patient appointment list
 const getPatientAppointments = async (req, res) => {
     try {
-        const appointments = await Appointment.find({ patient: req.user.id })
+        const { sortBy = 'date' } = req.query;
+        
+        let appointments = await Appointment.find({ patient: req.user.id })
             .populate('doctor', 'name specialization department')
-            .sort({ date: -1 });
+            .lean();
+
+        // 使用Strategy Pattern进行排序
+        const sorter = new AppointmentSorter(
+            sortBy === 'status' ? new StatusSortStrategy() : new DateSortStrategy('desc')
+        );
+        appointments = sorter.sort(appointments);
 
         res.json(appointments);
     } catch (error) {
@@ -116,16 +126,23 @@ const createAppointment = async (req, res) => {
             .populate('doctor', 'name specialization department')
             .populate('patient', 'name phone');
 
-        // Create appointment request notification for doctor
+        // 使用Observer Pattern发送通知
         try {
-            const language = getUserLanguage(req);
-            await Notice.createAppointmentRequest(
-                doctorId,
-                req.user.id,
-                appointment._id,
-                req.user.name,
-                language
-            );
+            const notificationCenter = getNotificationCenter();
+            // 如果还没有观察者，添加一个
+            if (notificationCenter.observers.length === 0) {
+                notificationCenter.attach(new InAppNotificationObserver(Notice));
+            }
+            
+            await notificationCenter.notify('appointment_created', {
+                recipientId: doctorId,
+                senderId: req.user.id,
+                noticeType: 'appointment_request',
+                title: 'New Appointment Request',
+                content: `New appointment request from ${req.user.name}`,
+                relatedId: appointment._id,
+                relatedType: 'appointment'
+            });
         } catch (noticeError) {
             console.error('Failed to create appointment notification:', noticeError);
             // Notification failure does not affect appointment creation
