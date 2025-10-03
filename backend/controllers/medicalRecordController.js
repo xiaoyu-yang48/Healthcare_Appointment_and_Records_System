@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Appointment = require('../models/Appointment');
 const Notice = require('../models/Notice');
 const { getUserLanguage } = require('../utils/i18n');
+const UserOOP = require('../models/UserOOP');
 
 // 获取患者病历列表
 const getPatientRecords = async (req, res) => {
@@ -79,20 +80,25 @@ const createMedicalRecord = async (req, res) => {
             }
         }
 
-        const medicalRecord = await MedicalRecord.create({
-            patient: patientId,
-            doctor: req.user.id,
-            appointment: appointmentId,
-            symptoms,
-            diagnosis,
-            treatment,
-            prescription,
-            vitalSigns,
-            labResults,
-            notes,
-            followUpDate,
-            followUpNotes
-        });
+        // Domain layer: Doctor creates medical record (encapsulation)
+        const doctorDomain = await UserOOP.User.fromUserId(req.user.id);
+        const createdDomain = await UserOOP.MedicalRecord.createByDoctor(
+            doctorDomain,
+            patientId,
+            {
+                appointment: appointmentId,
+                symptoms,
+                diagnosis,
+                treatment,
+                prescription,
+                vitalSigns,
+                labResults,
+                notes,
+                followUpDate,
+                followUpNotes
+            }
+        );
+        const medicalRecord = createdDomain.doc;
 
         const populatedRecord = await MedicalRecord.findById(medicalRecord._id)
             .populate('patient', 'name phone dateOfBirth gender')
@@ -140,13 +146,12 @@ const updateMedicalRecord = async (req, res) => {
             return res.status(403).json({ message: '无权限修改此病历' });
         }
 
-        // 更新病历
+        // 更新病历（保持最小变更）
         Object.keys(updateData).forEach(key => {
             if (updateData[key] !== undefined) {
                 record[key] = updateData[key];
             }
         });
-
         await record.save();
 
         const updatedRecord = await MedicalRecord.findById(id)
@@ -284,14 +289,14 @@ const uploadAttachment = async (req, res) => {
             return res.status(403).json({ message: '无权限修改此病历' });
         }
 
-        record.attachments.push({
+        const doctorDomain2 = await UserOOP.User.fromUserId(req.user.id);
+        const recordDomain = UserOOP.MedicalRecord.fromDoc(record);
+        await recordDomain.appendAttachmentByDoctor(doctorDomain2, {
             fileName,
             filePath,
             fileType,
             fileSize
         });
-
-        await record.save();
 
         res.json({
             message: '附件上传成功',

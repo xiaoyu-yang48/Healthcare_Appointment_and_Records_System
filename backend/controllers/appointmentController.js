@@ -5,6 +5,7 @@ const Notice = require('../models/Notice');
 const { getUserLanguage } = require('../utils/i18n');
 const { AppointmentSorter, DateSortStrategy, StatusSortStrategy } = require('../patterns/SortingStrategy');
 const { getNotificationCenter, InAppNotificationObserver } = require('../patterns/NotificationObserver');
+const UserOOP = require('../models/UserOOP');
 
 // Get patient appointment list
 const getPatientAppointments = async (req, res) => {
@@ -89,6 +90,10 @@ const createAppointment = async (req, res) => {
             return res.status(404).json({ message: 'Doctor not found' });
         }
 
+        // Use OOP domain wrappers (non-invasive)
+        const patientDomain = await UserOOP.User.fromUserId(req.user.id);
+        const doctorDomain = UserOOP.User.fromUserDoc(doctor);
+
         // Check if appointment time is available
         const existingAppointment = await Appointment.findOne({
             doctor: doctorId,
@@ -139,7 +144,7 @@ const createAppointment = async (req, res) => {
                 senderId: req.user.id,
                 noticeType: 'appointment_request',
                 title: 'New Appointment Request',
-                content: `New appointment request from ${req.user.name}`,
+                content: `New appointment request from ${patientDomain.displayName()}`,
                 relatedId: appointment._id,
                 relatedType: 'appointment'
             });
@@ -254,11 +259,12 @@ const cancelAppointment = async (req, res) => {
         // Create cancellation notification
         try {
             const recipientId = req.user.role === 'doctor' ? appointment.patient : appointment.doctor;
+            const actorDomain = await UserOOP.User.fromUserId(req.user.id);
             await Notice.createAppointmentCancelled(
                 recipientId,
                 req.user.id,
                 appointment._id,
-                req.user.name
+                actorDomain.displayName()
             );
         } catch (noticeError) {
             console.error('Failed to create cancellation notification:', noticeError);
