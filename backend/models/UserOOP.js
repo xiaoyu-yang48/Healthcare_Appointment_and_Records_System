@@ -1,161 +1,232 @@
-const User = require('./User');
-const Appointment = require('./Appointment');
-const MedicalRecord = require('./MedicalRecord');
+const UserModel = require('./User');
+const AppointmentModel = require('./Appointment');
+const MedicalRecordModel = require('./MedicalRecord');
+const DoctorScheduleModel = require('./DoctorSchedule');
+const Notice = require('./Notice');
 
-// Abstract base for user roles (Abstraction)
-class AbstractUserRole {
+// A: Abstract class User (Abstraction + Encapsulation)
+class User {
+  #id;
+  #name;
+  #email;
+
   constructor(userDoc) {
-    if (new.target === AbstractUserRole) {
-      throw new Error('AbstractUserRole cannot be instantiated directly');
+    if (new.target === User) {
+      throw new Error('User is abstract and cannot be instantiated directly');
     }
-    this.userDoc = userDoc;
+    this.#id = userDoc && userDoc._id;
+    this.#name = userDoc && userDoc.name;
+    this.#email = userDoc && userDoc.email;
   }
 
-  getId() {
-    return this.userDoc && this.userDoc._id;
+  get id() { return this.#id; }
+  get name() { return this.#name; }
+  get email() { return this.#email; }
+
+  displayName() {
+    return this.#name || this.#email || 'Unknown';
   }
 
-  getEmail() {
-    return this.userDoc && this.userDoc.email;
+  can(_action) { // intended to be overridden (Polymorphism)
+    throw new Error('can(action) must be implemented by subclass');
   }
 
-  getRole() {
-    return this.userDoc && this.userDoc.role;
+  static async fromUserId(userId) {
+    const doc = await UserModel.findById(userId);
+    if (!doc) throw new Error('User not found');
+    return User.fromUserDoc(doc);
   }
 
-  // abstract-like methods to be overridden by subclasses (Abstraction)
-  getPermissions() {
-    throw new Error('getPermissions must be implemented by subclass');
-  }
-
-  canViewRecord(recordDoc) {
-    throw new Error('canViewRecord must be implemented by subclass');
-  }
-
-  canMessage(targetUserDoc) {
-    throw new Error('canMessage must be implemented by subclass');
-  }
-}
-
-// Patient role (Inheritance + Polymorphism)
-class PatientRole extends AbstractUserRole {
-  getPermissions() {
-    return ['view_self_records', 'request_appointment', 'message_doctor'];
-  }
-
-  canViewRecord(recordDoc) {
-    if (!recordDoc) return false;
-    return String(recordDoc.patient) === String(this.getId());
-  }
-
-  canMessage(targetUserDoc) {
-    if (!targetUserDoc) return false;
-    return targetUserDoc.role === 'doctor' || targetUserDoc.role === 'admin';
-  }
-}
-
-// Doctor role (Inheritance + Polymorphism)
-class DoctorRole extends AbstractUserRole {
-  getPermissions() {
-    return ['manage_appointments', 'view_assigned_records', 'write_records', 'message_patient'];
-  }
-
-  canViewRecord(recordDoc) {
-    if (!recordDoc) return false;
-    return String(recordDoc.doctor) === String(this.getId());
-  }
-
-  canMessage(targetUserDoc) {
-    if (!targetUserDoc) return false;
-    return targetUserDoc.role === 'patient' || targetUserDoc.role === 'admin';
-  }
-}
-
-// Encapsulated access policy using private state (Encapsulation)
-const _policyState = new WeakMap();
-class RecordAccessPolicy {
-  constructor(userRole) {
-    _policyState.set(this, { userRole });
-  }
-
-  getUserRole() {
-    return _policyState.get(this).userRole;
-  }
-
-  canAccessRecord(recordDoc) {
-    const role = this.getUserRole();
-    return role.canViewRecord(recordDoc);
-  }
-
-  assertCanAccessRecord(recordDoc) {
-    if (!this.canAccessRecord(recordDoc)) {
-      throw new Error('Access denied to medical record');
+  static fromUserDoc(doc) {
+    switch (doc.role) {
+      case 'doctor':
+        return new Doctor(doc);
+      default:
+        return new Patient(doc);
     }
   }
 }
 
-// Coordinator encapsulates appointment workflows and leverages role polymorphism (Encapsulation + Polymorphism)
-const _coordState = new WeakMap();
-class AppointmentCoordinator {
-  constructor() {
-    _coordState.set(this, { createdBy: 'system' });
+// B: Patient extends User (Inheritance + Polymorphism)
+class Patient extends User {
+  can(action) {
+    const allowed = new Set(['view_self_records', 'request_appointment', 'message_doctor']);
+    return allowed.has(action);
   }
 
-  getCreatedBy() {
-    return _coordState.get(this).createdBy;
+  async getAppointments(filter = {}) {
+    const docs = await AppointmentModel.find(Object.assign({ patient: this.id }, filter)).sort({ date: -1 });
+    return docs.map((d) => Appointment.fromDoc(d));
   }
 
-  // Returns boolean eligibility using role polymorphism
-  canSchedule(patientRole, doctorRole) {
-    const patientPerms = patientRole.getPermissions();
-    const doctorPerms = doctorRole.getPermissions();
-    return patientPerms.includes('request_appointment') && doctorPerms.includes('manage_appointments');
+  async getMedicalRecords(filter = {}) {
+    const docs = await MedicalRecordModel.find(Object.assign({ patient: this.id }, filter)).sort({ visitDate: -1 });
+    return docs.map((d) => MedicalRecord.fromDoc(d));
+  }
+}
+
+// C: Doctor extends User (Inheritance + Polymorphism + Encapsulation)
+class Doctor extends User {
+  #specialty;
+  #schedule;
+
+  constructor(userDoc) {
+    super(userDoc);
+    this.#specialty = userDoc && (userDoc.specialization || userDoc.specialty) || null;
+    this.#schedule = null; // value object/aggregation
   }
 
-  // Minimal integration with Mongoose models; no side effects unless invoked
-  async createAppointment(patientRole, doctorRole, date, timeSlot) {
-    if (!this.canSchedule(patientRole, doctorRole)) {
-      throw new Error('Either patient or doctor role does not allow scheduling');
-    }
-    return Appointment.create({
-      patient: patientRole.getId(),
-      doctor: doctorRole.getId(),
+  get specialty() { return this.#specialty; }
+  get schedule() { return this.#schedule; }
+
+  can(action) {
+    const allowed = new Set(['manage_appointments', 'view_assigned_records', 'write_records', 'message_patient']);
+    return allowed.has(action);
+  }
+
+  async loadScheduleFor(date) {
+    const doc = await DoctorScheduleModel.findOne({ doctor: this.id, date });
+    this.#schedule = doc ? { date: doc.date, timeSlots: doc.timeSlots, isWorkingDay: doc.isWorkingDay } : null;
+    return this.#schedule;
+  }
+
+  async getAppointments(filter = {}) {
+    const docs = await AppointmentModel.find(Object.assign({ doctor: this.id }, filter)).sort({ date: -1 });
+    return docs.map((d) => Appointment.fromDoc(d));
+  }
+
+  async createMedicalRecord(patientId, payload) {
+    if (!this.can('write_records')) throw new Error('Doctor not permitted to write records');
+    const record = await MedicalRecordModel.create(Object.assign({}, payload, { patient: patientId, doctor: this.id }));
+    return MedicalRecord.fromDoc(record);
+  }
+
+  async appendRecordAttachment(recordId, attachment) {
+    if (!this.can('write_records')) throw new Error('Doctor not permitted to write records');
+    const record = await MedicalRecordModel.findById(recordId);
+    if (!record) throw new Error('Record not found');
+    if (String(record.doctor) !== String(this.id)) throw new Error('Only assigned doctor can modify this record');
+    MedicalRecord.validateAttachment(attachment);
+    record.attachments = Array.isArray(record.attachments) ? record.attachments : [];
+    record.attachments.push({
+      fileName: attachment.fileName,
+      filePath: attachment.filePath,
+      fileType: attachment.fileType,
+      uploadedAt: new Date()
+    });
+    await record.save();
+    return MedicalRecord.fromDoc(record);
+  }
+}
+
+// D: Appointment (Encapsulation + Abstraction)
+class Appointment {
+  #doc;
+  #status;
+
+  constructor(doc) {
+    this.#doc = doc;
+    this.#status = doc && doc.status;
+  }
+
+  static fromDoc(doc) { return new Appointment(doc); }
+  get id() { return this.#doc && this.#doc._id; }
+  get status() { return this.#status; }
+  get doc() { return this.#doc; }
+
+  static async book(patient, doctor, date, timeSlot) {
+    const created = await AppointmentModel.create({
+      patient: patient.id,
+      doctor: doctor.id,
       date,
       timeSlot,
       status: 'pending',
       type: 'consultation'
     });
+    await Notice.createAppointmentRequest(doctor.id, patient.id, created._id, patient.displayName(), 'en');
+    return Appointment.fromDoc(created);
   }
 
-  async addDoctorNote(doctorRole, recordId, note) {
-    const record = await MedicalRecord.findById(recordId);
-    if (!record) throw new Error('Record not found');
-    const policy = new RecordAccessPolicy(doctorRole);
-    policy.assertCanAccessRecord(record);
-    record.notes = [record.notes, note].filter(Boolean).join('\n');
-    return record.save();
+  async cancel(byUser, reason) {
+    if (this.#status === 'completed') throw new Error('Cannot cancel a completed appointment');
+    this.#doc.status = 'cancelled';
+    this.#doc.cancellationReason = reason || 'cancelled';
+    this.#doc.cancelledBy = byUser.id;
+    this.#doc.cancelledAt = new Date();
+    await this.#doc.save();
+    this.#status = this.#doc.status;
+
+    // notify counterpart
+    const isPatient = byUser instanceof Patient;
+    const recipientId = isPatient ? this.#doc.doctor : this.#doc.patient;
+    await Notice.createAppointmentCancelled(recipientId, byUser.id, this.id, byUser.displayName(), 'en');
+    return this;
+  }
+
+  async complete() {
+    if (this.#status === 'cancelled') throw new Error('Cannot complete a cancelled appointment');
+    this.#doc.status = 'completed';
+    await this.#doc.save();
+    this.#status = this.#doc.status;
+    return this;
   }
 }
 
-function createUserRoleFor(userOrId) {
-  if (typeof userOrId === 'object' && userOrId._id) {
-    const userDoc = userOrId;
-    if (userDoc.role === 'doctor') return new DoctorRole(userDoc);
-    return new PatientRole(userDoc);
+// E: MedicalRecord (Encapsulation)
+class MedicalRecord {
+  #doc;
+  #diagnosis;
+  #treatment;
+  #attachments;
+
+  constructor(doc) {
+    this.#doc = doc;
+    this.#diagnosis = doc && doc.diagnosis;
+    this.#treatment = doc && doc.treatment;
+    this.#attachments = (doc && doc.attachments) || [];
   }
-  return User.findById(userOrId).then((doc) => {
-    if (!doc) throw new Error('User not found');
-    if (doc.role === 'doctor') return new DoctorRole(doc);
-    return new PatientRole(doc);
-  });
+
+  static fromDoc(doc) { return new MedicalRecord(doc); }
+  get id() { return this.#doc && this.#doc._id; }
+  get diagnosis() { return this.#diagnosis; }
+  get treatment() { return this.#treatment; }
+  get attachments() { return [...this.#attachments]; }
+  get doc() { return this.#doc; }
+
+  static validateAttachment(att) {
+    if (!att || !att.fileName || !att.filePath || !att.fileType) {
+      throw new Error('Invalid attachment');
+    }
+  }
+
+  static async createByDoctor(doctor, patientId, payload) {
+    if (!(doctor instanceof Doctor)) throw new Error('Only doctor can create medical record');
+    const created = await MedicalRecordModel.create(Object.assign({}, payload, { patient: patientId, doctor: doctor.id }));
+    return MedicalRecord.fromDoc(created);
+  }
+
+  async appendAttachmentByDoctor(doctor, attachment) {
+    if (!(doctor instanceof Doctor)) throw new Error('Only doctor can modify medical record');
+    if (String(this.#doc.doctor) !== String(doctor.id)) throw new Error('Only assigned doctor can modify this record');
+    MedicalRecord.validateAttachment(attachment);
+    this.#doc.attachments = Array.isArray(this.#doc.attachments) ? this.#doc.attachments : [];
+    this.#doc.attachments.push({
+      fileName: attachment.fileName,
+      filePath: attachment.filePath,
+      fileType: attachment.fileType,
+      uploadedAt: new Date()
+    });
+    await this.#doc.save();
+    this.#attachments = this.#doc.attachments;
+    return this;
+  }
 }
 
 module.exports = {
-  AbstractUserRole,
-  PatientRole,
-  DoctorRole,
-  RecordAccessPolicy,
-  AppointmentCoordinator,
-  createUserRoleFor
+  User,
+  Patient,
+  Doctor,
+  Appointment,
+  MedicalRecord
 };
 
