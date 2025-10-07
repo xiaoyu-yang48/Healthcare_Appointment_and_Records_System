@@ -133,6 +133,7 @@ class AppointmentFacade {
             );
 
             // Step 5: 发送取消通知
+            
             console.log('[Facade] Step 5: Sending cancellation notifications...');
             await this.sendCancellationNotifications({
                 appointment,
