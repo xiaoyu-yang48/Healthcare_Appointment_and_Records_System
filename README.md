@@ -30,7 +30,7 @@ Develop a healthcare appointment system based on the **MERN stack** (MongoDB + E
   - Upload examination reports (PDF/images)  
 - Patients can:  
   - View their own medical records (read-only)  
-  - Download reports  
+  - Download medical reports  
 
 #### **(4) Doctor-Patient Communication**  
 - Patients and doctors can send **in-app messages** (e.g., inquiries, follow-up reminders)  
@@ -92,6 +92,6 @@ const MedicalRecordSchema = new mongoose.Schema({
 ### **4. Non-Functional Requirements**  
 - **Security**: JWT authentication, password encryption (bcrypt)  
 - **Performance**: API response time ≤ 500ms  
-- **Data Storage**: MongoDB Atlas (cloud) or local MongoDB  
+- **Data Storage**: MongoDB Atlas (cloud) or local MongoDB 
 
 ---
