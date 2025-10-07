@@ -1,20 +1,49 @@
 {
-  "name": "task-manager",
+  "name": "healthcare-appointment-backend",
   "version": "1.0.0",
-  "description": "Complete MERN Task Manager Application",
+  "description": "医疗预约系统后端服务",
+  "main": "server.js",
   "scripts": {
-    "install-all": "npm install && npm install --prefix backend && npm install --prefix frontend",
-    "start": "concurrently \"npm run prod --prefix backend\" \"npm start --prefix frontend\"",
-    "dev": "concurrently \"npm run dev --prefix backend\" \"npm start --prefix frontend\""
+    "test": "mocha test/**/*.test.js --timeout 10000",
+    "test:auth": "mocha test/auth.test.js --timeout 10000",
+    "test:admin": "mocha test/admin.test.js --timeout 10000",
+    "test:appointment": "mocha test/appointment.test.js --timeout 10000",
+    "test:medical-record": "mocha test/medical-record.test.js --timeout 10000",
+    "test:notice": "mocha test/notice.test.js --timeout 10000",
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "prod": "node server.js",
+    "init-admin": "node scripts/initAdmin.js",
+    "init-schedules": "node scripts/init-doctor-schedules.js",
+    "test-appointment": "node scripts/test-appointment.js"
+  },
+  "dependencies": {
+    "all": "^0.0.0",
+    "axios": "^1.11.0",
+    "bcryptjs": "^2.4.3",
+    "chai": "^4.5.0",
+    "chai-http": "^4.4.0",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.13.8",
+    "request": "^2.88.2"
   },
   "devDependencies": {
-    "chai": "^5.1.2",
-    "concurrently": "^7.0.0",
-    "mocha": "^11.0.1"
+    "esm": "^3.2.25",
+    "mocha": "^11.7.1",
+    "nodemon": "^2.0.22",
+    "sinon": "^19.0.5"
   },
-  "author": "Task Manager Team",
+  "author": "医疗预约系统团队",
   "license": "ISC",
-  "dependencies": {
-    "all": "^0.0.0"
-  }
+  "keywords": [
+    "healthcare",
+    "appointment",
+    "medical",
+    "nodejs",
+    "express",
+    "mongodb"
+  ]
 }
